@@ -1,0 +1,759 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum VeracityRating {
+  TRUE
+  MOSTLY_TRUE
+  HALF_TRUE
+  MOSTLY_FALSE
+  FALSE
+  UNVERIFIABLE
+  SATIRE
+  MISLEADING
+}
+
+enum SubmissionStatus {
+  PENDING
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+  PUBLISHED
+}
+
+enum SubmissionType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  LINK
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  UNDER_REVIEW
+}
+
+enum EventType {
+  WORKSHOP
+  WEBINAR
+  EXHIBITION
+  CONFERENCE
+  TRAINING
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  SUBMISSION_UPDATE
+  EVENT_REMINDER
+  ACHIEVEMENT_UNLOCKED
+  CERTIFICATE_ISSUED
+  SYSTEM
+}
+
+enum ModerationAction {
+  APPROVE
+  REJECT
+  FLAG
+  ESCALATE
+}
+
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String?   // Null for OAuth users
+  firstName         String?
+  lastName          String?
+  username          String?   @unique
+  avatar            String?
+  bio               String?
+  role              Role      @default(USER)
+  isEmailVerified   Boolean   @default(false)
+  googleId          String?   @unique
+  reputation        Int       @default(0)
+  totalPoints       Int       @default(0)
+  level             Int       @default(1)
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastLoginAt       DateTime?
+  
+  // Relations
+  submissions       Submission[]
+  factChecks        FactCheck[]        @relation("Author")
+  certificates      Certificate[]
+  eventRegistrations EventRegistration[]
+  achievements      UserAchievement[]
+  notifications     Notification[]
+  comments          Comment[]
+  courseProgress    CourseProgress[]
+  quizAttempts      QuizAttempt[]
+  moderationActions ModerationLog[]
+  contactMessages   ContactMessage[]
+  savedContent      SavedContent[]
+  activityLogs      ActivityLog[]
+  
+  @@index([email])
+  @@index([role])
+  @@index([reputation])
+  @@map("users")
+}
+
+// ============================================
+// FACT CHECKING CORE
+// ============================================
+
+model FactCheck {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  claim           String          @db.Text
+  claimant        String?
+  claimDate       DateTime?
+  verdict         VeracityRating
+  summary         String          @db.Text
+  fullAnalysis    String          @db.Text
+  methodology     String?         @db.Text
+  sources         Json[]          // Array of source objects
+  mediaUrls       String[]
+  tags            String[]
+  views           Int             @default(0)
+  shares          Int             @default(0)
+  status          ContentStatus   @default(DRAFT)
+  featuredImage   String?
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // Publishing
+  publishedAt     DateTime?
+  authorId        String
+  author          User            @relation("Author", fields: [authorId], references: [id])
+  
+  // Related
+  submissionId    String?         @unique
+  submission      Submission?     @relation(fields: [submissionId], references: [id])
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  comments        Comment[]
+  savedBy         SavedContent[]
+  
+  @@index([slug])
+  @@index([verdict])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
+  @@map("fact_checks")
+}
+
+model Submission {
+  id              String            @id @default(cuid())
+  type            SubmissionType
+  content         String            @db.Text
+  sourceUrl       String?
+  mediaUrls       String[]
+  context         String?           @db.Text
+  status          SubmissionStatus  @default(PENDING)
+  priority        Int               @default(0)
+  internalNotes   String?           @db.Text
+  
+  // Submitter info
+  submitterId     String
+  submitter       User              @relation(fields: [submitterId], references: [id])
+  submitterEmail  String?
+  isAnonymous     Boolean           @default(false)
+  
+  // Review process
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  factCheck       FactCheck?
+  moderationLogs  ModerationLog[]
+  
+  @@index([status])
+  @@index([submitterId])
+  @@index([createdAt])
+  @@map("submissions")
+}
+
+// ============================================
+// MEDIA LITERACY EDUCATION
+// ============================================
+
+model Course {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  description     String          @db.Text
+  coverImage      String?
+  difficulty      String          // Beginner, Intermediate, Advanced
+  duration        Int             // in minutes
+  order           Int             @default(0)
+  isPublished     Boolean         @default(false)
+  prerequisites   String[]
+  learningObjectives String[]
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  lessons         Lesson[]
+  enrollments     CourseProgress[]
+  certificates    Certificate[]
+  
+  @@index([slug])
+  @@index([isPublished])
+  @@map("courses")
+}
+
+model Lesson {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String
+  content         String          @db.Text
+  videoUrl        String?
+  duration        Int?            // in minutes
+  order           Int
+  resources       Json[]          // Downloadable resources
+  
+  courseId        String
+  course          Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  quiz            Quiz?
+  
+  @@unique([courseId, slug])
+  @@index([courseId])
+  @@map("lessons")
+}
+
+model Quiz {
+  id              String          @id @default(cuid())
+  title           String
+  passingScore    Int             @default(70)
+  timeLimit       Int?            // in minutes
+  questions       Json[]          // Array of question objects
+  
+  lessonId        String          @unique
+  lesson          Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  attempts        QuizAttempt[]
+  
+  @@map("quizzes")
+}
+
+model QuizAttempt {
+  id              String          @id @default(cuid())
+  score           Int
+  answers         Json            // User's answers
+  isPassed        Boolean
+  timeSpent       Int?            // in seconds
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  quizId          String
+  quiz            Quiz            @relation(fields: [quizId], references: [id])
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  
+  @@index([userId])
+  @@index([quizId])
+  @@map("quiz_attempts")
+}
+
+model CourseProgress {
+  id              String          @id @default(cuid())
+  isCompleted     Boolean         @default(false)
+  completedAt     DateTime?
+  progress        Int             @default(0) // Percentage
+  lastAccessedAt  DateTime        @default(now())
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  courseId        String
+  course          Course          @relation(fields: [courseId], references: [id])
+  
+  // Timestamps
+  startedAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("course_progress")
+}
+
+// ============================================
+// CERTIFICATES
+// ============================================
+
+model Certificate {
+  id              String          @id @default(cuid())
+  certificateNumber String        @unique
+  verificationCode  String        @unique
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  courseId        String
+  course          Course          @relation(fields: [courseId], references: [id])
+  
+  // Certificate data
+  recipientName   String
+  issuedDate      DateTime        @default(now())
+  expiryDate      DateTime?
+  pdfUrl          String?
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  
+  @@index([certificateNumber])
+  @@index([userId])
+  @@map("certificates")
+}
+
+// ============================================
+// EVENTS & WORKSHOPS
+// ============================================
+
+model Event {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  description     String          @db.Text
+  type            EventType
+  status          EventStatus     @default(UPCOMING)
+  coverImage      String?
+  
+  // Event details
+  startDate       DateTime
+  endDate         DateTime
+  location        String?
+  virtualLink     String?
+  isVirtual       Boolean         @default(false)
+  maxAttendees    Int?
+  
+  // Additional info
+  speakers        Json[]          // Array of speaker objects
+  agenda          Json[]
+  requirements    String[]
+  tags            String[]
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  registrations   EventRegistration[]
+  
+  @@index([slug])
+  @@index([status])
+  @@index([startDate])
+  @@map("events")
+}
+
+model EventRegistration {
+  id              String          @id @default(cuid())
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  eventId         String
+  event           Event           @relation(fields: [eventId], references: [id])
+  
+  // Registration details
+  status          String          @default("CONFIRMED") // CONFIRMED, CANCELLED, ATTENDED
+  attendedAt      DateTime?
+  feedback        String?
+  rating          Int?
+  
+  // Timestamps
+  registeredAt    DateTime        @default(now())
+  
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+  @@map("event_registrations")
+}
+
+model HostRequest {
+  id              String          @id @default(cuid())
+  
+  // Requester info
+  name            String
+  email           String
+  phone           String?
+  organization    String?
+  
+  // Event details
+  proposedTitle   String
+  description     String          @db.Text
+  eventType       EventType
+  preferredDate   DateTime
+  expectedAttendees Int?
+  location        String?
+  
+  // Status
+  status          String          @default("PENDING") // PENDING, APPROVED, REJECTED
+  reviewNotes     String?
+  reviewedAt      DateTime?
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([status])
+  @@map("host_requests")
+}
+
+// ============================================
+// RECORDED SESSIONS
+// ============================================
+
+model Session {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  description     String          @db.Text
+  videoUrl        String
+  thumbnailUrl    String?
+  duration        Int             // in minutes
+  views           Int             @default(0)
+  
+  // Content details
+  speakers        Json[]
+  topics          String[]
+  resources       Json[]
+  
+  // Publishing
+  status          ContentStatus   @default(DRAFT)
+  publishedAt     DateTime?
+  
+  // Timestamps
+  recordedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([slug])
+  @@index([status])
+  @@map("sessions")
+}
+
+// ============================================
+// RESEARCH & INSIGHTS
+// ============================================
+
+model Research {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  summary         String          @db.Text
+  fullContent     String          @db.Text
+  authors         String[]
+  category        String
+  tags            String[]
+  
+  // Media
+  coverImage      String?
+  attachments     Json[]
+  
+  // Publishing
+  status          ContentStatus   @default(DRAFT)
+  publishedAt     DateTime?
+  
+  // Metrics
+  views           Int             @default(0)
+  downloads       Int             @default(0)
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([slug])
+  @@index([category])
+  @@index([status])
+  @@map("research")
+}
+
+// ============================================
+// FAQ
+// ============================================
+
+model FAQ {
+  id              String          @id @default(cuid())
+  question        String
+  answer          String          @db.Text
+  category        String
+  order           Int             @default(0)
+  isPublished     Boolean         @default(true)
+  views           Int             @default(0)
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([category])
+  @@index([isPublished])
+  @@map("faqs")
+}
+
+// ============================================
+// CONTACT
+// ============================================
+
+model ContactMessage {
+  id              String          @id @default(cuid())
+  name            String
+  email           String
+  phone           String?
+  subject         String
+  message         String          @db.Text
+  
+  // Status
+  status          String          @default("NEW") // NEW, IN_PROGRESS, RESOLVED
+  response        String?         @db.Text
+  respondedAt     DateTime?
+  respondedBy     String?
+  
+  // User relation (if logged in)
+  userId          String?
+  user            User?           @relation(fields: [userId], references: [id])
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_messages")
+}
+
+// ============================================
+// GAMIFICATION
+// ============================================
+
+model Achievement {
+  id              String          @id @default(cuid())
+  name            String
+  description     String
+  icon            String
+  points          Int
+  category        String          // Learning, Contribution, Social, etc.
+  criteria        Json            // Conditions to unlock
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  
+  // Relations
+  userAchievements UserAchievement[]
+  
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id              String          @id @default(cuid())
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  achievementId   String
+  achievement     Achievement     @relation(fields: [achievementId], references: [id])
+  
+  // Timestamps
+  unlockedAt      DateTime        @default(now())
+  
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@map("user_achievements")
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id              String            @id @default(cuid())
+  type            NotificationType
+  title           String
+  message         String
+  actionUrl       String?
+  isRead          Boolean           @default(false)
+  
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  readAt          DateTime?
+  
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// ============================================
+// MODERATION
+// ============================================
+
+model ModerationLog {
+  id              String            @id @default(cuid())
+  action          ModerationAction
+  reason          String?
+  notes           String?           @db.Text
+  
+  moderatorId     String
+  moderator       User              @relation(fields: [moderatorId], references: [id])
+  
+  submissionId    String?
+  submission      Submission?       @relation(fields: [submissionId], references: [id])
+  
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  
+  @@index([moderatorId])
+  @@index([submissionId])
+  @@map("moderation_logs")
+}
+
+// ============================================
+// COMMENTS & ENGAGEMENT
+// ============================================
+
+model Comment {
+  id              String          @id @default(cuid())
+  content         String          @db.Text
+  isEdited        Boolean         @default(false)
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  
+  factCheckId     String?
+  factCheck       FactCheck?      @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
+  
+  // Nesting
+  parentId        String?
+  parent          Comment?        @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies         Comment[]       @relation("CommentReplies")
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([userId])
+  @@index([factCheckId])
+  @@map("comments")
+}
+
+model SavedContent {
+  id              String          @id @default(cuid())
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  
+  factCheckId     String?
+  factCheck       FactCheck?      @relation(fields: [factCheckId], references: [id])
+  
+  // Timestamps
+  savedAt         DateTime        @default(now())
+  
+  @@unique([userId, factCheckId])
+  @@index([userId])
+  @@map("saved_content")
+}
+
+// ============================================
+// ANALYTICS & LOGGING
+// ============================================
+
+model ActivityLog {
+  id              String          @id @default(cuid())
+  action          String
+  entity          String
+  entityId        String?
+  metadata        Json?
+  ipAddress       String?
+  userAgent       String?
+  
+  userId          String?
+  user            User?           @relation(fields: [userId], references: [id])
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model SystemMetric {
+  id              String          @id @default(cuid())
+  metric          String
+  value           Float
+  metadata        Json?
+  
+  // Timestamps
+  recordedAt      DateTime        @default(now())
+  
+  @@index([metric])
+  @@index([recordedAt])
+  @@map("system_metrics")
+}
