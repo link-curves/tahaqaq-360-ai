@@ -23,11 +23,13 @@ async function bootstrap() {
   // ============================================
   // SECURITY MIDDLEWARE
   // ============================================
-  app.use(helmet({
-    contentSecurityPolicy: environment === 'production',
-    crossOriginEmbedderPolicy: environment === 'production',
-  }));
-  
+  app.use(
+    helmet({
+      contentSecurityPolicy: environment === 'production',
+      crossOriginEmbedderPolicy: environment === 'production',
+    }),
+  );
+
   app.use(compression());
   app.use(cookieParser());
 
@@ -71,10 +73,7 @@ async function bootstrap() {
   // ============================================
   // GLOBAL FILTERS
   // ============================================
-  app.useGlobalFilters(
-    new HttpExceptionFilter(),
-    new PrismaExceptionFilter(),
-  );
+  app.useGlobalFilters(new HttpExceptionFilter(), new PrismaExceptionFilter());
 
   // ============================================
   // GLOBAL INTERCEPTORS
@@ -90,7 +89,9 @@ async function bootstrap() {
   if (environment === 'development') {
     const config = new DocumentBuilder()
       .setTitle('Tahaqaq 360 API')
-      .setDescription('Fact-checking and Media Literacy Platform API Documentation')
+      .setDescription(
+        'Fact-checking and Media Literacy Platform API Documentation',
+      )
       .setVersion('1.0')
       .addBearerAuth(
         {
@@ -123,7 +124,9 @@ async function bootstrap() {
       customCss: '.swagger-ui .topbar { display: none }',
     });
 
-    console.log(`📚 API Documentation available at: http://localhost:${port}/api/docs`);
+    console.log(
+      `📚 API Documentation available at: http://localhost:${port}/api/docs`,
+    );
   }
 
   // ============================================

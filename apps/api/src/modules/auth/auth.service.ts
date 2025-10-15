@@ -1,11 +1,12 @@
 import {
-    ConflictException,
-    Injectable,
-    UnauthorizedException
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
+import { CookieOptions } from 'express';
 import { PrismaService } from '../../database/prisma.service';
 import { LoginDto, SignupDto } from './dto/signup.dto';
 
@@ -148,6 +149,78 @@ export class AuthService {
         avatar: user.avatar,
       },
       ...tokens,
+    };
+  }
+
+  async handleGoogleLogin(googleUser: any) {
+    const { googleId, email, firstName, lastName, avatar } = googleUser;
+
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      // Create new user
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          googleId,
+          firstName,
+          lastName,
+          avatar,
+          isEmailVerified: true,
+        },
+      });
+    } else if (!user.googleId) {
+      // Link Google account to existing user
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          googleId,
+          isEmailVerified: true,
+        },
+      });
+    }
+
+    // Update last login
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    // Generate tokens
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+
+    // Cookie configuration
+    const accessCookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/',
+    };
+
+    const refreshCookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth/refresh',
+    };
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        avatar: user.avatar,
+      },
+      accessCookieOptions,
+      refreshCookieOptions,
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 

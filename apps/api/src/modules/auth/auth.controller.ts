@@ -1,26 +1,35 @@
 import {
-    Body,
-    Controller,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Post,
-    Req,
-    Res,
-    UseGuards,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { GoogleAuthGuard } from '../../common/guards/google-auth.guard';
 import { AuthService } from './auth.service';
-import { LoginDto, RefreshTokenDto, SignupDto } from './dto/signup.dto';
+import { LoginDto, SignupDto } from './dto/signup.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private config: ConfigService,
+  ) {}
 
   @Public()
   @Post('signup')
@@ -41,40 +50,89 @@ export class AuthController {
 
   @Public()
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   @ApiOperation({ summary: 'Initiate Google OAuth' })
-  googleAuth() {
-    // Guard redirects to Google
-  }
+  googleAuth() {}
 
   @Public()
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   @ApiOperation({ summary: 'Google OAuth callback' })
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-    const result = await this.authService.googleLogin(req.user);
-    
-    // Redirect to frontend with tokens
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(
-      `${frontendUrl}/auth/callback?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}`,
-    );
+    // req.user comes from GoogleStrategy.validate()
+    const { accessCookieOptions, refreshCookieOptions, token, refreshToken } =
+      await this.authService.handleGoogleLogin(req.user as any);
+
+    // Set httpOnly JWT cookies
+    res.cookie('access_token', token, accessCookieOptions);
+    res.cookie('refresh_token', refreshToken, refreshCookieOptions);
+
+    // Optional: Set a non-httpOnly flag for UI state management
+    res.cookie('logged_in', 'true', {
+      ...accessCookieOptions,
+      httpOnly: false, // This one can be read by JS for UI state
+      maxAge: accessCookieOptions.maxAge,
+    });
+
+    // Redirect back to your web app
+    const successUrl =
+      this.config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    return res.redirect(`${successUrl}/auth/success`);
   }
 
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Refresh access token' })
-  async refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshTokens(refreshTokenDto.refreshToken);
+  @ApiOperation({ summary: 'Refresh access token using cookie' })
+  async refreshTokens(@Req() req: Request, @Res() res: Response) {
+    const refreshToken = req.cookies?.refresh_token;
+
+    if (!refreshToken) {
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        message: 'Refresh token not found',
+      });
+    }
+
+    try {
+      const tokens = await this.authService.refreshTokens(refreshToken);
+
+      // Set new access token cookie
+      const accessCookieOptions = {
+        httpOnly: true,
+        secure: this.config.get<string>('NODE_ENV') === 'production',
+        sameSite: 'lax' as const,
+        maxAge: 15 * 60 * 1000, // 15 minutes
+        path: '/',
+      };
+
+      res.cookie('access_token', tokens.accessToken, accessCookieOptions);
+
+      return res.json({ message: 'Token refreshed successfully' });
+    } catch (error) {
+      // Clear invalid refresh token
+      res.clearCookie('refresh_token');
+      res.clearCookie('access_token');
+      res.clearCookie('logged_in');
+
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        message: 'Invalid refresh token',
+      });
+    }
   }
 
   @Post('logout')
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout user' })
-  async logout(@CurrentUser('id') userId: string) {
-    return this.authService.logout(userId);
+  @ApiOperation({ summary: 'Logout user and clear cookies' })
+  async logout(@CurrentUser('id') userId: string, @Res() res: Response) {
+    await this.authService.logout(userId);
+
+    // Clear all auth cookies
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    res.clearCookie('logged_in');
+
+    return res.json({ message: 'Logged out successfully' });
   }
 
   @Get('me')
@@ -84,4 +142,3 @@ export class AuthController {
     return { user };
   }
 }
-

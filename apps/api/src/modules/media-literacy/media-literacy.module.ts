@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { Media-literacyService } from './media-literacy.service';
-import { Media-literacyController } from './media-literacy.controller';
+import { MediaLiteracyController } from './media-literacy.controller';
+import { MediaLiteracyService } from './media-literacy.service';
 
 @Module({
-  controllers: [Media-literacyController],
-  providers: [Media-literacyService],
+  controllers: [MediaLiteracyController],
+  providers: [MediaLiteracyService],
 })
-export class Media-literacyModule {}
+export class MediaLiteracyModule {}

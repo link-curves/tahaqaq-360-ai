@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { Fact-checksService } from './fact-checks.service';
-import { Fact-checksController } from './fact-checks.controller';
+import { PrismaModule } from '../../database/prisma.module';
+import { FactChecksController } from './fact-checks.controller';
+import { FactChecksService } from './fact-checks.service';
 
 @Module({
-  controllers: [Fact-checksController],
-  providers: [Fact-checksService],
+  imports: [PrismaModule],
+  controllers: [FactChecksController],
+  providers: [FactChecksService],
+  exports: [FactChecksService],
 })
-export class Fact-checksModule {}
+export class FactChecksModule {}

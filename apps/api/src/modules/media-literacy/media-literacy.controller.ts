@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
-import { Media-literacyService } from './media-literacy.service';
+import { MediaLiteracyService } from './media-literacy.service';
 
 @Controller('media-literacy')
-export class Media-literacyController {
-  constructor(private readonly media-literacyService: Media-literacyService) {}
+export class MediaLiteracyController {
+  constructor(private readonly mediaLiteracyService: MediaLiteracyService) {}
 }

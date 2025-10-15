@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class Media-literacyService {
+export class MediaLiteracyService {
   // TODO: Implement media-literacy service logic
 }
