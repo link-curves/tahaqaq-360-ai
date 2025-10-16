@@ -1,15 +1,36 @@
 import {
-  Mail,
-  Phone,
-  MapPin,
   Facebook,
-  Twitter,
   Instagram,
-  Youtube,
+  Mail,
+  MapPin,
+  Phone,
+  Twitter,
 } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TahqaqLogo } from "./ui/TahaqaqLogo";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = (sectionId: string) => {
+    // If we're not on the home page, navigate there first
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        const element = document.querySelector(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    } else {
+      const element = document.querySelector(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   return (
     <footer
       className="bg-gradient-to-br from-gray-900 via-slate-900 to-red-950 text-white py-20"
@@ -86,44 +107,44 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4">
               <li>
-                <a
-                  href="#fact-checking"
+                <Link
+                  to="/fact-checks"
                   className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
                 >
                   فحص الحقائق
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#education"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                <button
+                  onClick={() => scrollToSection("#education")}
+                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform text-right"
                 >
                   محو الأمية الإعلامية
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href="#blog"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                <button
+                  onClick={() => scrollToSection("#blog")}
+                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform text-right"
                 >
                   المدونة والأبحاث
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href="#events"
+                <Link
+                  to="/events"
                   className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
                 >
                   الفعاليات وورش العمل
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#features"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                <button
+                  onClick={() => scrollToSection("#features")}
+                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform text-right"
                 >
                   ميزات المنصة
-                </a>
+                </button>
               </li>
             </ul>
           </div>

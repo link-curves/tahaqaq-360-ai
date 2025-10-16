@@ -7,6 +7,10 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Admin from "./pages/Admin";
 import AuthPage from "./pages/Auth";
 import AuthSuccessPage from "./pages/AuthSuccess";
+import EventDetail from "./pages/EventDetail";
+import Events from "./pages/Events";
+import FactCheckDetail from "./pages/FactCheckDetail";
+import FactChecks from "./pages/FactChecks";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +40,10 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth/success" element={<AuthSuccessPage />} />
+            <Route path="/fact-checks" element={<FactChecks />} />
+            <Route path="/fact-checks/:slug" element={<FactCheckDetail />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:slug" element={<EventDetail />} />
             <Route
               path="/admin"
               element={

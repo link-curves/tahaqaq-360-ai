@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { BookOpen, Eye, Search, Target } from "lucide-react";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 interface TahqaqLogoProps {
   className?: string;
@@ -29,6 +30,15 @@ const TahqaqLogo: React.FC<TahqaqLogoProps> = ({
 };
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.querySelector(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div
       id="hero"
@@ -94,11 +104,15 @@ const Hero = () => {
           </p>{" "}
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Button className="bg-white hover:bg-red-600 text-red-600 hover:text-white px-10 py-4 text-lg rounded-full transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl border border-white/20 font-semibold">
+            <Button
+              onClick={() => navigate("/fact-checks")}
+              className="bg-white hover:bg-red-600 text-red-600 hover:text-white px-10 py-4 text-lg rounded-full transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl border border-white/20 font-semibold"
+            >
               <Search className="ml-2 h-5 w-5 transition-colors duration-300" />
               ابدأ التحقق من الأخبار
             </Button>
             <Button
+              onClick={() => scrollToSection("#education")}
               variant="outline"
               className="bg-white hover:bg-red-600 border-2 border-white hover:border-red-600 text-red-600 hover:text-white px-10 py-4 text-lg rounded-full transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl font-semibold"
             >

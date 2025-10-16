@@ -18,9 +18,11 @@ import {
   Search,
   XCircle,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const FactCheckingSection = () => {
   const { data: factChecksData, isLoading, error } = useFeaturedFactChecks(6);
+  const navigate = useNavigate();
 
   const getStatusIcon = (rating: VeracityRating) => {
     switch (rating) {
@@ -159,6 +161,7 @@ const FactCheckingSection = () => {
               {factChecks.map((factCheck) => (
                 <Card
                   key={factCheck.id}
+                  onClick={() => navigate(`/fact-checks/${factCheck.slug}`)}
                   className="group overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white border-0 shadow-lg rounded-xl flex flex-col h-full relative cursor-pointer"
                 >
                   {/* Card Image with Enhanced Effects */}
@@ -231,7 +234,10 @@ const FactCheckingSection = () => {
           )}
           {/* CTA Section */}
           <div className="text-center mt-16">
-            <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-['Cairo']">
+            <Button
+              onClick={() => navigate("/fact-checks")}
+              className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-['Cairo']"
+            >
               عرض جميع فحوصات الحقائق
             </Button>
           </div>

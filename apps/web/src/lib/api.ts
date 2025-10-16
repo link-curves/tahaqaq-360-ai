@@ -243,13 +243,6 @@ class ApiClient {
   ): Promise<PaginatedResponse<FactCheck>> {
     const searchParams = new URLSearchParams();
 
-    if (params?.page) searchParams.append("page", params.page.toString());
-    if (params?.limit) searchParams.append("limit", params.limit.toString());
-    if (params?.verdict) searchParams.append("verdict", params.verdict);
-    if (params?.status) searchParams.append("status", params.status);
-    if (params?.search) searchParams.append("search", params.search);
-    // Note: 'featured' parameter is not supported by backend
-
     const queryString = searchParams.toString();
     const endpoint = `/fact-checks${queryString ? `?${queryString}` : ""}`;
 
@@ -273,14 +266,6 @@ class ApiClient {
   // Events endpoints
   async getEvents(params?: EventParams): Promise<PaginatedResponse<Event>> {
     const searchParams = new URLSearchParams();
-
-    if (params?.page) searchParams.append("page", params.page.toString());
-    if (params?.limit) searchParams.append("limit", params.limit.toString());
-    if (params?.type) searchParams.append("type", params.type);
-    if (params?.status) searchParams.append("status", params.status);
-    if (params?.upcoming)
-      searchParams.append("upcoming", params.upcoming.toString());
-    if (params?.search) searchParams.append("search", params.search);
 
     const queryString = searchParams.toString();
     const endpoint = `/events${queryString ? `?${queryString}` : ""}`;

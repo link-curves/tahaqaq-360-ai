@@ -5,9 +5,11 @@ import { useUpcomingEvents } from "@/hooks/useApi";
 import { EventType } from "@/lib/api";
 import { formatDate, generateExcerpt, getImageUrl } from "@/lib/utils";
 import { AlertCircle, Calendar, MapPin, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const EventsSection = () => {
   const { data: eventsData, isLoading, error } = useUpcomingEvents(4);
+  const navigate = useNavigate();
 
   const getEventTypeLabel = (type: EventType) => {
     switch (type) {
@@ -106,7 +108,8 @@ const EventsSection = () => {
             {events.map((event) => (
               <Card
                 key={event.id}
-                className="group overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white border-0 shadow-lg rounded-xl flex flex-col h-full relative"
+                onClick={() => navigate(`/events/${event.slug}`)}
+                className="group overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white border-0 shadow-lg rounded-xl flex flex-col h-full relative cursor-pointer"
               >
                 {/* Event Image */}
                 <div className="relative h-48 overflow-hidden">
@@ -212,6 +215,7 @@ const EventsSection = () => {
                 اطلب تدريباً
               </Button>
               <Button
+                onClick={() => navigate("/events")}
                 variant="outline"
                 className="border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-300 font-['Cairo'] font-semibold py-3 px-8 rounded-lg"
               >

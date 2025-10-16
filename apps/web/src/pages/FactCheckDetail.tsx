@@ -1,27 +1,27 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useFactCheck, useRelatedFactChecks } from "@/hooks/useApi";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFactCheck, useRelatedFactChecks } from "@/hooks/useApi";
 import {
-  ArrowLeft,
-  Calendar,
-  Eye,
-  Share2,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  ExternalLink,
-} from "lucide-react";
-import {
-  getVeracityLabel,
-  getVeracityColor,
   formatDate,
   getImageUrl,
+  getVeracityColor,
+  getVeracityLabel,
 } from "@/lib/utils";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle,
+  ExternalLink,
+  Eye,
+  Share2,
+  XCircle,
+} from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const FactCheckDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -198,7 +198,10 @@ const FactCheckDetail = () => {
             </h2>
             <div className="space-y-3">
               {factCheck.sources.map((source: any, index: number) => (
-                <Card key={index} className="p-4 hover:shadow-md transition-shadow">
+                <Card
+                  key={index}
+                  className="p-4 hover:shadow-md transition-shadow"
+                >
                   <a
                     href={source.url}
                     target="_blank"
@@ -229,7 +232,11 @@ const FactCheckDetail = () => {
             </h3>
             <div className="flex flex-wrap gap-2">
               {factCheck.tags.map((tag: string, index: number) => (
-                <Badge key={index} variant="secondary" className="font-['Cairo']">
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="font-['Cairo']"
+                >
                   {tag}
                 </Badge>
               ))}

@@ -10,7 +10,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, LogOut, Menu, Settings, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TahqaqLogo } from "./ui/TahaqaqLogo";
 
 const Navbar = () => {
@@ -18,6 +18,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Handle scroll effect
   useEffect(() => {
@@ -29,18 +30,29 @@ const Navbar = () => {
   }, []);
 
   const navItems = [
-    { name: "الرئيسية", href: "#hero" },
-    { name: "الميزات", href: "#features" },
-    { name: "فحص الحقائق", href: "#fact-checking" },
-    { name: "التعليم", href: "#education" },
-    { name: "المدونة", href: "#blog" },
-    { name: "الفعاليات", href: "#events" },
+    { name: "الرئيسية", href: "/", isRoute: true },
+    { name: "فحص الحقائق", href: "/fact-checks", isRoute: true },
+    { name: "الفعاليات", href: "/events", isRoute: true },
+    { name: "الميزات", href: "#features", isRoute: false },
+    { name: "التعليم", href: "#education", isRoute: false },
+    { name: "المدونة", href: "#blog", isRoute: false },
   ];
 
   const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+    // If we're not on the home page, navigate there first
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        const element = document.querySelector(href);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    } else {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
     setIsOpen(false);
   };
@@ -71,7 +83,10 @@ const Navbar = () => {
         {" "}
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo and Brand */}
-          <div className="flex items-center space-x-2 lg:space-x-3 space-x-reverse flex-shrink-0">
+          <Link
+            to="/"
+            className="flex items-center space-x-2 lg:space-x-3 space-x-reverse flex-shrink-0 hover:opacity-90 transition-opacity"
+          >
             <TahqaqLogo
               className="transition-all duration-300"
               width={isScrolled ? 32 : 40}
@@ -93,27 +108,47 @@ const Navbar = () => {
                 فحص الحقائق بالذكاء الاصطناعي
               </span>
             </div>
-          </div>
+          </Link>
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8 space-x-reverse">
-            {navItems.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => scrollToSection(item.href)}
-                className={`font-['Cairo'] font q-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap ${
-                  isScrolled
-                    ? "text-gray-700 hover:text-red-600"
-                    : "text-white hover:text-red-300"
-                }`}
-              >
-                {item.name}
-                <span
-                  className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                    isScrolled ? "bg-red-600" : "bg-red-300"
+            {navItems.map((item) =>
+              item.isRoute ? (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`font-['Cairo'] font-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap ${
+                    isScrolled
+                      ? "text-gray-700 hover:text-red-600"
+                      : "text-white hover:text-red-300"
                   }`}
-                ></span>
-              </button>
-            ))}
+                >
+                  {item.name}
+                  <span
+                    className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
+                      isScrolled ? "bg-red-600" : "bg-red-300"
+                    }`}
+                  ></span>
+                </Link>
+              ) : (
+                <button
+                  key={item.name}
+                  onClick={() => scrollToSection(item.href)}
+                  className={`font-['Cairo'] font-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap ${
+                    isScrolled
+                      ? "text-gray-700 hover:text-red-600"
+                      : "text-white hover:text-red-300"
+                  }`}
+                >
+                  {item.name}
+                  <span
+                    className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
+                      isScrolled ? "bg-red-600" : "bg-red-300"
+                    }`}
+                  ></span>
+                </button>
+              )
+            )}
           </div>{" "}
           {/* Login Button and Mobile Menu */}
           <div className="flex items-center space-x-2 lg:space-x-4 space-x-reverse">
@@ -220,15 +255,26 @@ const Navbar = () => {
           }`}
         >
           <div className="py-4 space-y-2 bg-white/95 backdrop-blur-md rounded-lg shadow-lg border border-gray-200 mt-2">
-            {navItems.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => scrollToSection(item.href)}
-                className="block w-full text-right px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200 font-['Cairo'] font-medium"
-              >
-                {item.name}
-              </button>
-            ))}
+            {navItems.map((item) =>
+              item.isRoute ? (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full text-right px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200 font-['Cairo'] font-medium"
+                >
+                  {item.name}
+                </Link>
+              ) : (
+                <button
+                  key={item.name}
+                  onClick={() => scrollToSection(item.href)}
+                  className="block w-full text-right px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200 font-['Cairo'] font-medium"
+                >
+                  {item.name}
+                </button>
+              )
+            )}
 
             {/* Mobile Authentication */}
             <div className="px-4 py-2 space-y-2 border-t border-gray-200">
