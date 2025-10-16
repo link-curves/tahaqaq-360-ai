@@ -1,13 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Shield,
-  CheckCircle,
-  BookOpen,
-  Users,
-  Search,
-  Eye,
-  Target,
-} from "lucide-react";
+import { BookOpen, Eye, Search, Target } from "lucide-react";
 import React from "react";
 
 interface TahqaqLogoProps {

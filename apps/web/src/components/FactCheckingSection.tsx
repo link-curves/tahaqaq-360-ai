@@ -1,100 +1,92 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Search, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useFeaturedFactChecks } from "@/hooks/useApi";
+import { VeracityRating } from "@/lib/api";
+import {
+  formatDate,
+  generateExcerpt,
+  getImageUrl,
+  getVeracityColor,
+  getVeracityLabel,
+} from "@/lib/utils";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Search,
+  XCircle,
+} from "lucide-react";
 
 const FactCheckingSection = () => {
-  const recentChecks = [
-    {
-      claim: "تقنية الذكاء الاصطناعي الجديدة يمكنها التنبؤ بالزلازل بدقة 100%",
-      status: "false",
-      summary:
-        "رغم تحسن الذكاء الاصطناعي في التنبؤ بالزلازل، إلا أن ادعاءات الدقة 100% مضللة.",
-      date: "2024-06-15",
-      image:
-        "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=400&h=200&fit=crop",
-    },
-    {
-      claim:
-        "استخدام وسائل التواصل الاجتماعي مرتبط بانخفاض فترة التركيز لدى الطلاب",
-      status: "partially-true",
-      summary: "تظهر الدراسات وجود علاقة لكن السببية ما زالت قيد البحث.",
-      date: "2024-06-14",
-      image:
-        "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=200&fit=crop",
-    },
-    {
-      claim: "اختراق جديد في الطاقة المتجددة يمكنه تشغيل مدن بأكملها",
-      status: "true",
-      summary: "التحسينات الأخيرة في كفاءة الألواح الشمسية تدعم هذا الادعاء.",
-      date: "2024-06-13",
-      image:
-        "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=200&fit=crop",
-    },
-    {
-      claim: "اللقاحات الجديدة ضد كوفيد-19 تحتوي على رقائق تتبع",
-      status: "false",
-      summary: "لا يوجد أي دليل علمي يدعم وجود رقائق تتبع في اللقاحات.",
-      date: "2024-06-12",
-      image:
-        "https://images.unsplash.com/photo-1584118624012-df056829fbd0?w=400&h=200&fit=crop",
-    },
-    {
-      claim: "القهوة تقلل من خطر الإصابة بأمراض القلب",
-      status: "partially-true",
-      summary: "بعض الدراسات تدعم هذا، لكن الكمية والنوعية مهمان.",
-      date: "2024-06-11",
-      image:
-        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=200&fit=crop",
-    },
-    {
-      claim: "تغير المناخ سبب رئيسي في زيادة الكوارث الطبيعية",
-      status: "true",
-      summary:
-        "الأدلة العلمية تؤكد الصلة بين تغير المناخ وزيادة شدة الكوارث الطبيعية.",
-      date: "2024-06-10",
-      image:
-        "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400&h=200&fit=crop",
-    },
-  ];
+  const { data: factChecksData, isLoading, error } = useFeaturedFactChecks(6);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "true":
+  const getStatusIcon = (rating: VeracityRating) => {
+    switch (rating) {
+      case VeracityRating.TRUE:
+      case VeracityRating.MOSTLY_TRUE:
         return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case "false":
+      case VeracityRating.FALSE:
+      case VeracityRating.MOSTLY_FALSE:
         return <XCircle className="h-5 w-5 text-red-600" />;
-      case "partially-true":
+      case VeracityRating.HALF_TRUE:
+      case VeracityRating.MISLEADING:
         return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
       default:
         return <Search className="h-5 w-5 text-gray-600" />;
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "true":
-        return "bg-green-100 text-green-800";
-      case "false":
-        return "bg-red-100 text-red-800";
-      case "partially-true":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div
+        id="fact-checking"
+        className="bg-gradient-to-br from-white to-gray-50 py-24"
+        dir="rtl"
+        style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Skeleton className="h-12 w-96 mx-auto mb-6" />
+            <Skeleton className="h-6 w-2/3 mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, index) => (
+              <Card key={index} className="p-6">
+                <Skeleton className="h-48 w-full mb-4 rounded-lg" />
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-full mb-4" />
+                <Skeleton className="h-8 w-20" />
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "true":
-        return "صحيح";
-      case "false":
-        return "خاطئ";
-      case "partially-true":
-        return "صحيح جزئياً";
-      default:
-        return "قيد المراجعة";
-    }
-  };
+  // Error state
+  if (error) {
+    return (
+      <div
+        id="fact-checking"
+        className="bg-gradient-to-br from-white to-gray-50 py-24"
+        dir="rtl"
+        style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="text-red-600 mb-4">
+            <XCircle className="h-12 w-12 mx-auto mb-4" />
+            <p>حدث خطأ في تحميل البيانات</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const factChecks = factChecksData?.data || [];
 
   return (
     <div
@@ -154,92 +146,95 @@ const FactCheckingSection = () => {
           {" "}
           <h3 className="text-3xl font-semibold text-gray-900 mb-8 text-center font-['Cairo']">
             فحوصات الحقائق الأخيرة
-          </h3>{" "}
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {recentChecks.map((check, index) => (
-              <Card
-                key={index}
-                className="group overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white border-0 shadow-lg rounded-xl flex flex-col h-full relative"
-              >
-                {/* Card Image with Enhanced Effects */}
-                <div className="relative h-52 overflow-hidden">
-                  <img
-                    src={check.image}
-                    alt={check.claim}
-                    className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110 group-hover:brightness-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent group-hover:from-black/30"></div>
+          </h3>
+          {factChecks.length === 0 ? (
+            <div className="text-center py-12">
+              <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 text-xl">
+                لا توجد فحوصات حقائق متاحة حالياً
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {factChecks.map((factCheck) => (
+                <Card
+                  key={factCheck.id}
+                  className="group overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white border-0 shadow-lg rounded-xl flex flex-col h-full relative cursor-pointer"
+                >
+                  {/* Card Image with Enhanced Effects */}
+                  <div className="relative h-52 overflow-hidden">
+                    <img
+                      src={getImageUrl(factCheck.featuredImage)}
+                      alt={factCheck.title}
+                      className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110 group-hover:brightness-110"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=200&fit=crop";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent group-hover:from-black/30"></div>
 
-                  {/* Floating Status Badge */}
-                  <div className="absolute top-4 right-4">
-                    <div
-                      className={`flex items-center space-x-1 space-x-reverse px-3 py-2 rounded-full backdrop-blur-sm bg-white/90 shadow-lg ${getStatusColor(
-                        check.status
-                      )} border-0`}
-                    >
-                      {getStatusIcon(check.status)}
-                      <span className="text-xs font-semibold font-['Cairo']">
-                        {getStatusText(check.status)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Date Badge */}
-                  <div className="absolute bottom-4 left-4">
-                    <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-lg">
-                      <span className="text-xs text-gray-700 font-medium font-['Cairo']">
-                        {check.date}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card Content with Flex Layout for Equal Height */}
-                <div className="p-6 flex flex-col flex-grow">
-                  <h4 className="font-bold text-gray-900 mb-3 text-right font-['Cairo'] leading-relaxed text-lg group-hover:text-red-600 transition-colors duration-300 flex-grow-0">
-                    {check.claim}
-                  </h4>
-
-                  <p className="text-gray-600 text-sm mb-6 text-right font-['Cairo'] leading-relaxed flex-grow">
-                    {check.summary}
-                  </p>
-
-                  {/* Button with Enhanced Hover Effects */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full mt-auto border-2 border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-semibold py-3 rounded-lg group-hover:border-red-300"
-                  >
-                    <span className="flex items-center justify-center space-x-2 space-x-reverse">
-                      <span>اقرأ التحليل الكامل</span>
-                      <svg
-                        className="w-4 h-4 transform transition-transform duration-300 group-hover:translate-x-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    {/* Floating Status Badge */}
+                    <div className="absolute top-4 right-4">
+                      <Badge
+                        className={`${getVeracityColor(factCheck.verdict)} border-0 shadow-lg backdrop-blur-sm`}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 19l-7-7 7-7"
-                        />
-                      </svg>
-                    </span>
-                  </Button>
-                </div>
+                        <span className="flex items-center gap-1">
+                          {getStatusIcon(factCheck.verdict)}
+                          {getVeracityLabel(factCheck.verdict)}
+                        </span>
+                      </Badge>
+                    </div>
 
-                {/* Subtle Card Accent */}
-                <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-red-500 via-red-400 to-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-              </Card>
-            ))}
+                    {/* Date Badge */}
+                    <div className="absolute bottom-4 left-4">
+                      <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-lg">
+                        <span className="text-xs text-gray-700 font-medium font-['Cairo'] flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {factCheck.publishedAt
+                            ? formatDate(factCheck.publishedAt)
+                            : formatDate(factCheck.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-6 flex-1 flex flex-col">
+                    <h4 className="text-lg font-bold text-gray-900 mb-3 leading-tight line-clamp-2 group-hover:text-red-600 transition-colors duration-300 font-['Cairo']">
+                      {factCheck.title}
+                    </h4>
+
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed font-['Cairo']">
+                      <strong>الادعاء:</strong>{" "}
+                      {generateExcerpt(factCheck.claim, 15)}
+                    </p>
+
+                    <p className="text-sm text-gray-700 flex-1 leading-relaxed font-['Cairo'] line-clamp-3">
+                      {generateExcerpt(factCheck.summary, 20)}
+                    </p>
+
+                    {/* Author and Views */}
+                    <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                      <span className="font-['Cairo']">
+                        بواسطة: {factCheck.author.firstName}{" "}
+                        {factCheck.author.lastName}
+                      </span>
+                      <span className="font-['Cairo']">
+                        {factCheck.views} مشاهدة
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+          {/* CTA Section */}
+          <div className="text-center mt-16">
+            <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-['Cairo']">
+              عرض جميع فحوصات الحقائق
+            </Button>
           </div>
-        </div>
-
-        <div className="text-center">
-          <Button className="bg-red-600 hover:bg-red-700 px-8 py-3 text-white shadow-lg hover:shadow-xl transition-all duration-300 font-['Cairo']">
-            عرض جميع فحوصات الحقائق
-          </Button>
         </div>
       </div>
     </div>

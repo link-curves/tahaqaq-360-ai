@@ -1,11 +1,23 @@
-import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
+import { LogIn, LogOut, Menu, Settings, User, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TahqaqLogo } from "./ui/TahaqaqLogo";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   // Handle scroll effect
   useEffect(() => {
@@ -31,6 +43,19 @@ const Navbar = () => {
       element.scrollIntoView({ behavior: "smooth" });
     }
     setIsOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  const getUserInitials = (firstName?: string, lastName?: string) => {
+    if (!firstName || !lastName) return "U";
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
   return (
@@ -92,31 +117,81 @@ const Navbar = () => {
           </div>{" "}
           {/* Login Button and Mobile Menu */}
           <div className="flex items-center space-x-2 lg:space-x-4 space-x-reverse">
-            {/* Desktop Login Button */}
+            {/* Desktop Authentication */}
             <div className="hidden lg:flex items-center space-x-2 xl:space-x-3 space-x-reverse">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`font-['Cairo'] transition-all duration-300 px-3 py-2 ${
-                  isScrolled
-                    ? "text-gray-700 hover:text-red-600 hover:bg-red-50"
-                    : "text-white hover:text-red-300 hover:bg-white/10"
-                }`}
-              >
-                <User className="h-4 w-4 ml-2" />
-                حسابي
-              </Button>
-              <Button
-                size="sm"
-                className={`font-['Cairo'] font-semibold transition-all duration-300 transform hover:scale-105 px-4 py-2 ${
-                  isScrolled
-                    ? "bg-red-600 hover:bg-red-700 text-white shadow-lg"
-                    : "bg-white text-red-600 hover:bg-gray-100 shadow-lg"
-                }`}
-              >
-                <LogIn className="h-4 w-4 ml-2" />
-                تسجيل الدخول
-              </Button>
+              {isAuthenticated && user ? (
+                // Authenticated user dropdown
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={`relative h-8 w-8 rounded-full ${
+                        isScrolled ? "hover:bg-gray-100" : "hover:bg-white/10"
+                      }`}
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={user.avatar}
+                          alt={`${user.firstName} ${user.lastName}`}
+                        />
+                        <AvatarFallback className="bg-red-600 text-white text-sm">
+                          {getUserInitials(user.firstName, user.lastName)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium">
+                          {user.firstName} {user.lastName}
+                        </p>
+                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>الملف الشخصي</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>الإعدادات</span>
+                    </DropdownMenuItem>
+                    {user.role === "admin" && (
+                      <DropdownMenuItem onClick={() => navigate("/admin")}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>لوحة الإدارة</span>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      disabled={isLoading}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>تسجيل الخروج</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                // Not authenticated - show login button
+                <Button
+                  onClick={() => navigate("/auth")}
+                  size="sm"
+                  className={`font-['Cairo'] font-semibold transition-all duration-300 transform hover:scale-105 px-4 py-2 ${
+                    isScrolled
+                      ? "bg-red-600 hover:bg-red-700 text-white shadow-lg"
+                      : "bg-white text-red-600 hover:bg-gray-100 shadow-lg"
+                  }`}
+                  disabled={isLoading}
+                >
+                  <LogIn className="h-4 w-4 ml-2" />
+                  تسجيل الدخول
+                </Button>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -155,19 +230,81 @@ const Navbar = () => {
               </button>
             ))}
 
-            {/* Mobile Login Buttons */}
+            {/* Mobile Authentication */}
             <div className="px-4 py-2 space-y-2 border-t border-gray-200">
-              <Button
-                variant="ghost"
-                className="w-full justify-end font-['Cairo'] text-gray-700 hover:text-red-600 hover:bg-red-50"
-              >
-                <User className="h-4 w-4 ml-2" />
-                حسابي
-              </Button>
-              <Button className="w-full justify-end bg-red-600 hover:bg-red-700 text-white font-['Cairo'] font-semibold">
-                <LogIn className="h-4 w-4 ml-2" />
-                تسجيل الدخول
-              </Button>
+              {isAuthenticated && user ? (
+                // Authenticated user - mobile
+                <>
+                  <div className="px-2 py-3 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage
+                          src={user.avatar}
+                          alt={`${user.firstName} ${user.lastName}`}
+                        />
+                        <AvatarFallback className="bg-red-600 text-white">
+                          {getUserInitials(user.firstName, user.lastName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <p className="font-medium text-gray-900">
+                          {user.firstName} {user.lastName}
+                        </p>
+                        <p className="text-sm text-gray-500">{user.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-end font-['Cairo'] text-gray-700 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <User className="h-4 w-4 ml-2" />
+                    الملف الشخصي
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-end font-['Cairo'] text-gray-700 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <Settings className="h-4 w-4 ml-2" />
+                    الإعدادات
+                  </Button>
+                  {user.role === "admin" && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        navigate("/admin");
+                        setIsOpen(false);
+                      }}
+                      className="w-full justify-end font-['Cairo'] text-gray-700 hover:text-red-600 hover:bg-red-50"
+                    >
+                      <Settings className="h-4 w-4 ml-2" />
+                      لوحة الإدارة
+                    </Button>
+                  )}
+                  <Button
+                    onClick={handleLogout}
+                    variant="ghost"
+                    className="w-full justify-end font-['Cairo'] text-red-600 hover:text-red-700 hover:bg-red-50"
+                    disabled={isLoading}
+                  >
+                    <LogOut className="h-4 w-4 ml-2" />
+                    تسجيل الخروج
+                  </Button>
+                </>
+              ) : (
+                // Not authenticated - mobile
+                <Button
+                  onClick={() => {
+                    navigate("/auth");
+                    setIsOpen(false);
+                  }}
+                  className="w-full justify-end bg-red-600 hover:bg-red-700 text-white font-['Cairo'] font-semibold"
+                  disabled={isLoading}
+                >
+                  <LogIn className="h-4 w-4 ml-2" />
+                  تسجيل الدخول
+                </Button>
+              )}
             </div>
           </div>
         </div>

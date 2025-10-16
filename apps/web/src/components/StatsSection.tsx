@@ -1,22 +1,27 @@
-import { TrendingUp, Users, BookOpen, Shield } from "lucide-react";
+import { useFactCheckStats } from "@/hooks/useApi";
+import { formatCompactNumber } from "@/lib/utils";
+import { BookOpen, Shield, TrendingUp, Users } from "lucide-react";
 
 const StatsSection = () => {
-  const stats = [
+  const { data: statsData, isLoading, error } = useFactCheckStats();
+
+  // Fallback stats while loading or if error
+  const defaultStats = [
     {
       icon: Shield,
-      number: "10,000+",
+      number: "0",
       label: "حقيقة تم التحقق منها",
       color: "text-red-500",
     },
     {
       icon: Users,
-      number: "50,000+",
-      label: "طالب تم تعليمه",
+      number: "0",
+      label: "مستخدم نشط",
       color: "text-red-500",
     },
     {
       icon: BookOpen,
-      number: "200+",
+      number: "0",
       label: "مورد تعليمي",
       color: "text-red-500",
     },
@@ -27,6 +32,36 @@ const StatsSection = () => {
       color: "text-red-500",
     },
   ];
+
+  // Use real data if available
+  const stats = statsData?.data
+    ? [
+        {
+          icon: Shield,
+          number: formatCompactNumber(statsData.data.totalFactChecks),
+          label: "حقيقة تم التحقق منها",
+          color: "text-red-500",
+        },
+        {
+          icon: Users,
+          number: "50,000+", // This would come from user analytics
+          label: "مستخدم نشط",
+          color: "text-red-500",
+        },
+        {
+          icon: BookOpen,
+          number: "200+", // This would come from content count
+          label: "مورد تعليمي",
+          color: "text-red-500",
+        },
+        {
+          icon: TrendingUp,
+          number: "99.2%",
+          label: "معدل الدقة",
+          color: "text-red-500",
+        },
+      ]
+    : defaultStats;
 
   return (
     <div
