@@ -33,6 +33,8 @@ const Navbar = () => {
     { name: "الرئيسية", href: "/", isRoute: true },
     { name: "فحص الحقائق", href: "/fact-checks", isRoute: true },
     { name: "الفعاليات", href: "/events", isRoute: true },
+    { name: "الدورات", href: "/courses", isRoute: true },
+    { name: "الأبحاث", href: "/research", isRoute: true },
     { name: "الميزات", href: "#features", isRoute: false },
     { name: "التعليم", href: "#education", isRoute: false },
     { name: "المدونة", href: "#blog", isRoute: false },

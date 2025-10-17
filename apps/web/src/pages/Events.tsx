@@ -14,7 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEvents } from "@/hooks/useApi";
 import { EventType } from "@/lib/api";
-import { formatDate, getImageUrl } from "@/lib/utils";
+import { formatDate, getImageUrl, getTextDirection } from "@/lib/utils";
 import {
   Calendar,
   ChevronLeft,
@@ -188,95 +188,99 @@ const Events = () => {
         ) : (
           <>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {events.map((event) => (
-                <Card
-                  key={event.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => handleEventClick(event.slug)}
-                >
-                  {/* Event Image */}
-                  <div className="relative h-48 bg-gradient-to-br from-red-600 to-red-800">
-                    {event.coverImage && (
-                      <img
-                        src={getImageUrl(event.coverImage)}
-                        alt={event.title}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    )}
-                    <div className="absolute top-4 right-4">
-                      <Badge
-                        className={`${getEventTypeBadgeColor(
-                          event.type
-                        )} border-0 shadow-md font-['Cairo']`}
-                      >
-                        {getEventTypeLabel(event.type)}
-                      </Badge>
-                    </div>
-                    {event.isVirtual && (
-                      <div className="absolute top-4 left-4">
-                        <Badge className="bg-white text-gray-900 border-0 shadow-md font-['Cairo']">
-                          افتراضي
+              {events.map((event) => {
+                const cardDirection = getTextDirection(event.title);
+                return (
+                  <Card
+                    key={event.id}
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handleEventClick(event.slug)}
+                    dir={cardDirection}
+                  >
+                    {/* Event Image */}
+                    <div className="relative h-48 bg-gradient-to-br from-red-600 to-red-800">
+                      {event.coverImage && (
+                        <img
+                          src={getImageUrl(event.coverImage)}
+                          alt={event.title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      )}
+                      <div className="absolute top-4 right-4">
+                        <Badge
+                          className={`${getEventTypeBadgeColor(
+                            event.type
+                          )} border-0 shadow-md font-['Cairo']`}
+                        >
+                          {getEventTypeLabel(event.type)}
                         </Badge>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Event Content */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 font-['Cairo']">
-                      {event.title}
-                    </h3>
-
-                    <div
-                      className="text-gray-600 text-sm mb-4 line-clamp-3 font-['Cairo']"
-                      dangerouslySetInnerHTML={{
-                        __html: event.description.substring(0, 150) + "...",
-                      }}
-                    />
-
-                    <div className="space-y-2 text-sm text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-red-600" />
-                        <span className="font-['Cairo']">
-                          {formatDate(event.startDate)}
-                        </span>
-                      </div>
-
-                      {event.location && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-red-600" />
-                          <span className="line-clamp-1 font-['Cairo']">
-                            {event.location}
-                          </span>
+                      {event.isVirtual && (
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-white text-gray-900 border-0 shadow-md font-['Cairo']">
+                            افتراضي
+                          </Badge>
                         </div>
                       )}
                     </div>
 
-                    {event.tags && event.tags.length > 0 && (
-                      <div className="mt-4 pt-4 border-t flex flex-wrap gap-2">
-                        {event.tags
-                          .slice(0, 3)
-                          .map((tag: string, index: number) => (
-                            <Badge
-                              key={index}
-                              variant="secondary"
-                              className="text-xs font-['Cairo']"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                      </div>
-                    )}
-                  </div>
+                    {/* Event Content */}
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 font-['Cairo']">
+                        {event.title}
+                      </h3>
 
-                  {/* Footer */}
-                  <div className="px-6 pb-6">
-                    <Button className="w-full bg-red-600 hover:bg-red-700 font-['Cairo']">
-                      التفاصيل والتسجيل
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                      <div
+                        className="text-gray-600 text-sm mb-4 line-clamp-3 font-['Cairo']"
+                        dangerouslySetInnerHTML={{
+                          __html: event.description.substring(0, 150) + "...",
+                        }}
+                      />
+
+                      <div className="space-y-2 text-sm text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-red-600" />
+                          <span className="font-['Cairo']">
+                            {formatDate(event.startDate)}
+                          </span>
+                        </div>
+
+                        {event.location && (
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-red-600" />
+                            <span className="line-clamp-1 font-['Cairo']">
+                              {event.location}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {event.tags && event.tags.length > 0 && (
+                        <div className="mt-4 pt-4 border-t flex flex-wrap gap-2">
+                          {event.tags
+                            .slice(0, 3)
+                            .map((tag: string, index: number) => (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="text-xs font-['Cairo']"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-6 pb-6">
+                      <Button className="w-full bg-red-600 hover:bg-red-700 font-['Cairo']">
+                        التفاصيل والتسجيل
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
 
             {/* Pagination */}

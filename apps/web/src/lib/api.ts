@@ -63,6 +63,12 @@ export enum ContentStatus {
   UNDER_REVIEW = "UNDER_REVIEW",
 }
 
+export enum CourseDifficulty {
+  BEGINNER = "Beginner",
+  INTERMEDIATE = "Intermediate",
+  ADVANCED = "Advanced",
+}
+
 // Fact Check Types
 export interface FactCheck {
   id: string;
@@ -123,6 +129,76 @@ export interface Event {
   registrations?: any[];
 }
 
+// Course Types (Media Literacy)
+export interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  coverImage?: string;
+  difficulty: CourseDifficulty;
+  duration: number; // in minutes
+  order: number;
+  isPublished: boolean;
+  prerequisites: string[];
+  learningObjectives: string[];
+  createdAt: string;
+  updatedAt: string;
+  lessons?: Lesson[];
+  _count?: {
+    enrollments: number;
+  };
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  videoUrl?: string;
+  duration?: number;
+  order: number;
+  resources: any[];
+  courseId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Research Types
+export interface Research {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  fullContent: string;
+  authors: string[];
+  category: string;
+  tags: string[];
+  coverImage?: string;
+  attachments: any[];
+  status: ContentStatus;
+  publishedAt?: string;
+  views: number;
+  downloads: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Certificate Types
+export interface Certificate {
+  id: string;
+  certificateNumber: string;
+  verificationCode: string;
+  userId: string;
+  courseId: string;
+  recipientName: string;
+  issuedDate: string;
+  expiryDate?: string;
+  pdfUrl?: string;
+  createdAt: string;
+  course?: Course;
+}
+
 // API Response Types
 export interface PaginatedResponse<T> {
   data: T[];
@@ -155,6 +231,30 @@ export interface EventParams extends PaginationParams {
   status?: EventStatus;
   upcoming?: boolean;
   search?: string;
+}
+
+export interface CourseParams extends PaginationParams {
+  difficulty?: CourseDifficulty;
+  isPublished?: boolean;
+  search?: string;
+}
+
+export interface ResearchParams extends PaginationParams {
+  category?: string;
+  status?: ContentStatus;
+  search?: string;
+}
+
+// Platform Statistics
+export interface PlatformStats {
+  factChecks: number;
+  events: number;
+  courses: number;
+  research: number;
+  users: number;
+  submissions: number;
+  enrollments: number;
+  eventRegistrations: number;
 }
 
 // API Client with automatic cookie handling
@@ -281,6 +381,75 @@ class ApiClient {
     return this.request<ApiResponse<any>>(`/events/${eventId}/register`, {
       method: "POST",
     });
+  }
+
+  // Courses endpoints (Media Literacy)
+  async getCourses(params?: CourseParams): Promise<PaginatedResponse<Course>> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.append("search", params.search);
+    if (params?.difficulty)
+      searchParams.append("difficulty", params.difficulty);
+    if (params?.isPublished !== undefined)
+      searchParams.append("isPublished", params.isPublished.toString());
+
+    const queryString = searchParams.toString();
+    const endpoint = `/media-literacy/courses${queryString ? `?${queryString}` : ""}`;
+
+    return this.request<PaginatedResponse<Course>>(endpoint);
+  }
+
+  async getCourse(slug: string): Promise<ApiResponse<Course>> {
+    return this.request<ApiResponse<Course>>(`/media-literacy/courses/${slug}`);
+  }
+
+  async enrollInCourse(courseId: string): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(
+      `/media-literacy/courses/${courseId}/enroll`,
+      {
+        method: "POST",
+      }
+    );
+  }
+
+  // Research endpoints
+  async getResearch(
+    params?: ResearchParams
+  ): Promise<PaginatedResponse<Research>> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.append("search", params.search);
+    if (params?.category) searchParams.append("category", params.category);
+    if (params?.status) searchParams.append("status", params.status);
+
+    const queryString = searchParams.toString();
+    const endpoint = `/research${queryString ? `?${queryString}` : ""}`;
+
+    return this.request<PaginatedResponse<Research>>(endpoint);
+  }
+
+  async getResearchArticle(slug: string): Promise<ApiResponse<Research>> {
+    return this.request<ApiResponse<Research>>(`/research/${slug}`);
+  }
+
+  // Certificates endpoints
+  async getUserCertificates(): Promise<ApiResponse<Certificate[]>> {
+    return this.request<ApiResponse<Certificate[]>>(
+      "/certificates/my-certificates"
+    );
+  }
+
+  async verifyCertificate(
+    verificationCode: string
+  ): Promise<ApiResponse<Certificate>> {
+    return this.request<ApiResponse<Certificate>>(
+      `/certificates/verify/${verificationCode}`
+    );
+  }
+
+  // Analytics endpoints
+  async getPlatformStats(): Promise<ApiResponse<PlatformStats>> {
+    return this.request<ApiResponse<PlatformStats>>(
+      "/analytics/platform-stats"
+    );
   }
 
   // Helper method for building query strings

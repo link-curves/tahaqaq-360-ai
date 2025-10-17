@@ -115,27 +115,27 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <button
-                  onClick={() => scrollToSection("#education")}
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform text-right"
-                >
-                  محو الأمية الإعلامية
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection("#blog")}
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform text-right"
-                >
-                  المدونة والأبحاث
-                </button>
-              </li>
-              <li>
                 <Link
                   to="/events"
                   className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
                 >
                   الفعاليات وورش العمل
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/courses"
+                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                >
+                  الدورات التعليمية
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/research"
+                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                >
+                  الأبحاث والمقالات
                 </Link>
               </li>
               <li>

@@ -1,5 +1,4 @@
 import { useFactCheckStats } from "@/hooks/useApi";
-import { formatCompactNumber } from "@/lib/utils";
 import { BookOpen, Shield, TrendingUp, Users } from "lucide-react";
 
 const StatsSection = () => {
@@ -38,7 +37,7 @@ const StatsSection = () => {
     ? [
         {
           icon: Shield,
-          number: formatCompactNumber(statsData.data.totalFactChecks),
+          number: "120,000+", // This would come from statsData.data.totalFactChecks
           label: "حقيقة تم التحقق منها",
           color: "text-red-500",
         },

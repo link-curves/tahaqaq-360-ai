@@ -8,6 +8,7 @@ import { useFactCheck, useRelatedFactChecks } from "@/hooks/useApi";
 import {
   formatDate,
   getImageUrl,
+  getTextDirection,
   getVeracityColor,
   getVeracityLabel,
 } from "@/lib/utils";
@@ -27,7 +28,11 @@ const FactCheckDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { data: factCheckData, isLoading, error } = useFactCheck(slug || "");
-  const { data: relatedData } = useRelatedFactChecks(slug || "");
+  const {
+    data: relatedData,
+    isLoading: relatedLoading,
+    error: relatedError,
+  } = useRelatedFactChecks(slug || "");
 
   const getStatusIcon = (rating: string) => {
     switch (rating) {
@@ -76,8 +81,11 @@ const FactCheckDetail = () => {
   const factCheck = factCheckData.data;
   const related = relatedData?.data || [];
 
+  // Detect text direction based on the title
+  const textDirection = getTextDirection(factCheck.title);
+
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
+    <div className="min-h-screen bg-gray-50" dir={textDirection}>
       <Navbar />
 
       {/* Hero Section */}
@@ -266,7 +274,7 @@ const FactCheckDetail = () => {
         </Card>
 
         {/* Related Fact Checks */}
-        {related.length > 0 && (
+        {!relatedError && !relatedLoading && related.length > 0 && (
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-6 font-['Cairo']">
               تحققات ذات صلة

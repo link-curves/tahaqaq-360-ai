@@ -1,12 +1,18 @@
 import {
   apiClient,
   ApiResponse,
+  Certificate,
+  Course,
+  CourseParams,
   Event,
   EventParams,
   FactCheck,
   FactCheckParams,
   FactCheckStats,
   PaginatedResponse,
+  PlatformStats,
+  Research,
+  ResearchParams,
 } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
@@ -42,6 +48,20 @@ export const useRelatedFactChecks = (slug: string) => {
     queryFn: () => apiClient.getRelatedFactChecks(slug),
     enabled: !!slug,
     staleTime: 1000 * 60 * 10, // 10 minutes
+    retry: (failureCount, error: any) => {
+      // Don't retry on 429 (Too Many Requests) or 404
+      if (
+        error?.message?.includes("Too Many Requests") ||
+        error?.status === 429
+      ) {
+        return false;
+      }
+      if (error?.status === 404) {
+        return false;
+      }
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
@@ -77,4 +97,75 @@ export const useUpcomingEvents = (limit: number = 3) => {
 export const useLatestFactChecks = (limit: number = 4) => {
   // Use basic query without filters due to backend validation issues
   return useFactChecks();
+};
+
+// Courses Hooks (Media Literacy)
+export const useCourses = (params?: CourseParams) => {
+  return useQuery<PaginatedResponse<Course>>({
+    queryKey: ["courses", params],
+    queryFn: () => apiClient.getCourses(params),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useCourse = (slug: string) => {
+  return useQuery<ApiResponse<Course>>({
+    queryKey: ["course", slug],
+    queryFn: () => apiClient.getCourse(slug),
+    enabled: !!slug,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+};
+
+export const useFeaturedCourses = (limit: number = 6) => {
+  return useCourses({ isPublished: true });
+};
+
+// Research Hooks
+export const useResearch = (params?: ResearchParams) => {
+  return useQuery<PaginatedResponse<Research>>({
+    queryKey: ["research", params],
+    queryFn: () => apiClient.getResearch(params),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useResearchArticle = (slug: string) => {
+  return useQuery<ApiResponse<Research>>({
+    queryKey: ["research", slug],
+    queryFn: () => apiClient.getResearchArticle(slug),
+    enabled: !!slug,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+};
+
+export const useLatestResearch = (limit: number = 6) => {
+  return useResearch();
+};
+
+// Certificates Hooks
+export const useUserCertificates = () => {
+  return useQuery<ApiResponse<Certificate[]>>({
+    queryKey: ["userCertificates"],
+    queryFn: () => apiClient.getUserCertificates(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useVerifyCertificate = (verificationCode: string) => {
+  return useQuery<ApiResponse<Certificate>>({
+    queryKey: ["verifyCertificate", verificationCode],
+    queryFn: () => apiClient.verifyCertificate(verificationCode),
+    enabled: !!verificationCode && verificationCode.length > 0,
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+};
+
+// Analytics hooks
+export const usePlatformStats = () => {
+  return useQuery<ApiResponse<PlatformStats>>({
+    queryKey: ["platformStats"],
+    queryFn: () => apiClient.getPlatformStats(),
+    staleTime: 1000 * 60 * 10, // 10 minutes - stats don't change frequently
+  });
 };

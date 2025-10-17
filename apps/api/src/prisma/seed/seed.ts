@@ -715,7 +715,7 @@ async function main() {
   let achievementAssignCount = 0;
 
   for (const user of users.slice(0, 70)) {
-    const numAchievements = randomInt(2, 15);
+    const numAchievements = randomInt(2, 5);
     const userAchievements = shuffle([...achievements]).slice(
       0,
       numAchievements,

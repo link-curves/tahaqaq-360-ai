@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useEvent } from "@/hooks/useApi";
 import { EventType } from "@/lib/api";
-import { formatDate, getImageUrl } from "@/lib/utils";
+import { formatDate, getImageUrl, getTextDirection } from "@/lib/utils";
 import {
   ArrowLeft,
   Calendar,
@@ -91,8 +91,11 @@ const EventDetail = () => {
 
   const event = eventData.data;
 
+  // Detect text direction based on the title
+  const textDirection = getTextDirection(event.title);
+
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
+    <div className="min-h-screen bg-gray-50" dir={textDirection}>
       <Navbar />
 
       {/* Hero Section */}
@@ -320,7 +323,7 @@ const EventDetail = () => {
               </div>
 
               <Button
-                className="w-full bg-red-600 hover:bg-red-700 font-['Cairo'] font-semibold text-lg py-6"
+                className="w-full bg-red-600 hover:bg-red-700 font-['Cairo'] font-semibold text-lg text-amber-50 py-6"
                 onClick={handleRegister}
               >
                 سجل الآن

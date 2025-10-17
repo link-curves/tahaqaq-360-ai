@@ -149,3 +149,41 @@ export const generateExcerpt = (
   if (words.length <= wordLimit) return plainText;
   return words.slice(0, wordLimit).join(" ") + "...";
 };
+
+// Language detection utilities
+export const detectLanguage = (text: string): "ar" | "en" => {
+  if (!text) return "en";
+
+  // Remove HTML tags and trim
+  const cleanText = stripHtml(text).trim();
+  if (!cleanText) return "en";
+
+  // Count Arabic characters (Unicode range for Arabic: U+0600 to U+06FF)
+  const arabicChars = cleanText.match(/[\u0600-\u06FF]/g);
+  const arabicCount = arabicChars ? arabicChars.length : 0;
+
+  // Count English/Latin characters
+  const latinChars = cleanText.match(/[a-zA-Z]/g);
+  const latinCount = latinChars ? latinChars.length : 0;
+
+  // If we have Arabic characters and they're more than half of all alphabetic chars, it's Arabic
+  const totalAlphaChars = arabicCount + latinCount;
+  if (totalAlphaChars === 0) return "en"; // Default to English if no alphabetic characters
+
+  return arabicCount > totalAlphaChars / 2 ? "ar" : "en";
+};
+
+export const getTextDirection = (text: string): "rtl" | "ltr" => {
+  const language = detectLanguage(text);
+  return language === "ar" ? "rtl" : "ltr";
+};
+
+// Check if text contains Arabic characters
+export const containsArabic = (text: string): boolean => {
+  return /[\u0600-\u06FF]/.test(text);
+};
+
+// Check if text is primarily Arabic (more than 50% Arabic characters)
+export const isPrimaryArabic = (text: string): boolean => {
+  return detectLanguage(text) === "ar";
+};

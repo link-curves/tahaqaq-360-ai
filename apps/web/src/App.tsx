@@ -7,12 +7,16 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Admin from "./pages/Admin";
 import AuthPage from "./pages/Auth";
 import AuthSuccessPage from "./pages/AuthSuccess";
+import CourseDetail from "./pages/CourseDetail";
+import Courses from "./pages/Courses";
 import EventDetail from "./pages/EventDetail";
 import Events from "./pages/Events";
 import FactCheckDetail from "./pages/FactCheckDetail";
 import FactChecks from "./pages/FactChecks";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Research from "./pages/Research";
+import ResearchDetail from "./pages/ResearchDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +48,10 @@ const App = () => (
             <Route path="/fact-checks/:slug" element={<FactCheckDetail />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:slug" element={<EventDetail />} />
+            <Route path="/research" element={<Research />} />
+            <Route path="/research/:slug" element={<ResearchDetail />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:slug" element={<CourseDetail />} />
             <Route
               path="/admin"
               element={

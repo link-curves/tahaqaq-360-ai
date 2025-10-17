@@ -12,43 +12,47 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFactChecks } from "@/hooks/useApi";
-import { VeracityRating } from "@/lib/api";
+import { useResearch } from "@/hooks/useApi";
 import {
   formatDate,
   generateExcerpt,
   getImageUrl,
   getTextDirection,
-  getVeracityColor,
-  getVeracityLabel,
 } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Filter, Search } from "lucide-react";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const FactChecksPage = () => {
+const Research = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [verdictFilter, setVerdictFilter] = useState<VeracityRating | "">("");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
-  // Build params object - NO page parameter (backend doesn't support it)
+  // Build params object
   const params = {
     ...(search && { search }),
-    ...(verdictFilter && { verdict: verdictFilter }),
+    ...(categoryFilter && { category: categoryFilter }),
   };
 
-  const { data, isLoading, error } = useFactChecks(params);
-
-  console.log("FactChecks Debug:", { data, isLoading, error, params });
+  const { data, isLoading, error } = useResearch(params);
 
   // Client-side pagination
-  const allFactChecks = data?.data || [];
+  const allResearch = data?.data || [];
   const itemsPerPage = 9;
-  const totalPages = Math.ceil(allFactChecks.length / itemsPerPage);
+  const totalPages = Math.ceil(allResearch.length / itemsPerPage);
   const startIndex = (page - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const factChecks = allFactChecks.slice(startIndex, endIndex);
+  const research = allResearch.slice(startIndex, endIndex);
+
+  // Get unique categories
+  const categories = Array.from(new Set(allResearch.map((r) => r.category)));
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
@@ -58,10 +62,10 @@ const FactChecksPage = () => {
       <div className="bg-gradient-to-br from-red-600 to-red-800 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 font-['Cairo']">
-            فحص الحقائق
+            الأبحاث والرؤى
           </h1>
           <p className="text-xl text-white/90 font-['Cairo']">
-            تصفح جميع التحققات من الحقائق والأخبار
+            تصفح مكتبتنا الشاملة من الأبحاث والدراسات حول محو الأمية الإعلامية
           </p>
         </div>
       </div>
@@ -75,7 +79,7 @@ const FactChecksPage = () => {
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
                 type="text"
-                placeholder="ابحث عن حقيقة..."
+                placeholder="ابحث عن بحث..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -85,34 +89,24 @@ const FactChecksPage = () => {
               />
             </div>
 
-            {/* Verdict Filter */}
+            {/* Category Filter */}
             <Select
-              value={verdictFilter || "all"}
+              value={categoryFilter}
               onValueChange={(value) => {
-                setVerdictFilter(
-                  value === "all" ? "" : (value as VeracityRating)
-                );
+                setCategoryFilter(value === "all" ? "" : value);
                 setPage(1);
               }}
             >
               <SelectTrigger className="w-full md:w-64 font-['Cairo']">
-                <Filter className="h-4 w-4 ml-2" />
-                <SelectValue placeholder="تصفية حسب الحكم" />
+                <SelectValue placeholder="جميع الفئات" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">الكل</SelectItem>
-                <SelectItem value={VeracityRating.TRUE}>صحيح</SelectItem>
-                <SelectItem value={VeracityRating.MOSTLY_TRUE}>
-                  صحيح في الغالب
-                </SelectItem>
-                <SelectItem value={VeracityRating.HALF_TRUE}>
-                  نصف صحيح
-                </SelectItem>
-                <SelectItem value={VeracityRating.MOSTLY_FALSE}>
-                  خاطئ في الغالب
-                </SelectItem>
-                <SelectItem value={VeracityRating.FALSE}>خاطئ</SelectItem>
-                <SelectItem value={VeracityRating.MISLEADING}>مضلل</SelectItem>
+                <SelectItem value="all">جميع الفئات</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -125,7 +119,7 @@ const FactChecksPage = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...Array(9)].map((_, index) => (
               <Card key={index} className="overflow-hidden">
-                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-52 w-full" />
                 <div className="p-6">
                   <Skeleton className="h-6 w-24 mb-3" />
                   <Skeleton className="h-6 w-full mb-2" />
@@ -141,9 +135,9 @@ const FactChecksPage = () => {
               حدث خطأ في تحميل البيانات
             </p>
           </div>
-        ) : factChecks.length === 0 ? (
+        ) : research.length === 0 ? (
           <div className="text-center py-12">
-            <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 text-xl font-['Cairo']">
               لا توجد نتائج مطابقة
             </p>
@@ -153,40 +147,38 @@ const FactChecksPage = () => {
             {/* Results Count */}
             <div className="mb-6">
               <p className="text-gray-600 font-['Cairo']">
-                عرض {factChecks.length} من أصل {data?.total || 0} نتيجة
+                عرض {research.length} من أصل {data?.total || 0} نتيجة
               </p>
             </div>
 
-            {/* Fact Checks Grid */}
+            {/* Research Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {factChecks.map((factCheck) => {
-                const cardDirection = getTextDirection(factCheck.title);
+              {research.map((article) => {
+                const cardDirection = getTextDirection(article.title);
                 return (
                   <Card
-                    key={factCheck.id}
+                    key={article.id}
                     className="group overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
-                    onClick={() => navigate(`/fact-checks/${factCheck.slug}`)}
+                    onClick={() => navigate(`/research/${article.slug}`)}
                     dir={cardDirection}
                   >
                     {/* Image */}
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-52 overflow-hidden">
                       <img
-                        src={getImageUrl(factCheck.featuredImage)}
-                        alt={factCheck.title}
+                        src={getImageUrl(article.coverImage)}
+                        alt={article.title}
                         className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
                         onError={(e) => {
                           e.currentTarget.src =
-                            "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=200&fit=crop";
+                            "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=200&fit=crop";
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
-                      {/* Verdict Badge */}
+                      {/* Category Badge */}
                       <div className="absolute top-4 right-4">
-                        <Badge
-                          className={`${getVeracityColor(factCheck.verdict)} border-0 shadow-lg`}
-                        >
-                          {getVeracityLabel(factCheck.verdict)}
+                        <Badge className="bg-white/90 text-red-600 border-0 shadow-lg backdrop-blur-sm">
+                          {article.category}
                         </Badge>
                       </div>
 
@@ -195,7 +187,7 @@ const FactChecksPage = () => {
                         <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full">
                           <span className="text-xs text-gray-700 font-medium font-['Cairo']">
                             {formatDate(
-                              factCheck.publishedAt || factCheck.createdAt
+                              article.publishedAt || article.createdAt
                             )}
                           </span>
                         </div>
@@ -205,27 +197,24 @@ const FactChecksPage = () => {
                     {/* Content */}
                     <div className="p-6">
                       <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight line-clamp-2 group-hover:text-red-600 transition-colors font-['Cairo']">
-                        {factCheck.title}
+                        {article.title}
                       </h3>
 
-                      <p className="text-sm text-gray-600 mb-3 font-['Cairo']">
-                        <strong>الادعاء:</strong>{" "}
-                        {generateExcerpt(factCheck.claim, 15)}
-                      </p>
-
-                      <p className="text-sm text-gray-700 mb-4 line-clamp-2 font-['Cairo']">
-                        {generateExcerpt(factCheck.summary, 20)}
+                      <p className="text-sm text-gray-700 mb-4 line-clamp-3 font-['Cairo']">
+                        {generateExcerpt(article.summary, 20)}
                       </p>
 
                       {/* Stats */}
                       <div className="flex items-center justify-between text-xs text-gray-500 border-t pt-3">
                         <span className="font-['Cairo']">
-                          {factCheck.views} مشاهدة
+                          {article.views} مشاهدة
                         </span>
-                        <span className="font-['Cairo']">
-                          {factCheck.author.firstName}{" "}
-                          {factCheck.author.lastName}
-                        </span>
+                        {article.authors && article.authors.length > 0 && (
+                          <span className="font-['Cairo'] flex items-center">
+                            <User className="h-3 w-3 ml-1" />
+                            {article.authors[0]}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </Card>
@@ -244,21 +233,20 @@ const FactChecksPage = () => {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
 
-                <div className="flex gap-2">
-                  {[...Array(Math.min(5, totalPages))].map((_, index) => {
-                    const pageNum = index + 1;
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={page === pageNum ? "default" : "outline"}
-                        onClick={() => setPage(pageNum)}
-                        className="w-10"
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                </div>
+                {[...Array(totalPages)].map((_, i) => (
+                  <Button
+                    key={i}
+                    variant={page === i + 1 ? "default" : "outline"}
+                    onClick={() => setPage(i + 1)}
+                    className={
+                      page === i + 1
+                        ? "bg-red-600 text-white hover:bg-red-700"
+                        : ""
+                    }
+                  >
+                    {i + 1}
+                  </Button>
+                ))}
 
                 <Button
                   variant="outline"
@@ -278,4 +266,4 @@ const FactChecksPage = () => {
   );
 };
 
-export default FactChecksPage;
+export default Research;
