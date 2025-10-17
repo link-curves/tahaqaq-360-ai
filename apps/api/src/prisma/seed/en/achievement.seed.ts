@@ -1,5 +1,5 @@
 import { Achievement, PrismaClient } from '@prisma/client';
-import { randomElement, randomInt } from './helpers/seed.helper';
+import { randomElement, randomInt } from '../helpers/seed.helper';
 
 export const seedAchievements = async (
   prisma: PrismaClient,

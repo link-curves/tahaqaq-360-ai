@@ -8,7 +8,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, LogOut, Menu, Settings, User, X } from "lucide-react";
+import {
+  FileText,
+  LogIn,
+  LogOut,
+  Menu,
+  Send,
+  Settings,
+  User,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TahqaqLogo } from "./ui/TahaqaqLogo";
@@ -76,8 +85,8 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200"
-          : "bg-transparent"
+          ? "bg-white/98 backdrop-blur-lg shadow-xl border-b border-gray-200/80"
+          : "bg-white/90 backdrop-blur-md shadow-md border-b border-gray-100/50"
       }`}
       dir="rtl"
     >
@@ -96,16 +105,14 @@ const Navbar = () => {
             />
             <div className="flex flex-col">
               <span
-                className={`font-bold font-['Cairo'] transition-all duration-300 ${
-                  isScrolled ? "text-gray-900 text-lg" : "text-white text-xl"
+                className={`font-bold font-['Cairo'] transition-all duration-300 text-gray-900 ${
+                  isScrolled ? "text-lg" : "text-xl"
                 }`}
               >
                 تحقق 360
               </span>
               <span
-                className={`text-xs font-['Cairo'] transition-all duration-300 hidden sm:block ${
-                  isScrolled ? "text-red-600" : "text-red-300"
-                }`}
+                className="text-xs font-['Cairo'] transition-all duration-300 hidden sm:block text-red-600"
               >
                 فحص الحقائق بالذكاء الاصطناعي
               </span>
@@ -119,34 +126,22 @@ const Navbar = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`font-['Cairo'] font-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap ${
-                    isScrolled
-                      ? "text-gray-700 hover:text-red-600"
-                      : "text-white hover:text-red-300"
-                  }`}
+                  className="font-['Cairo'] font-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap text-gray-700 hover:text-red-600"
                 >
                   {item.name}
                   <span
-                    className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                      isScrolled ? "bg-red-600" : "bg-red-300"
-                    }`}
+                    className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-red-600"
                   ></span>
                 </Link>
               ) : (
                 <button
                   key={item.name}
                   onClick={() => scrollToSection(item.href)}
-                  className={`font-['Cairo'] font-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap ${
-                    isScrolled
-                      ? "text-gray-700 hover:text-red-600"
-                      : "text-white hover:text-red-300"
-                  }`}
+                  className="font-['Cairo'] font-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap text-gray-700 hover:text-red-600"
                 >
                   {item.name}
                   <span
-                    className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                      isScrolled ? "bg-red-600" : "bg-red-300"
-                    }`}
+                    className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-red-600"
                   ></span>
                 </button>
               )
@@ -162,9 +157,7 @@ const Navbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className={`relative h-8 w-8 rounded-full ${
-                        isScrolled ? "hover:bg-gray-100" : "hover:bg-white/10"
-                      }`}
+                      className="relative h-8 w-8 rounded-full hover:bg-gray-100"
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage
@@ -189,7 +182,18 @@ const Navbar = () => {
                       </div>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/submit")}>
+                      <Send className="mr-2 h-4 w-4" />
+                      <span>إرسال محتوى</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/my-submissions")}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>طلباتي</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/profile")}>
                       <User className="mr-2 h-4 w-4" />
                       <span>الملف الشخصي</span>
                     </DropdownMenuItem>
@@ -216,13 +220,9 @@ const Navbar = () => {
               ) : (
                 // Not authenticated - show login button
                 <Button
-                  onClick={() => navigate("/auth")}
+                  onClick={() => navigate("/login")}
                   size="sm"
-                  className={`font-['Cairo'] font-semibold transition-all duration-300 transform hover:scale-105 px-4 py-2 ${
-                    isScrolled
-                      ? "bg-red-600 hover:bg-red-700 text-white shadow-lg"
-                      : "bg-white text-red-600 hover:bg-gray-100 shadow-lg"
-                  }`}
+                  className="font-['Cairo'] font-semibold transition-all duration-300 transform hover:scale-105 px-4 py-2 bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl"
                   disabled={isLoading}
                 >
                   <LogIn className="h-4 w-4 ml-2" />
@@ -234,11 +234,7 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`lg:hidden p-2 rounded-lg transition-all duration-300 ${
-                isScrolled
-                  ? "text-gray-700 hover:bg-gray-100"
-                  : "text-white hover:bg-white/10"
-              }`}
+              className="lg:hidden p-2 rounded-lg transition-all duration-300 text-gray-700 hover:bg-gray-100"
             >
               {isOpen ? (
                 <X className="h-6 w-6" />

@@ -4,17 +4,20 @@ import {
   Certificate,
   Course,
   CourseParams,
+  CreateSubmissionRequest,
   Event,
   EventParams,
   FactCheck,
   FactCheckParams,
   FactCheckStats,
   PaginatedResponse,
+  PaginationParams,
   PlatformStats,
   Research,
   ResearchParams,
+  Submission,
 } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Fact Checks Hooks
 export const useFactChecks = (params?: FactCheckParams) => {
@@ -167,5 +170,36 @@ export const usePlatformStats = () => {
     queryKey: ["platformStats"],
     queryFn: () => apiClient.getPlatformStats(),
     staleTime: 1000 * 60 * 10, // 10 minutes - stats don't change frequently
+  });
+};
+
+// Submission Hooks
+export const useSubmissions = (params?: PaginationParams) => {
+  return useQuery<PaginatedResponse<Submission>>({
+    queryKey: ["mySubmissions", params],
+    queryFn: () => apiClient.getMySubmissions(params),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+};
+
+export const useSubmission = (id: string) => {
+  return useQuery<ApiResponse<Submission>>({
+    queryKey: ["submission", id],
+    queryFn: () => apiClient.getSubmission(id),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useCreateSubmission = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateSubmissionRequest) =>
+      apiClient.createSubmission(data),
+    onSuccess: () => {
+      // Invalidate submissions list to refetch
+      queryClient.invalidateQueries({ queryKey: ["mySubmissions"] });
+    },
   });
 };

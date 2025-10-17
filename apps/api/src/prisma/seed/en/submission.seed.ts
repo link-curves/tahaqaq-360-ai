@@ -6,8 +6,8 @@ import {
   SubmissionType,
   User,
 } from '@prisma/client';
-import { claimTexts } from './data/primary.data';
-import { randomDate, randomElement, randomInt } from './helpers/seed.helper';
+import { claimTexts } from '../en/data/english.data';
+import { randomDate, randomElement, randomInt } from '../helpers/seed.helper';
 
 export const seedSubmissions = async (
   prisma: PrismaClient,

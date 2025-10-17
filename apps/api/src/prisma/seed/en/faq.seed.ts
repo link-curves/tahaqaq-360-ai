@@ -1,5 +1,5 @@
 import { FAQ, PrismaClient } from '@prisma/client';
-import { randomInt } from './helpers/seed.helper';
+import { randomInt } from '../helpers/seed.helper';
 
 export const seedFAQs = async (prisma: PrismaClient): Promise<FAQ[]> => {
   const faqs = [];

@@ -63,6 +63,21 @@ export enum ContentStatus {
   UNDER_REVIEW = "UNDER_REVIEW",
 }
 
+export enum SubmissionType {
+  TEXT = "TEXT",
+  IMAGE = "IMAGE",
+  VIDEO = "VIDEO",
+  AUDIO = "AUDIO",
+  LINK = "LINK",
+}
+
+export enum SubmissionStatus {
+  PENDING = "PENDING",
+  UNDER_REVIEW = "UNDER_REVIEW",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+}
+
 export enum CourseDifficulty {
   BEGINNER = "Beginner",
   INTERMEDIATE = "Intermediate",
@@ -197,6 +212,42 @@ export interface Certificate {
   pdfUrl?: string;
   createdAt: string;
   course?: Course;
+}
+
+// Submission Types
+export interface Submission {
+  id: string;
+  type: SubmissionType;
+  content: string;
+  sourceUrl?: string;
+  mediaUrls: string[];
+  context?: string;
+  status: SubmissionStatus;
+  priority: number;
+  submitterId: string;
+  submitterEmail?: string;
+  isAnonymous: boolean;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  factCheck?: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  submitter?: User;
+}
+
+export interface CreateSubmissionRequest {
+  type: SubmissionType;
+  content: string;
+  sourceUrl?: string;
+  mediaUrls?: string[];
+  context?: string;
+  isAnonymous?: boolean;
+  submitterEmail?: string;
 }
 
 // API Response Types
@@ -450,6 +501,35 @@ class ApiClient {
     return this.request<ApiResponse<PlatformStats>>(
       "/analytics/platform-stats"
     );
+  }
+
+  // Submission endpoints
+  async createSubmission(
+    data: CreateSubmissionRequest
+  ): Promise<ApiResponse<Submission>> {
+    return this.request<ApiResponse<Submission>>("/submissions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getMySubmissions(
+    params?: PaginationParams
+  ): Promise<PaginatedResponse<Submission>> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.append("page", params.page.toString());
+    if (params?.limit) searchParams.append("limit", params.limit.toString());
+
+    const queryString = searchParams.toString();
+    const endpoint = `/submissions/my-submissions${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    return this.request<PaginatedResponse<Submission>>(endpoint);
+  }
+
+  async getSubmission(id: string): Promise<ApiResponse<Submission>> {
+    return this.request<ApiResponse<Submission>>(`/submissions/${id}`);
   }
 
   // Helper method for building query strings

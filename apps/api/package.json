@@ -23,11 +23,14 @@
     "db:deploy": "npx prisma migrate deploy --schema=src/prisma/schema.prisma",
     "db:studio": "npx prisma studio --schema=src/prisma/schema.prisma",
     "db:seed": "ts-node src/prisma/seed/seed.ts",
+    "db:seed:ar": "ts-node src/prisma/seed/arabic.seed.ts",
     "db:pull": "npx prisma db pull --schema=src/prisma/schema.prisma",
     "db:push": "npx prisma db push --schema=src/prisma/schema.prisma",
     "db:reset": "npx prisma migrate reset --schema=src/prisma/schema.prisma",
     "db:reset-seed": "prisma migrate reset --schema=src/prisma/schema.prisma --force && ts-node src/prisma/seed/seed.ts",
-    "db:fresh": "pnpm db:reset-seed"
+    "db:reset-seed:ar": "prisma migrate reset --schema=src/prisma/schema.prisma --force && ts-node src/prisma/seed/arabic.seed.ts",
+    "db:fresh": "pnpm db:reset-seed",
+    "db:fresh:ar": "pnpm db:reset-seed:ar"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",

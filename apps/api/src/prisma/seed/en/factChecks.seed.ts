@@ -13,13 +13,13 @@ import {
   firstNames,
   lastNames,
   tags,
-} from './data/primary.data';
+} from '../en/data/english.data';
 import {
   randomDate,
   randomElement,
   randomInt,
   shuffle,
-} from './helpers/seed.helper';
+} from '../helpers/seed.helper';
 
 export const seedFactChecks = async (
   prisma: PrismaClient,

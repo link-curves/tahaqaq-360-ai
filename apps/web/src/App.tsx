@@ -5,7 +5,6 @@ import { AuthProvider, ProtectedRoute } from "@/contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Admin from "./pages/Admin";
-import AuthPage from "./pages/Auth";
 import AuthSuccessPage from "./pages/AuthSuccess";
 import CourseDetail from "./pages/CourseDetail";
 import Courses from "./pages/Courses";
@@ -14,9 +13,13 @@ import Events from "./pages/Events";
 import FactCheckDetail from "./pages/FactCheckDetail";
 import FactChecks from "./pages/FactChecks";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import MySubmissions from "./pages/MySubmissions";
 import NotFound from "./pages/NotFound";
+import Register from "./pages/Register";
 import Research from "./pages/Research";
 import ResearchDetail from "./pages/ResearchDetail";
+import SubmitContent from "./pages/SubmitContent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,7 +45,8 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/auth/success" element={<AuthSuccessPage />} />
             <Route path="/fact-checks" element={<FactChecks />} />
             <Route path="/fact-checks/:slug" element={<FactCheckDetail />} />
@@ -52,10 +56,28 @@ const App = () => (
             <Route path="/research/:slug" element={<ResearchDetail />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:slug" element={<CourseDetail />} />
+
+            {/* Protected Routes */}
+            <Route
+              path="/submit"
+              element={
+                <ProtectedRoute fallback={<Login />}>
+                  <SubmitContent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-submissions"
+              element={
+                <ProtectedRoute fallback={<Login />}>
+                  <MySubmissions />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin"
               element={
-                <ProtectedRoute fallback={<AuthPage />}>
+                <ProtectedRoute fallback={<Login />}>
                   <Admin />
                 </ProtectedRoute>
               }

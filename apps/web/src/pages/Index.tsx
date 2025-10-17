@@ -1,12 +1,13 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import FeaturedSection from "@/components/FeaturedSection";
-import FactCheckingSection from "@/components/FactCheckingSection";
-import MediaLiteracySection from "@/components/MediaLiteracySection";
 import BlogSection from "@/components/BlogSection";
 import EventsSection from "@/components/EventsSection";
-import StatsSection from "@/components/StatsSection";
+import FactCheckingSection from "@/components/FactCheckingSection";
+import FeaturedSection from "@/components/FeaturedSection";
 import Footer from "@/components/Footer";
+import Hero from "@/components/Hero";
+import MediaLiteracySection from "@/components/MediaLiteracySection";
+import Navbar from "@/components/Navbar";
+import StatsSection from "@/components/StatsSection";
+import SubmitContentSection from "@/components/SubmitContentSection";
 
 const Index = () => {
   return (
@@ -15,6 +16,7 @@ const Index = () => {
       <Hero />
       <FeaturedSection />
       <StatsSection />
+      <SubmitContentSection />
       <FactCheckingSection />
       <MediaLiteracySection />
       <BlogSection />

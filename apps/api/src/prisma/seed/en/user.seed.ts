@@ -1,6 +1,6 @@
 import { PrismaClient, Role, User } from '@prisma/client';
 import * as argon2 from 'argon2';
-import { categories, firstNames, lastNames } from './data/primary.data';
+import { categories, firstNames, lastNames } from '../en/data/english.data';
 
 export const seedUsers = async (prisma: PrismaClient): Promise<User[]> => {
   console.log('🌱 Starting user seeding...');

@@ -10,13 +10,18 @@ import {
   SubmissionStatus,
 } from '@prisma/client';
 import { randomInt } from 'crypto';
-import { seedAchievements } from './achievement.seed';
-import { categories, firstNames, lastNames, tags } from './data/primary.data';
-import { seedFactChecks } from './factChecks.seed';
-import { seedFAQs } from './faq.seed';
+import { seedAchievements } from './en/achievement.seed';
+import {
+  categories,
+  firstNames,
+  lastNames,
+  tags,
+} from './en/data/english.data';
+import { seedFactChecks } from './en/factChecks.seed';
+import { seedFAQs } from './en/faq.seed';
+import { seedSubmissions } from './en/submission.seed';
+import { seedUsers } from './en/user.seed';
 import { randomDate, randomElement, shuffle } from './helpers/seed.helper';
-import { seedSubmissions } from './submission.seed';
-import { seedUsers } from './user.seed';
 
 const prisma = new PrismaClient();
 
