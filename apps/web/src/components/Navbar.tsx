@@ -111,9 +111,7 @@ const Navbar = () => {
               >
                 تحقق 360
               </span>
-              <span
-                className="text-xs font-['Cairo'] transition-all duration-300 hidden sm:block text-red-600"
-              >
+              <span className="text-xs font-['Cairo'] transition-all duration-300 hidden sm:block text-red-600">
                 فحص الحقائق بالذكاء الاصطناعي
               </span>
             </div>
@@ -129,9 +127,7 @@ const Navbar = () => {
                   className="font-['Cairo'] font-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap text-gray-700 hover:text-red-600"
                 >
                   {item.name}
-                  <span
-                    className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-red-600"
-                  ></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-red-600"></span>
                 </Link>
               ) : (
                 <button
@@ -140,9 +136,7 @@ const Navbar = () => {
                   className="font-['Cairo'] font-medium transition-all duration-300 hover:scale-105 relative group px-2 py-1 whitespace-nowrap text-gray-700 hover:text-red-600"
                 >
                   {item.name}
-                  <span
-                    className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-red-600"
-                  ></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full bg-red-600"></span>
                 </button>
               )
             )}

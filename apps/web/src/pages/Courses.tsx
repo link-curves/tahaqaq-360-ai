@@ -1,5 +1,3 @@
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -72,9 +70,7 @@ const Courses = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      <Navbar />
-
+    <div className="min-h-screen bg-gray-50 mt-18" dir="rtl">
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-600 to-teal-700 py-16">
         <div className="max-w-7xl mx-auto px-4">
@@ -252,8 +248,6 @@ const Courses = () => {
           </>
         )}
       </div>
-
-      <Footer />
     </div>
   );
 };

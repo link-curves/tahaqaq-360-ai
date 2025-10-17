@@ -757,3 +757,39 @@ model SystemMetric {
   @@index([recordedAt])
   @@map("system_metrics")
 }
+
+model PrivacyPolicy {
+  id        String  @id @default(cuid())
+  version   String  @unique
+  content   String  @db.Text
+  isCurrent Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@map("privacy_policies")
+}
+
+model TermsOfService {
+  id        String  @id @default(cuid())
+  version   String  @unique
+  content   String  @db.Text
+  isCurrent Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@map("terms_of_service")
+}
+
+model AccessibilityStatement {
+  id        String  @id @default(cuid())
+  version   String  @unique
+  content   String  @db.Text
+  isCurrent Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@map("accessibility_statements")
+}

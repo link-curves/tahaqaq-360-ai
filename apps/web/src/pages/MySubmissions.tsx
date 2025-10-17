@@ -100,7 +100,7 @@ const MySubmissions = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100"
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 mt-18"
       dir="rtl"
     >
       {/* Header */}
@@ -115,7 +115,7 @@ const MySubmissions = () => {
             </div>
             <Button
               onClick={() => navigate("/submit")}
-              className="bg-white text-red-600 hover:bg-gray-100 font-semibold h-12 px-6 rounded-xl shadow-lg"
+              className="bg-white text-red-600 hover:bg-gray-100 h-12 px-6 rounded-xl shadow-lg font-bold"
             >
               <Plus className="h-5 w-5 ml-2" />
               طلب جديد
@@ -229,7 +229,7 @@ const MySubmissions = () => {
               {filterStatus === "ALL" && (
                 <Button
                   onClick={() => navigate("/submit")}
-                  className="mt-4 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 h-12 px-8 rounded-xl"
+                  className="mt-4 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 h-12 px-8 rounded-xl text-amber-50 font-bold"
                 >
                   <Plus className="h-5 w-5 ml-2" />
                   إرسال طلب جديد

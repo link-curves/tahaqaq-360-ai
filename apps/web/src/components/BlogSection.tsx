@@ -25,10 +25,10 @@ const BlogSection = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6 font-['Cairo']">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
             أحدث الرؤى والأبحاث
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto font-['Cairo']">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             ابق على اطلاع بأحدث أبحاثنا وتحليلاتنا ورؤانا حول اتجاهات المعلومات
             المضللة وأفضل ممارسات محو الأمية الإعلامية ومنهجيات فحص الحقائق
           </p>

@@ -1,10 +1,12 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Public } from '../../common/decorators/public.decorator';
 import { ResearchService } from './research.service';
 
 @Controller('research')
 export class ResearchController {
   constructor(private readonly researchService: ResearchService) {}
 
+  @Public()
   @Get()
   async getResearch(
     @Query('search') search?: string,
@@ -20,6 +22,7 @@ export class ResearchController {
     });
   }
 
+  @Public()
   @Get(':slug')
   async getResearchArticle(@Param('slug') slug: string) {
     return this.researchService.getResearchArticle(slug);

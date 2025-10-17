@@ -1,16 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { usePlatformStats } from "@/hooks/useApi";
 import {
   Award,
-  BookOpen,
   CheckCircle2,
-  Eye,
   Search,
   Send,
   Shield,
   Target,
-  TrendingUp,
-  Users,
   Zap,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
@@ -42,44 +37,8 @@ const TahqaqLogo: React.FC<TahqaqLogoProps> = ({
   );
 };
 
-// Animated Counter Component
-const AnimatedCounter: React.FC<{ end: number; duration?: number }> = ({
-  end,
-  duration = 2000,
-}) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let startTime: number;
-    let animationFrame: number;
-
-    const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = timestamp - startTime;
-      const percentage = Math.min(progress / duration, 1);
-      const easeOutQuart = 1 - Math.pow(1 - percentage, 4);
-      setCount(Math.floor(end * easeOutQuart));
-
-      if (percentage < 1) {
-        animationFrame = requestAnimationFrame(animate);
-      }
-    };
-
-    animationFrame = requestAnimationFrame(animate);
-    return () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
-    };
-  }, [end, duration]);
-
-  return <span>{count.toLocaleString("ar-SA")}</span>;
-};
-
 const Hero = () => {
   const navigate = useNavigate();
-  const { data: statsData, isLoading } = usePlatformStats();
-  const stats = statsData?.data;
   const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -111,7 +70,6 @@ const Hero = () => {
       id="hero"
       className="relative bg-white text-gray-900 min-h-screen flex items-center overflow-hidden"
       dir="rtl"
-      style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
     >
       {/* Elegant Background with Red Accents */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-red-50/30">
@@ -161,22 +119,12 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Content */}
           <div className="text-center lg:text-right space-y-8">
-            {/* Logo Badge */}
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 rounded-full px-6 py-3 shadow-sm">
-              <div className="relative">
-                <div className="absolute inset-0 bg-red-500 rounded-full blur-md opacity-20 animate-pulse" />
-                <TahqaqLogo className="h-8 w-8 relative z-10" />
-              </div>
-              <span className="text-lg font-bold text-red-600">تحقق 360</span>
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            </div>
-
             {/* Main Heading */}
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
-                <span className="block text-gray-900">منصة التحقق من</span>
-                <span className="block bg-gradient-to-r from-red-600 via-rose-600 to-red-700 bg-clip-text text-transparent">
-                  الحقائق بالذكاء الاصطناعي
+                <span className="block text-gray-900">نحو وعي رقمي</span>
+                <span className="block bg-gradient-to-r from-red-600 via-rose-600 to-red-700 bg-clip-text text-transparent mt-3">
+                  لا يخدعك أحد
                 </span>
               </h1>
 
@@ -265,188 +213,78 @@ const Hero = () => {
                   />
                 </div>
 
-                {/* Center Badge */}
-                <div className="relative bg-gradient-to-br from-white to-red-50 border-4 border-red-100 rounded-full w-40 h-40 flex items-center justify-center shadow-2xl group-hover:shadow-red-200 transition-all duration-500">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/10 rounded-full animate-pulse-slow" />
-                  <div className="text-center relative z-10">
-                    <CheckCircle2 className="w-16 h-16 text-red-600 mx-auto mb-2" />
-                    <p className="text-xs font-bold text-gray-700">موثوق</p>
-                    <p className="text-xs text-gray-500">100%</p>
+                {/* Center Badge - 360° Verification Hub */}
+                <div className="relative w-100 h-100 flex items-center justify-center">
+                  {/* Rotating Outer Ring with Verification Icons */}
+                  <div className="absolute inset-0 animate-spin-slow">
+                    <div className="relative w-full h-full">
+                      {/* AI Icon - Top */}
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4">
+                        <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl p-3 shadow-xl">
+                          <Zap className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                      {/* Shield Icon - Right */}
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4">
+                        <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-3 shadow-xl">
+                          <Shield className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                      {/* Check Icon - Bottom */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4">
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl p-3 shadow-xl">
+                          <CheckCircle2 className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                      {/* Search Icon - Left */}
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4">
+                        <div className="bg-gradient-to-br from-red-500 to-rose-500 rounded-xl p-3 shadow-xl">
+                          <Search className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle Ring - Counter Rotate */}
+                  <div className="absolute inset-10 border-4 border-dashed border-red-200 rounded-full animate-spin-reverse" />
+
+                  {/* Inner Glow Ring */}
+                  <div className="absolute inset-16 bg-gradient-to-br from-red-500/20 to-rose-500/20 rounded-full blur-lg animate-pulse-slow" />
+
+                  {/* Central Core */}
+                  <div className="relative bg-gradient-to-br from-white via-red-50 to-rose-50 border-6 border-red-100 rounded-full w-48 h-48 flex items-center justify-center shadow-3xl group-hover:shadow-red-300 transition-all duration-500 group-hover:scale-110 z-10">
+                    {/* Animated Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-rose-600/10 rounded-full animate-pulse-slow" />
+
+                    {/* 360° Text with Logo */}
+                    <div className="text-center relative z-10">
+                      <div className="relative mb-3">
+                        <TahqaqLogo
+                          width={60}
+                          height={60}
+                          className="mx-auto drop-shadow-lg"
+                        />
+                        {/* Orbiting Sparkles */}
+                        <div className="absolute -top-2 -right-2">
+                          <div className="w-3 h-3 bg-yellow-400 rounded-full animate-ping" />
+                        </div>
+                      </div>
+                      <div className="text-4xl font-black bg-gradient-to-r from-red-600 via-rose-600 to-red-600 bg-clip-text text-transparent leading-none">
+                        360
+                      </div>
+                      <p className="text-sm font-bold text-gray-600 mt-2">
+                        تحقق شامل
+                      </p>
+                    </div>
+
+                    {/* Scanning Line Effect */}
+                    <div className="absolute inset-0 overflow-hidden rounded-full">
+                      <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Orbiting Stats Cards */}
-            {!isLoading && stats && (
-              <>
-                {/* Fact Checks - Top */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20">
-                  <div className="group bg-white border-2 border-red-100 hover:border-red-300 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-br from-red-100 to-rose-100 p-3 rounded-xl">
-                        <Shield className="w-6 h-6 text-red-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
-                          <AnimatedCounter end={stats.factChecks} />
-                        </div>
-                        <div className="text-xs font-semibold text-gray-600">
-                          عملية تحقق
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-rose-500 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                  </div>
-                </div>
-
-                {/* Users - Right */}
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20">
-                  <div className="group bg-white border-2 border-blue-100 hover:border-blue-300 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-br from-blue-100 to-cyan-100 p-3 rounded-xl">
-                        <Users className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                          <AnimatedCounter end={stats.events} />
-                        </div>
-                        <div className="text-xs font-semibold text-gray-600">
-                          فعالية
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                  </div>
-                </div>
-
-                {/* Courses - Bottom */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20">
-                  <div className="group bg-white border-2 border-emerald-100 hover:border-emerald-300 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-br from-emerald-100 to-green-100 p-3 rounded-xl">
-                        <BookOpen className="w-6 h-6 text-emerald-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
-                          <AnimatedCounter end={stats.courses} />
-                        </div>
-                        <div className="text-xs font-semibold text-gray-600">
-                          دورة تعليمية
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                  </div>
-                </div>
-
-                {/* Research - Left */}
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 z-20">
-                  <div className="group bg-white border-2 border-purple-100 hover:border-purple-300 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-3 rounded-xl">
-                        <TrendingUp className="w-6 h-6 text-purple-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                          <AnimatedCounter end={stats.research} />
-                        </div>
-                        <div className="text-xs font-semibold text-gray-600">
-                          بحث علمي
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                  </div>
-                </div>
-
-                {/* Additional Feature Icons - Diagonal Positions */}
-                <div className="absolute top-20 right-20 z-10">
-                  <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
-                    <Eye className="w-8 h-8 text-yellow-600" />
-                  </div>
-                </div>
-
-                <div className="absolute bottom-20 right-20 z-10">
-                  <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
-                    <Search className="w-8 h-8 text-indigo-600" />
-                  </div>
-                </div>
-
-                <div className="absolute top-20 left-20 z-10">
-                  <div className="bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
-                    <Zap className="w-8 h-8 text-rose-600" />
-                  </div>
-                </div>
-
-                <div className="absolute bottom-20 left-20 z-10">
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
-                    <Target className="w-8 h-8 text-green-600" />
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Connecting Lines (SVG) */}
-            <svg
-              className="absolute inset-0 w-full h-full pointer-events-none"
-              style={{ zIndex: 5 }}
-            >
-              <defs>
-                <linearGradient
-                  id="line-gradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="0%"
-                >
-                  <stop offset="0%" stopColor="rgba(239, 68, 68, 0)" />
-                  <stop offset="50%" stopColor="rgba(239, 68, 68, 0.2)" />
-                  <stop offset="100%" stopColor="rgba(239, 68, 68, 0)" />
-                </linearGradient>
-              </defs>
-              {/* Lines from center to each stat card */}
-              <line
-                x1="50%"
-                y1="50%"
-                x2="50%"
-                y2="10%"
-                stroke="url(#line-gradient)"
-                strokeWidth="2"
-                strokeDasharray="5,5"
-                className="animate-pulse-slow"
-              />
-              <line
-                x1="50%"
-                y1="50%"
-                x2="90%"
-                y2="50%"
-                stroke="url(#line-gradient)"
-                strokeWidth="2"
-                strokeDasharray="5,5"
-                className="animate-pulse-slow"
-              />
-              <line
-                x1="50%"
-                y1="50%"
-                x2="50%"
-                y2="90%"
-                stroke="url(#line-gradient)"
-                strokeWidth="2"
-                strokeDasharray="5,5"
-                className="animate-pulse-slow"
-              />
-              <line
-                x1="50%"
-                y1="50%"
-                x2="10%"
-                y2="50%"
-                stroke="url(#line-gradient)"
-                strokeWidth="2"
-                strokeDasharray="5,5"
-                className="animate-pulse-slow"
-              />
-            </svg>
 
             {/* Decorative Particles */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">

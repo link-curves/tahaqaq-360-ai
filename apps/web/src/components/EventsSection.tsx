@@ -33,7 +33,6 @@ const EventsSection = () => {
         id="events"
         className="bg-gradient-to-br from-red-50 to-white py-24"
         dir="rtl"
-        style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -62,7 +61,6 @@ const EventsSection = () => {
         id="events"
         className="bg-gradient-to-br from-red-50 to-white py-24"
         dir="rtl"
-        style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-red-600 mb-4">
@@ -81,7 +79,6 @@ const EventsSection = () => {
       id="events"
       className="bg-gradient-to-br from-red-50 to-white py-24"
       dir="rtl"
-      style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
@@ -211,7 +208,7 @@ const EventsSection = () => {
               مدرستك أو مجتمعك. نحن نقدم ورش عمل وبرامج تدريبية مخصصة
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-semibold py-3 px-8 rounded-lg">
+              <Button className="bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-bold py-3 px-8 rounded-lg text-amber-50">
                 اطلب تدريباً
               </Button>
               <Button

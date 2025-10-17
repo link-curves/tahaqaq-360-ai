@@ -37,19 +37,13 @@ export class AdminController {
 
   @Patch('users/:id/role')
   @ApiOperation({ summary: 'Update user role' })
-  updateUserRole(
-    @Param('id') userId: string,
-    @Body('role') role: Role,
-  ) {
+  updateUserRole(@Param('id') userId: string, @Body('role') role: Role) {
     return this.adminService.updateUserRole(userId, role);
   }
 
   @Post('users/:id/ban')
   @ApiOperation({ summary: 'Ban a user' })
-  banUser(
-    @Param('id') userId: string,
-    @Body('reason') reason: string,
-  ) {
+  banUser(@Param('id') userId: string, @Body('reason') reason: string) {
     return this.adminService.banUser(userId, reason);
   }
 
@@ -98,4 +92,3 @@ export class AdminController {
     return this.adminService.updateSystemSettings(settings);
   }
 }
-

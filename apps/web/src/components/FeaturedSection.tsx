@@ -1,5 +1,4 @@
-import { CheckCircle, BookOpen, Users } from "lucide-react";
-import React from "react";
+import { BookOpen, CheckCircle, Users } from "lucide-react";
 
 const FeaturedSection = () => {
   return (
@@ -7,7 +6,7 @@ const FeaturedSection = () => {
       id="features"
       className="relative bg-gradient-to-br from-slate-50 to-gray-50 py-24"
       dir="rtl"
-      style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
+      style={{ fontFamily: "Cairo" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

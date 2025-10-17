@@ -1,5 +1,3 @@
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -84,9 +82,7 @@ const Events = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      <Navbar />
-
+    <div className="min-h-screen bg-gray-50 mt-18" dir="rtl">
       {/* Header */}
       <div className="bg-gradient-to-br from-red-600 to-red-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4">
@@ -245,11 +241,20 @@ const Events = () => {
                           </span>
                         </div>
 
-                        {event.location && (
+                        {event.location ? (
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-red-600" />
                             <span className="line-clamp-1 font-['Cairo']">
                               {event.location}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-red-600" />
+                            <span className="line-clamp-1 font-['Cairo']">
+                              {event.isVirtual
+                                ? "فعالية افتراضية"
+                                : "الموقع سيحدد لاحقاً"}
                             </span>
                           </div>
                         )}
@@ -274,7 +279,7 @@ const Events = () => {
 
                     {/* Footer */}
                     <div className="px-6 pb-6">
-                      <Button className="w-full bg-red-600 hover:bg-red-700 font-['Cairo']">
+                      <Button className="w-full bg-red-600 hover:bg-red-700 text-amber-50 font-bold">
                         التفاصيل والتسجيل
                       </Button>
                     </div>
@@ -324,8 +329,6 @@ const Events = () => {
           </>
         )}
       </div>
-
-      <Footer />
     </div>
   );
 };

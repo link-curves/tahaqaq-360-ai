@@ -47,7 +47,6 @@ const FactCheckingSection = () => {
         id="fact-checking"
         className="bg-gradient-to-br from-white to-gray-50 py-24"
         dir="rtl"
-        style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -76,7 +75,6 @@ const FactCheckingSection = () => {
         id="fact-checking"
         className="bg-gradient-to-br from-white to-gray-50 py-24"
         dir="rtl"
-        style={{ fontFamily: "Noto Sans Arabic, Cairo, Amiri, serif" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-red-600 mb-4">

@@ -4,7 +4,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 
-
 // Database
 import { PrismaModule } from './database/prisma.module';
 
@@ -35,8 +34,16 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { appConfig } from './config/app.config';
-import { databaseConfig, googleConfig, jwtConfig, storageConfig } from './config/database.config';
+import {
+  databaseConfig,
+  googleConfig,
+  jwtConfig,
+  storageConfig,
+} from './config/database.config';
 import { emailConfig } from './config/email.config';
+import { AccessibilityStatementModule } from './modules/accessiblitystatement/accessiblitystatement.module';
+import { FaqModule } from './modules/faq/faq.module';
+import { PrivacyPolicyModule } from './modules/privacypolicy/privacypolicy.module';
 
 @Module({
   imports: [
@@ -55,7 +62,6 @@ import { emailConfig } from './config/email.config';
       ],
       envFilePath: ['.env.local', '.env'],
     }),
-
 
     // ============================================
     // RATE LIMITING
@@ -104,15 +110,16 @@ import { emailConfig } from './config/email.config';
     MediaModule,
     GamificationModule,
     ModerationModule,
+    AccessibilityStatementModule,
+    PrivacyPolicyModule,
+    FaqModule,
 
     // ============================================
     // ADMIN MODULE
     // ============================================
     AdminModule,
   ],
-  controllers: [
-    AppController
-  ],
+  controllers: [AppController],
   providers: [
     // Global JWT Guard
     {
@@ -124,7 +131,7 @@ import { emailConfig } from './config/email.config';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    AppService
+    AppService,
   ],
 })
 export class AppModule {}

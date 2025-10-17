@@ -109,41 +109,56 @@ const Footer = () => {
               <li>
                 <Link
                   to="/fact-checks"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                  className="text-gray-300 hover:text-red-400 transition-all duration-500 text-base block hover:translate-x-2 transform hover:scale-105 group"
                 >
-                  فحص الحقائق
+                  <span className="relative">
+                    فحص الحقائق
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-500 group-hover:w-full"></span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link
                   to="/events"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                  className="text-gray-300 hover:text-red-400 transition-all duration-500 text-base block hover:translate-x-2 transform hover:scale-105 group"
                 >
-                  الفعاليات وورش العمل
+                  <span className="relative">
+                    الفعاليات وورش العمل
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-500 group-hover:w-full"></span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link
                   to="/courses"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                  className="text-gray-300 hover:text-red-400 transition-all duration-500 text-base block hover:translate-x-2 transform hover:scale-105 group"
                 >
-                  الدورات التعليمية
+                  <span className="relative">
+                    الدورات التعليمية
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-500 group-hover:w-full"></span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link
                   to="/research"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                  className="text-gray-300 hover:text-red-400 transition-all duration-500 text-base block hover:translate-x-2 transform hover:scale-105 group"
                 >
-                  الأبحاث والمقالات
+                  <span className="relative">
+                    الأبحاث والمقالات
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-500 group-hover:w-full"></span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <button
                   onClick={() => scrollToSection("#features")}
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform text-right"
+                  className="text-gray-300 hover:text-red-400 transition-all duration-500 text-base block hover:translate-x-2 transform text-right hover:scale-105 group"
                 >
-                  ميزات المنصة
+                  <span className="relative">
+                    ميزات المنصة
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-500 group-hover:w-full"></span>
+                  </span>
                 </button>
               </li>
             </ul>
@@ -151,49 +166,42 @@ const Footer = () => {
 
           {/* Support Links */}
           <div className="lg:col-span-3">
-            <h3 className="text-xl font-bold mb-6 font-['Cairo'] text-white border-b border-red-600 pb-2">
+            <h3 className="text-xl font-bold mb-6 text-white border-b border-red-600 pb-2">
               الدعم والمساعدة
             </h3>
             <ul className="space-y-4">
               <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                <Link
+                  to="/help"
+                  className="text-gray-300 hover:text-red-400 transition-all duration-500 text-base block hover:translate-x-2 transform hover:scale-105 group"
                 >
-                  مركز المساعدة
-                </a>
+                  <span className="relative">
+                    مركز المساعدة
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-500 group-hover:w-full"></span>
+                  </span>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                <Link
+                  to="/faq"
+                  className="text-gray-300 hover:text-red-400 transition-all duration-500 text-base block hover:translate-x-2 transform hover:scale-105 group"
                 >
-                  الأسئلة الشائعة
-                </a>
+                  <span className="relative">
+                    الأسئلة الشائعة
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-500 group-hover:w-full"></span>
+                  </span>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
+                <Link
+                  to="/contact"
+                  className="text-gray-300 hover:text-red-400 transition-all duration-500 text-base block hover:translate-x-2 transform hover:scale-105 group"
                 >
-                  واجهة برمجة التطبيقات
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
-                >
-                  دليل المطورين
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-base block hover:translate-x-2 transform"
-                >
-                  التواصل معنا
-                </a>
+                  <span className="relative">
+                    التواصل معنا
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-500 group-hover:w-full"></span>
+                  </span>
+                </Link>
               </li>
             </ul>
           </div>

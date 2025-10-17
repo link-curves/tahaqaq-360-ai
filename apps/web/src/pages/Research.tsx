@@ -1,5 +1,3 @@
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -55,9 +53,7 @@ const Research = () => {
   const categories = Array.from(new Set(allResearch.map((r) => r.category)));
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      <Navbar />
-
+    <div className="min-h-screen bg-gray-50 mt-18" dir="rtl">
       {/* Header */}
       <div className="bg-gradient-to-br from-red-600 to-red-800 py-16">
         <div className="max-w-7xl mx-auto px-4">
@@ -260,8 +256,6 @@ const Research = () => {
           </>
         )}
       </div>
-
-      <Footer />
     </div>
   );
 };

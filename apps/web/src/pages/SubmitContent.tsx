@@ -108,7 +108,7 @@ const SubmitContent = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100"
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 mt-18"
       dir="rtl"
     >
       {/* Header */}
