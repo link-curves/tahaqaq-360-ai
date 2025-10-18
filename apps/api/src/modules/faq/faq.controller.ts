@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { Public } from '../../common/decorators/public.decorator';
-import { ApiResponse } from './../../../../web/src/lib/api';
+import { ApiResponse } from '../../common/interfaces/api-response.interface';
 import { Faq } from './entities/faq.entity';
 import { FaqService } from './faq.service';
 

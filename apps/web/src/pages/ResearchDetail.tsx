@@ -1,5 +1,3 @@
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,7 +18,6 @@ const ResearchDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50" dir="rtl">
-        <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-12">
           <Skeleton className="h-64 w-full mb-8 rounded-xl" />
           <Skeleton className="h-12 w-3/4 mb-4" />
@@ -33,7 +30,6 @@ const ResearchDetail = () => {
   if (error || !researchData?.data) {
     return (
       <div className="min-h-screen bg-gray-50" dir="rtl">
-        <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4 font-['Cairo']">
             لم يتم العثور على البحث
@@ -51,8 +47,6 @@ const ResearchDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50" dir={textDirection}>
-      <Navbar />
-
       {/* Hero Section */}
       <div className="relative h-96 bg-gradient-to-br from-red-600 to-red-800">
         {research.coverImage && (
@@ -193,8 +187,6 @@ const ResearchDetail = () => {
           </div>
         )}
       </div>
-
-      <Footer />
     </div>
   );
 };

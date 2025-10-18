@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { AccessibilityStatement } from '@prisma/client';
-import { ApiResponse } from '../../../../web/src/lib/api';
+import { ApiResponse } from '../../common/interfaces/api-response.interface';
 import { AccessibilityStatementService } from './accessiblitystatement.service';
 
 @Controller('accessibility-statement')

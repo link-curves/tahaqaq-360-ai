@@ -1,24 +1,102 @@
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCourse } from "@/hooks/useApi";
-import { CourseDifficulty } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  useCourse,
+  useCourseProgress,
+  useEnrollInCourse,
+  useMarkLessonComplete,
+} from "@/hooks/useApi";
+import { CourseDifficulty, CourseDifficultyValue } from "@/lib/api";
 import { getImageUrl, getTextDirection } from "@/lib/utils";
-import { BookOpen, CheckCircle, Clock, PlayCircle, Users } from "lucide-react";
-import { useParams } from "react-router-dom";
+import {
+  Award,
+  BookOpen,
+  CheckCircle,
+  Clock,
+  ExternalLink,
+  Lock,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const CourseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { data, isLoading } = useCourse(slug!);
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const { data: course, isLoading } = useCourse(slug!);
+  const [expandedLesson, setExpandedLesson] = useState<string | null>(null);
 
-  const course = data?.data;
+  // Get course progress only if authenticated and course is loaded
+  const {
+    data: progress,
+    isLoading: progressLoading,
+    error: progressError,
+  } = useCourseProgress(course?.id || "");
+
+  const enrollMutation = useEnrollInCourse();
+  const markLessonMutation = useMarkLessonComplete();
+
+  const isEnrolled = progress !== undefined && !progressError;
+
+  const handleEnroll = async () => {
+    if (!isAuthenticated) {
+      toast.error("يجب تسجيل الدخول أولاً");
+      navigate("/login");
+      return;
+    }
+
+    if (!course?.id) return;
+
+    enrollMutation.mutate(course.id, {
+      onSuccess: () => {
+        toast.success("تم التسجيل في الدورة بنجاح!");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "حدث خطأ أثناء التسجيل");
+      },
+    });
+  };
+
+  const handleToggleLessonComplete = async (
+    lessonId: string,
+    isCompleted: boolean
+  ) => {
+    if (!isAuthenticated) {
+      toast.error("يجب تسجيل الدخول أولاً");
+      return;
+    }
+
+    markLessonMutation.mutate(
+      { lessonId, isCompleted: !isCompleted },
+      {
+        onSuccess: () => {
+          toast.success(
+            isCompleted ? "تم إلغاء اكتمال الدرس" : "تم تحديد الدرس كمكتمل!"
+          );
+        },
+        onError: (error: any) => {
+          toast.error(error.message || "حدث خطأ");
+        },
+      }
+    );
+  };
+
+  const getLessonProgress = (lessonId: string) => {
+    if (!progress?.course?.lessons) return null;
+    const lesson = progress.course.lessons.find((l) => l.id === lessonId);
+    return lesson?.lessonProgress?.[0];
+  };
 
   const direction = getTextDirection(course?.title || "");
 
-  const getDifficultyLabel = (difficulty: CourseDifficulty) => {
+  const getDifficultyLabel = (difficulty: CourseDifficultyValue) => {
     switch (difficulty) {
       case CourseDifficulty.BEGINNER:
         return "مبتدئ";
@@ -43,7 +121,6 @@ const CourseDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50" dir="rtl">
-        <Navbar />
         <div className="max-w-5xl mx-auto px-4 py-12">
           <Skeleton className="h-96 w-full mb-8 rounded-lg" />
           <Skeleton className="h-8 w-3/4 mb-4" />
@@ -51,15 +128,13 @@ const CourseDetail = () => {
           <Skeleton className="h-6 w-full mb-2" />
           <Skeleton className="h-6 w-2/3" />
         </div>
-        <Footer />
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gray-50" dir="rtl">
-        <Navbar />
+      <div className="min-h-screen bg-gray-50 mt-18" dir="rtl">
         <div className="max-w-5xl mx-auto px-4 py-12 text-center">
           <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2 font-['Cairo']">
@@ -69,15 +144,12 @@ const CourseDetail = () => {
             عذراً، لم نتمكن من العثور على الدورة المطلوبة
           </p>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50" dir={direction}>
-      <Navbar />
-
       {/* Hero Section */}
       <div className="relative h-[400px] overflow-hidden">
         <img
@@ -140,27 +212,69 @@ const CourseDetail = () => {
                   محتوى الدورة
                 </h2>
                 <div className="space-y-3">
-                  {course.lessons.map((lesson, index) => (
-                    <div
-                      key={lesson.id}
-                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex-shrink-0 w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center font-bold">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 font-['Cairo']">
-                          {lesson.title}
-                        </h3>
-                        {lesson.duration && (
-                          <p className="text-sm text-gray-500 font-['Cairo']">
-                            {lesson.duration} دقيقة
-                          </p>
+                  {course.lessons.map((lesson, index) => {
+                    const lessonProgress = getLessonProgress(lesson.id);
+                    const isCompleted = lessonProgress?.isCompleted || false;
+
+                    return (
+                      <div
+                        key={lesson.id}
+                        className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      >
+                        {/* Completion checkbox - only show if enrolled */}
+                        {isEnrolled && (
+                          <Checkbox
+                            checked={isCompleted}
+                            onCheckedChange={() =>
+                              handleToggleLessonComplete(lesson.id, isCompleted)
+                            }
+                            disabled={markLessonMutation.isPending}
+                            className="flex-shrink-0"
+                          />
+                        )}
+
+                        {/* Lesson number */}
+                        <div className="flex-shrink-0 w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center font-bold">
+                          {isCompleted ? (
+                            <CheckCircle className="h-5 w-5" />
+                          ) : (
+                            <span>{index + 1}</span>
+                          )}
+                        </div>
+
+                        {/* Lesson info */}
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 font-['Cairo']">
+                            {lesson.title}
+                          </h3>
+                          {lesson.duration && (
+                            <p className="text-sm text-gray-500 font-['Cairo']">
+                              {lesson.duration} دقيقة
+                            </p>
+                          )}
+                        </div>
+
+                        {/* External link or lock icon */}
+                        {isEnrolled ? (
+                          lesson.videoUrl && (
+                            <a
+                              href={lesson.videoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              <span className="text-sm font-['Cairo']">
+                                شاهد الآن
+                              </span>
+                            </a>
+                          )
+                        ) : (
+                          <Lock className="h-5 w-5 text-gray-400" />
                         )}
                       </div>
-                      <PlayCircle className="h-5 w-5 text-gray-400" />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </Card>
             )}
@@ -219,9 +333,80 @@ const CourseDetail = () => {
                       "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=200&fit=crop";
                   }}
                 />
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-['Cairo']">
-                  ابدأ التعلم الآن
-                </Button>
+
+                {/* Enrollment / Progress */}
+                {!isAuthenticated ? (
+                  <Button
+                    onClick={() => {
+                      toast.error("يجب تسجيل الدخول أولاً");
+                      navigate("/login");
+                    }}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-['Cairo']"
+                  >
+                    سجل دخول للتسجيل
+                  </Button>
+                ) : !isEnrolled ? (
+                  <Button
+                    onClick={handleEnroll}
+                    disabled={enrollMutation.isPending}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-['Cairo']"
+                  >
+                    {enrollMutation.isPending
+                      ? "جاري التسجيل..."
+                      : "سجل في الدورة"}
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm font-['Cairo']">
+                        <span className="text-gray-600">تقدمك</span>
+                        <span className="font-bold text-emerald-600">
+                          {Math.round(progress?.progress || 0)}%
+                        </span>
+                      </div>
+                      <Progress
+                        value={progress?.progress || 0}
+                        className="h-3"
+                      />
+                      <p className="text-xs text-gray-500 text-center font-['Cairo']">
+                        {progress?.completedLessons || 0} من{" "}
+                        {progress?.totalLessons || 0} دروس مكتملة
+                      </p>
+                    </div>
+
+                    {/* Certificate Notification */}
+                    {progress?.isCompleted && (
+                      <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <Award className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-amber-900 font-['Cairo']">
+                            تهانينا! حصلت على شهادة
+                          </p>
+                          <Button
+                            variant="link"
+                            className="h-auto p-0 text-xs text-amber-700 font-['Cairo']"
+                            onClick={() => navigate("/profile/certificates")}
+                          >
+                            عرض الشهادة →
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-['Cairo']"
+                      onClick={() => {
+                        // Scroll to lessons section
+                        document
+                          .querySelector('[class*="محتوى الدورة"]')
+                          ?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      متابعة التعلم
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4 border-t pt-6">
@@ -256,8 +441,6 @@ const CourseDetail = () => {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCourses } from "@/hooks/useApi";
-import { CourseDifficulty } from "@/lib/api";
+import { CourseDifficulty, CourseDifficultyValue } from "@/lib/api";
 import { getImageUrl, getTextDirection } from "@/lib/utils";
 import {
   BookOpen,
@@ -33,7 +33,7 @@ const Courses = () => {
   const params = {
     ...(search && { search }),
     ...(difficultyFilter && {
-      difficulty: difficultyFilter as CourseDifficulty,
+      difficulty: difficultyFilter as CourseDifficultyValue,
     }),
     isPublished: true,
   };
@@ -47,7 +47,7 @@ const Courses = () => {
   const endIndex = startIndex + itemsPerPage;
   const courses = allCourses.slice(startIndex, endIndex);
 
-  const getDifficultyLabel = (difficulty: CourseDifficulty) => {
+  const getDifficultyLabel = (difficulty: CourseDifficultyValue) => {
     switch (difficulty) {
       case CourseDifficulty.BEGINNER:
         return "مبتدئ";

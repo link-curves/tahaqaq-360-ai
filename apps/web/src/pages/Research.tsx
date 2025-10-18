@@ -140,13 +140,6 @@ const Research = () => {
           </div>
         ) : (
           <>
-            {/* Results Count */}
-            <div className="mb-6">
-              <p className="text-gray-600 font-['Cairo']">
-                عرض {research.length} من أصل {data?.total || 0} نتيجة
-              </p>
-            </div>
-
             {/* Research Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {research.map((article) => {

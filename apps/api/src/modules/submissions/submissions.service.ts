@@ -1,12 +1,15 @@
 import {
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { Role, SubmissionStatus } from '@prisma/client';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
-import { CreateSubmissionDto, UpdateSubmissionStatusDto } from './dto/create-submission.dto';
+import {
+  CreateSubmissionDto,
+  UpdateSubmissionStatusDto,
+} from './dto/create-submission.dto';
 
 @Injectable()
 export class SubmissionsService {
@@ -66,7 +69,12 @@ export class SubmissionsService {
     type?: string,
     userId?: string,
   ) {
-    const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -114,16 +122,16 @@ export class SubmissionsService {
       this.prisma.submission.count({ where }),
     ]);
 
+    const totalPages = Math.ceil(total / limit);
+
     return {
       data: submissions,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        hasNextPage: page < Math.ceil(total / limit),
-        hasPreviousPage: page > 1,
-      },
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
     };
   }
 
@@ -161,11 +169,14 @@ export class SubmissionsService {
     }
 
     // Check permissions
-    const isModerator = userRole && ['MODERATOR', 'ADMIN', 'SUPER_ADMIN'].includes(userRole);
+    const isModerator =
+      userRole && ['MODERATOR', 'ADMIN', 'SUPER_ADMIN'].includes(userRole);
     const isOwner = userId && submission.submitterId === userId;
 
     if (!isModerator && !isOwner) {
-      throw new ForbiddenException('You do not have permission to view this submission');
+      throw new ForbiddenException(
+        'You do not have permission to view this submission',
+      );
     }
 
     return submission;

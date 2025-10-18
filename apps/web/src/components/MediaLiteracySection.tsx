@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFeaturedCourses } from "@/hooks/useApi";
-import { CourseDifficulty } from "@/lib/api";
+import { CourseDifficulty, CourseDifficultyValue } from "@/lib/api";
 import { getImageUrl, getTextDirection } from "@/lib/utils";
 import { Award, BookOpen, Clock, Users, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,7 @@ const MediaLiteracySection = () => {
     return icons[index % icons.length];
   };
 
-  const getDifficultyLabel = (difficulty: CourseDifficulty) => {
+  const getDifficultyLabel = (difficulty: CourseDifficultyValue) => {
     switch (difficulty) {
       case CourseDifficulty.BEGINNER:
         return "مبتدئ";

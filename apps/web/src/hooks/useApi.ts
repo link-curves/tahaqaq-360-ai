@@ -4,6 +4,7 @@ import {
   Certificate,
   Course,
   CourseParams,
+  CourseProgress,
   CreateSubmissionRequest,
   Event,
   EventParams,
@@ -29,7 +30,7 @@ export const useFactChecks = (params?: FactCheckParams) => {
 };
 
 export const useFactCheck = (slug: string) => {
-  return useQuery<ApiResponse<FactCheck>>({
+  return useQuery<FactCheck>({
     queryKey: ["factCheck", slug],
     queryFn: () => apiClient.getFactCheck(slug),
     enabled: !!slug,
@@ -38,7 +39,7 @@ export const useFactCheck = (slug: string) => {
 };
 
 export const useFactCheckStats = () => {
-  return useQuery<ApiResponse<FactCheckStats>>({
+  return useQuery<FactCheckStats>({
     queryKey: ["factCheckStats"],
     queryFn: () => apiClient.getFactCheckStats(),
     staleTime: 1000 * 60 * 15, // 15 minutes
@@ -46,7 +47,7 @@ export const useFactCheckStats = () => {
 };
 
 export const useRelatedFactChecks = (slug: string) => {
-  return useQuery<ApiResponse<FactCheck[]>>({
+  return useQuery<FactCheck[]>({
     queryKey: ["relatedFactChecks", slug],
     queryFn: () => apiClient.getRelatedFactChecks(slug),
     enabled: !!slug,
@@ -78,7 +79,7 @@ export const useEvents = (params?: EventParams) => {
 };
 
 export const useEvent = (slug: string) => {
-  return useQuery<ApiResponse<Event>>({
+  return useQuery<Event>({
     queryKey: ["event", slug],
     queryFn: () => apiClient.getEvent(slug),
     enabled: !!slug,
@@ -112,7 +113,7 @@ export const useCourses = (params?: CourseParams) => {
 };
 
 export const useCourse = (slug: string) => {
-  return useQuery<ApiResponse<Course>>({
+  return useQuery<Course>({
     queryKey: ["course", slug],
     queryFn: () => apiClient.getCourse(slug),
     enabled: !!slug,
@@ -122,6 +123,52 @@ export const useCourse = (slug: string) => {
 
 export const useFeaturedCourses = (limit: number = 6) => {
   return useCourses({ isPublished: true });
+};
+
+export const useEnrollInCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (courseId: string) => apiClient.enrollInCourse(courseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courseProgress"] });
+      queryClient.invalidateQueries({ queryKey: ["myCourses"] });
+    },
+  });
+};
+
+export const useCourseProgress = (courseId: string) => {
+  return useQuery<CourseProgress>({
+    queryKey: ["courseProgress", courseId],
+    queryFn: () => apiClient.getCourseProgress(courseId),
+    enabled: !!courseId,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+};
+
+export const useMarkLessonComplete = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      lessonId,
+      isCompleted,
+    }: {
+      lessonId: string;
+      isCompleted: boolean;
+    }) => apiClient.markLessonComplete(lessonId, isCompleted),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courseProgress"] });
+    },
+  });
+};
+
+export const useMyCourses = () => {
+  return useQuery({
+    queryKey: ["myCourses"],
+    queryFn: () => apiClient.getMyCourses(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 };
 
 // Research Hooks
@@ -134,7 +181,7 @@ export const useResearch = (params?: ResearchParams) => {
 };
 
 export const useResearchArticle = (slug: string) => {
-  return useQuery<ApiResponse<Research>>({
+  return useQuery<Research>({
     queryKey: ["research", slug],
     queryFn: () => apiClient.getResearchArticle(slug),
     enabled: !!slug,
@@ -148,7 +195,7 @@ export const useLatestResearch = (limit: number = 6) => {
 
 // Certificates Hooks
 export const useUserCertificates = () => {
-  return useQuery<ApiResponse<Certificate[]>>({
+  return useQuery<Certificate[]>({
     queryKey: ["userCertificates"],
     queryFn: () => apiClient.getUserCertificates(),
     staleTime: 1000 * 60 * 5, // 5 minutes

@@ -1,4 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, Research } from '@prisma/client';
+import { PaginationDto } from '../../common/dto/pagination.dto';
+import { IPaginatedResult } from '../../common/interfaces/pagination.interface';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -10,10 +13,11 @@ export class ResearchService {
     category?: string;
     isPublished?: boolean;
     isFeatured?: boolean;
-  }) {
-    const { search, category, isPublished } = params;
+    paginationParams: PaginationDto;
+  }): Promise<IPaginatedResult<Research>> {
+    const { search, category, isPublished, paginationParams } = params;
 
-    const where: any = {};
+    const where: Prisma.ResearchWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -30,15 +34,26 @@ export class ResearchService {
       where.status = isPublished ? 'PUBLISHED' : 'DRAFT';
     }
 
-    const research = await this.prisma.research.findMany({
-      where,
-      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-    });
+    const [research, total] = await Promise.all([
+      this.prisma.research.findMany({
+        where,
+        skip: (paginationParams.page - 1) * paginationParams.limit,
+        take: paginationParams.limit,
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+      }),
+      this.prisma.research.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / paginationParams.limit);
 
     return {
-      success: true,
       data: research,
-      total: research.length,
+      total,
+      page: paginationParams.page,
+      limit: paginationParams.limit,
+      totalPages,
+      hasNextPage: paginationParams.page < totalPages,
+      hasPreviousPage: paginationParams.page > 1,
     };
   }
 
@@ -57,9 +72,6 @@ export class ResearchService {
       data: { views: { increment: 1 } },
     });
 
-    return {
-      success: true,
-      data: { ...article, views: article.views + 1 },
-    };
+    return { ...article, views: article.views + 1 };
   }
 }

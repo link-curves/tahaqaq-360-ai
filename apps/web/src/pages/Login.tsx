@@ -61,7 +61,7 @@ const Login = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-rose-900 flex items-center justify-center p-4 relative overflow-hidden"
+      className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-rose-900 flex items-center justify-center p-4 relative overflow-hidden mt-18"
       dir="rtl"
     >
       {/* Animated Background Elements */}
@@ -147,9 +147,11 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-700 font-medium">
-                البريد الإلكتروني
-              </Label>
+              <div>
+                <Label htmlFor="email" className="text-slate-700 font-medium">
+                  البريد الإلكتروني
+                </Label>
+              </div>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <Input
@@ -169,9 +171,15 @@ const Login = () => {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-700 font-medium">
-                كلمة المرور
-              </Label>
+              <div>
+                <Label
+                  htmlFor="password"
+                  className="text-slate-700 font-medium"
+                >
+                  كلمة المرور
+                </Label>
+              </div>
+
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <Input
@@ -244,7 +252,7 @@ const Login = () => {
             </div>
 
             {/* Social Login */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Button
                 type="button"
                 variant="outline"
@@ -270,20 +278,6 @@ const Login = () => {
                   />
                 </svg>
                 Google
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-12 border-slate-300 hover:bg-slate-50 rounded-xl transition-all duration-300"
-              >
-                <svg
-                  className="w-5 h-5 ml-2"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                Facebook
               </Button>
             </div>
 

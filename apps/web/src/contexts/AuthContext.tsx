@@ -39,24 +39,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
   const queryClient = useQueryClient();
 
-  // Query to get current user
+  // Query to get current user - runs on mount if cookie exists
   const {
     data: userData,
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ["currentUser"],
     queryFn: () => apiClient.getCurrentUser(),
     enabled: isAuthenticated, // Only run if we think user is authenticated
-    retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
+    staleTime: 1000 * 60 * 60, // 1 hour - keep user data cached longer
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours - don't garbage collect
+    refetchOnWindowFocus: false, // Don't refetch on every window focus
+    refetchOnMount: true, // Always check on mount
   });
+
+  // Check cookie on mount and periodically
+  useEffect(() => {
+    const checkAuth = () => {
+      const hasAuthCookie = isLoggedInFromCookie();
+      if (hasAuthCookie && !isAuthenticated) {
+        setIsAuthenticated(true);
+        refetch(); // Fetch user data if cookie exists but we're not authenticated
+      } else if (!hasAuthCookie && isAuthenticated) {
+        setIsAuthenticated(false);
+        queryClient.setQueryData(["currentUser"], null);
+      }
+    };
+
+    // Check on mount
+    checkAuth();
+
+    // Check periodically (every 30 seconds)
+    const interval = setInterval(checkAuth, 30000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, queryClient, refetch]);
 
   // Update authentication state when query result changes
   useEffect(() => {
     if (isError) {
-      setIsAuthenticated(false);
-      queryClient.setQueryData(["currentUser"], null);
+      // Only clear if cookie is also missing
+      if (!isLoggedInFromCookie()) {
+        setIsAuthenticated(false);
+        queryClient.setQueryData(["currentUser"], null);
+      }
     } else if (userData?.user) {
       setIsAuthenticated(true);
     }
@@ -65,12 +94,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (credentials: LoginRequest) => apiClient.login(credentials),
-    onSuccess: (data) => {
-      setIsAuthenticated(true);
+    onSuccess: async (data) => {
+      console.log("[AUTH] Login response data:", data);
+      console.log("[AUTH] User data from login:", data.user);
+      console.log("[AUTH] Cookies after login:", document.cookie);
+
+      // CRITICAL: Set query data BEFORE setting isAuthenticated
+      // This ensures the data is in cache when the query becomes enabled
       queryClient.setQueryData(["currentUser"], { user: data.user });
-      toast.success("تم تسجيل الدخول بنجاح!");
+
+      // Now enable the query
+      setIsAuthenticated(true);
+
+      // Immediately refetch to verify authentication with backend
+      // This will use the cookies that were just set
+      setTimeout(async () => {
+        try {
+          console.log("[AUTH] Refetching user data from /auth/me...");
+          await refetch();
+        } catch (error) {
+          console.error("[AUTH] Failed to refetch after login:", error);
+          // Keep using the login response data if refetch fails
+        }
+      }, 200);
+
+      toast.success(`مرحباً ${data.user.firstName}! تم تسجيل الدخول بنجاح`);
     },
     onError: (error: Error) => {
+      console.error("[AUTH] Login error:", error);
       toast.error(`خطأ في تسجيل الدخول: ${error.message}`);
     },
   });
@@ -78,12 +129,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: (userData: RegisterRequest) => apiClient.register(userData),
-    onSuccess: (data) => {
-      setIsAuthenticated(true);
+    onSuccess: async (data) => {
+      console.log("[AUTH] Register response data:", data);
+
+      // Set query data BEFORE setting isAuthenticated
       queryClient.setQueryData(["currentUser"], { user: data.user });
-      toast.success("تم إنشاء الحساب بنجاح!");
+
+      // Now enable the query
+      setIsAuthenticated(true);
+
+      // Refetch to verify
+      setTimeout(async () => {
+        try {
+          await refetch();
+        } catch (error) {
+          console.error("[AUTH] Failed to refetch after register:", error);
+        }
+      }, 200);
+
+      toast.success(`مرحباً ${data.user.firstName}! تم إنشاء حسابك بنجاح`);
     },
     onError: (error: Error) => {
+      console.error("[AUTH] Register error:", error);
       toast.error(`خطأ في إنشاء الحساب: ${error.message}`);
     },
   });
@@ -94,32 +161,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     onSuccess: () => {
       setIsAuthenticated(false);
       queryClient.clear(); // Clear all cached data
+      // Clear the currentUser query specifically
+      queryClient.removeQueries({ queryKey: ["currentUser"] });
       toast.success("تم تسجيل الخروج بنجاح!");
     },
     onError: (error: Error) => {
       // Even if logout fails on server, clear local state
       setIsAuthenticated(false);
       queryClient.clear();
+      queryClient.removeQueries({ queryKey: ["currentUser"] });
       toast.error(`خطأ في تسجيل الخروج: ${error.message}`);
     },
   });
 
   // Auth actions
   const login = async (credentials: LoginRequest) => {
-    await loginMutation.mutateAsync(credentials);
+    console.log("[AUTH] login() called with:", { email: credentials.email });
+    try {
+      await loginMutation.mutateAsync(credentials);
+      console.log("[AUTH] login() completed successfully");
+    } catch (error) {
+      console.error("[AUTH] login() failed:", error);
+      throw error;
+    }
   };
 
   const register = async (userData: RegisterRequest) => {
-    await registerMutation.mutateAsync(userData);
+    console.log("[AUTH] register() called");
+    try {
+      await registerMutation.mutateAsync(userData);
+      console.log("[AUTH] register() completed successfully");
+    } catch (error) {
+      console.error("[AUTH] register() failed:", error);
+      throw error;
+    }
   };
 
   const logout = async () => {
-    await logoutMutation.mutateAsync();
+    console.log("[AUTH] logout() called");
+    try {
+      await logoutMutation.mutateAsync();
+      console.log("[AUTH] logout() completed successfully");
+    } catch (error) {
+      console.error("[AUTH] logout() failed:", error);
+      throw error;
+    }
   };
 
   const loginWithGoogle = () => {
     window.location.href = apiClient.getGoogleAuthUrl();
   };
+
+  // Debug logging
+  console.log("AuthContext state:", {
+    userData,
+    user: userData?.user,
+    isAuthenticated,
+    isLoading,
+  });
 
   const value: AuthContextType = {
     user: userData?.user || null,

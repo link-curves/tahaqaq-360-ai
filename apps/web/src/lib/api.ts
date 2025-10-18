@@ -1,6 +1,6 @@
 // API Configuration and Types
 export const API_BASE_URL =
-  process.env.VITE_API_URL || "http://localhost:5000/api/v1";
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 export interface User {
   id: string;
@@ -29,60 +29,100 @@ export interface RegisterRequest {
   lastName: string;
 }
 
-// Enums
-export enum VeracityRating {
-  TRUE = "TRUE",
-  MOSTLY_TRUE = "MOSTLY_TRUE",
-  HALF_TRUE = "HALF_TRUE",
-  MOSTLY_FALSE = "MOSTLY_FALSE",
-  FALSE = "FALSE",
-  UNVERIFIABLE = "UNVERIFIABLE",
-  SATIRE = "SATIRE",
-  MISLEADING = "MISLEADING",
-}
+// Enums - Using string literal unions for maximum compatibility
+export type VeracityRatingValue =
+  | "TRUE"
+  | "MOSTLY_TRUE"
+  | "HALF_TRUE"
+  | "MOSTLY_FALSE"
+  | "FALSE"
+  | "UNVERIFIABLE"
+  | "SATIRE"
+  | "MISLEADING";
 
-export enum EventType {
-  WORKSHOP = "WORKSHOP",
-  WEBINAR = "WEBINAR",
-  EXHIBITION = "EXHIBITION",
-  CONFERENCE = "CONFERENCE",
-  TRAINING = "TRAINING",
-}
+// Const object for accessing values at runtime
+export const VeracityRating = {
+  TRUE: "TRUE" as const,
+  MOSTLY_TRUE: "MOSTLY_TRUE" as const,
+  HALF_TRUE: "HALF_TRUE" as const,
+  MOSTLY_FALSE: "MOSTLY_FALSE" as const,
+  FALSE: "FALSE" as const,
+  UNVERIFIABLE: "UNVERIFIABLE" as const,
+  SATIRE: "SATIRE" as const,
+  MISLEADING: "MISLEADING" as const,
+};
 
-export enum EventStatus {
-  UPCOMING = "UPCOMING",
-  ONGOING = "ONGOING",
-  COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
-}
+export type EventTypeValue =
+  | "WORKSHOP"
+  | "WEBINAR"
+  | "EXHIBITION"
+  | "CONFERENCE"
+  | "TRAINING";
 
-export enum ContentStatus {
-  DRAFT = "DRAFT",
-  PUBLISHED = "PUBLISHED",
-  ARCHIVED = "ARCHIVED",
-  UNDER_REVIEW = "UNDER_REVIEW",
-}
+export const EventType = {
+  WORKSHOP: "WORKSHOP" as const,
+  WEBINAR: "WEBINAR" as const,
+  EXHIBITION: "EXHIBITION" as const,
+  CONFERENCE: "CONFERENCE" as const,
+  TRAINING: "TRAINING" as const,
+};
 
-export enum SubmissionType {
-  TEXT = "TEXT",
-  IMAGE = "IMAGE",
-  VIDEO = "VIDEO",
-  AUDIO = "AUDIO",
-  LINK = "LINK",
-}
+export type EventStatusValue =
+  | "UPCOMING"
+  | "ONGOING"
+  | "COMPLETED"
+  | "CANCELLED";
 
-export enum SubmissionStatus {
-  PENDING = "PENDING",
-  UNDER_REVIEW = "UNDER_REVIEW",
-  APPROVED = "APPROVED",
-  REJECTED = "REJECTED",
-}
+export const EventStatus = {
+  UPCOMING: "UPCOMING" as const,
+  ONGOING: "ONGOING" as const,
+  COMPLETED: "COMPLETED" as const,
+  CANCELLED: "CANCELLED" as const,
+};
 
-export enum CourseDifficulty {
-  BEGINNER = "Beginner",
-  INTERMEDIATE = "Intermediate",
-  ADVANCED = "Advanced",
-}
+export type ContentStatusValue =
+  | "DRAFT"
+  | "PUBLISHED"
+  | "ARCHIVED"
+  | "UNDER_REVIEW";
+
+export const ContentStatus = {
+  DRAFT: "DRAFT" as const,
+  PUBLISHED: "PUBLISHED" as const,
+  ARCHIVED: "ARCHIVED" as const,
+  UNDER_REVIEW: "UNDER_REVIEW" as const,
+};
+
+export type SubmissionTypeValue = "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" | "LINK";
+
+export const SubmissionType = {
+  TEXT: "TEXT" as const,
+  IMAGE: "IMAGE" as const,
+  VIDEO: "VIDEO" as const,
+  AUDIO: "AUDIO" as const,
+  LINK: "LINK" as const,
+};
+
+export type SubmissionStatusValue =
+  | "PENDING"
+  | "UNDER_REVIEW"
+  | "APPROVED"
+  | "REJECTED";
+
+export const SubmissionStatus = {
+  PENDING: "PENDING" as const,
+  UNDER_REVIEW: "UNDER_REVIEW" as const,
+  APPROVED: "APPROVED" as const,
+  REJECTED: "REJECTED" as const,
+};
+
+export type CourseDifficultyValue = "Beginner" | "Intermediate" | "Advanced";
+
+export const CourseDifficulty = {
+  BEGINNER: "Beginner" as const,
+  INTERMEDIATE: "Intermediate" as const,
+  ADVANCED: "Advanced" as const,
+};
 
 // Fact Check Types
 export interface FactCheck {
@@ -92,7 +132,7 @@ export interface FactCheck {
   claim: string;
   claimant?: string;
   claimDate?: string;
-  verdict: VeracityRating;
+  verdict: VeracityRatingValue;
   summary: string;
   fullAnalysis: string;
   methodology?: string;
@@ -101,7 +141,7 @@ export interface FactCheck {
   tags: string[];
   views: number;
   shares: number;
-  status: ContentStatus;
+  status: ContentStatusValue;
   featuredImage?: string;
   metaTitle?: string;
   metaDescription?: string;
@@ -126,8 +166,8 @@ export interface Event {
   title: string;
   slug: string;
   description: string;
-  type: EventType;
-  status: EventStatus;
+  type: EventTypeValue;
+  status: EventStatusValue;
   coverImage?: string;
   startDate: string;
   endDate: string;
@@ -151,7 +191,7 @@ export interface Course {
   slug: string;
   description: string;
   coverImage?: string;
-  difficulty: CourseDifficulty;
+  difficulty: CourseDifficultyValue;
   duration: number; // in minutes
   order: number;
   isPublished: boolean;
@@ -177,6 +217,32 @@ export interface Lesson {
   courseId: string;
   createdAt: string;
   updatedAt: string;
+  lessonProgress?: LessonProgress[];
+}
+
+export interface LessonProgress {
+  id: string;
+  isCompleted: boolean;
+  completedAt?: string;
+  userId: string;
+  lessonId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CourseProgress {
+  id: string;
+  isCompleted: boolean;
+  completedAt?: string;
+  progress: number;
+  lastAccessedAt: string;
+  userId: string;
+  courseId: string;
+  startedAt: string;
+  updatedAt: string;
+  course?: Course;
+  completedLessons?: number;
+  totalLessons?: number;
 }
 
 // Research Types
@@ -191,7 +257,7 @@ export interface Research {
   tags: string[];
   coverImage?: string;
   attachments: any[];
-  status: ContentStatus;
+  status: ContentStatusValue;
   publishedAt?: string;
   views: number;
   downloads: number;
@@ -217,12 +283,12 @@ export interface Certificate {
 // Submission Types
 export interface Submission {
   id: string;
-  type: SubmissionType;
+  type: SubmissionTypeValue;
   content: string;
   sourceUrl?: string;
   mediaUrls: string[];
   context?: string;
-  status: SubmissionStatus;
+  status: SubmissionStatusValue;
   priority: number;
   submitterId: string;
   submitterEmail?: string;
@@ -241,7 +307,7 @@ export interface Submission {
 }
 
 export interface CreateSubmissionRequest {
-  type: SubmissionType;
+  type: SubmissionTypeValue;
   content: string;
   sourceUrl?: string;
   mediaUrls?: string[];
@@ -257,6 +323,8 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface ApiResponse<T> {
@@ -271,28 +339,28 @@ export interface PaginationParams {
 }
 
 export interface FactCheckParams extends PaginationParams {
-  verdict?: VeracityRating;
-  status?: ContentStatus;
+  verdict?: VeracityRatingValue;
+  status?: ContentStatusValue;
   search?: string;
   featured?: boolean;
 }
 
 export interface EventParams extends PaginationParams {
-  type?: EventType;
-  status?: EventStatus;
+  type?: EventTypeValue;
+  status?: EventStatusValue;
   upcoming?: boolean;
   search?: string;
 }
 
 export interface CourseParams extends PaginationParams {
-  difficulty?: CourseDifficulty;
+  difficulty?: CourseDifficultyValue;
   isPublished?: boolean;
   search?: string;
 }
 
 export interface ResearchParams extends PaginationParams {
   category?: string;
-  status?: ContentStatus;
+  status?: ContentStatusValue;
   search?: string;
 }
 
@@ -338,16 +406,46 @@ class ApiClient {
     try {
       const response = await fetch(url, config);
 
+      console.log(`[API] ${options.method || "GET"} ${endpoint}:`, {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+      });
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error(`[API] Error response from ${endpoint}:`, errorData);
         throw new Error(
           errorData.message || `HTTP error! status: ${response.status}`
         );
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`[API] Raw response from ${endpoint}:`, result);
+
+      // Unwrap the TransformInterceptor response structure
+      // Backend wraps responses as: { success: true, data: T, message?, meta? }
+      if (result && typeof result === "object" && "data" in result) {
+        // For paginated responses: combine data array with meta pagination fields
+        if (result.meta && typeof result.meta === "object") {
+          console.log(`[API] Returning paginated response from ${endpoint}:`, {
+            data: result.data,
+            ...result.meta,
+          });
+          return {
+            data: result.data,
+            ...result.meta,
+          } as T;
+        }
+
+        // For regular responses: just unwrap data
+        console.log(`[API] Unwrapped data from ${endpoint}:`, result.data);
+        return result.data as T;
+      }
+
+      console.log(`[API] Returning result as-is from ${endpoint}:`, result);
+      return result;
     } catch (error) {
-      console.error("API request failed:", error);
+      console.error(`[API] Request failed for ${endpoint}:`, error);
       throw error;
     }
   }
@@ -400,18 +498,16 @@ class ApiClient {
     return this.request<PaginatedResponse<FactCheck>>(endpoint);
   }
 
-  async getFactCheck(slug: string): Promise<ApiResponse<FactCheck>> {
-    return this.request<ApiResponse<FactCheck>>(`/fact-checks/${slug}`);
+  async getFactCheck(slug: string): Promise<FactCheck> {
+    return this.request<FactCheck>(`/fact-checks/${slug}`);
   }
 
-  async getFactCheckStats(): Promise<ApiResponse<FactCheckStats>> {
-    return this.request<ApiResponse<FactCheckStats>>("/fact-checks/stats");
+  async getFactCheckStats(): Promise<FactCheckStats> {
+    return this.request<FactCheckStats>("/fact-checks/stats");
   }
 
-  async getRelatedFactChecks(slug: string): Promise<ApiResponse<FactCheck[]>> {
-    return this.request<ApiResponse<FactCheck[]>>(
-      `/fact-checks/${slug}/related`
-    );
+  async getRelatedFactChecks(slug: string): Promise<FactCheck[]> {
+    return this.request<FactCheck[]>(`/fact-checks/${slug}/related`);
   }
 
   // Events endpoints
@@ -424,12 +520,12 @@ class ApiClient {
     return this.request<PaginatedResponse<Event>>(endpoint);
   }
 
-  async getEvent(slug: string): Promise<ApiResponse<Event>> {
-    return this.request<ApiResponse<Event>>(`/events/${slug}`);
+  async getEvent(slug: string): Promise<Event> {
+    return this.request<Event>(`/events/${slug}`);
   }
 
-  async registerForEvent(eventId: string): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>(`/events/${eventId}/register`, {
+  async registerForEvent(eventId: string): Promise<any> {
+    return this.request<any>(`/events/${eventId}/register`, {
       method: "POST",
     });
   }
@@ -449,17 +545,34 @@ class ApiClient {
     return this.request<PaginatedResponse<Course>>(endpoint);
   }
 
-  async getCourse(slug: string): Promise<ApiResponse<Course>> {
-    return this.request<ApiResponse<Course>>(`/media-literacy/courses/${slug}`);
+  async getCourse(slug: string): Promise<Course> {
+    return this.request<Course>(`/media-literacy/courses/${slug}`);
   }
 
-  async enrollInCourse(courseId: string): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>(
-      `/media-literacy/courses/${courseId}/enroll`,
-      {
-        method: "POST",
-      }
+  async enrollInCourse(courseId: string): Promise<any> {
+    return this.request<any>(`/media-literacy/courses/${courseId}/enroll`, {
+      method: "POST",
+    });
+  }
+
+  async getCourseProgress(courseId: string): Promise<CourseProgress> {
+    return this.request<CourseProgress>(
+      `/media-literacy/courses/${courseId}/progress`
     );
+  }
+
+  async markLessonComplete(
+    lessonId: string,
+    isCompleted: boolean = true
+  ): Promise<any> {
+    return this.request<any>(`/media-literacy/lessons/${lessonId}/complete`, {
+      method: "POST",
+      body: JSON.stringify({ isCompleted }),
+    });
+  }
+
+  async getMyCourses(): Promise<any[]> {
+    return this.request<any[]>(`/media-literacy/my-courses`);
   }
 
   // Research endpoints
@@ -477,15 +590,13 @@ class ApiClient {
     return this.request<PaginatedResponse<Research>>(endpoint);
   }
 
-  async getResearchArticle(slug: string): Promise<ApiResponse<Research>> {
-    return this.request<ApiResponse<Research>>(`/research/${slug}`);
+  async getResearchArticle(slug: string): Promise<Research> {
+    return this.request<Research>(`/research/${slug}`);
   }
 
   // Certificates endpoints
-  async getUserCertificates(): Promise<ApiResponse<Certificate[]>> {
-    return this.request<ApiResponse<Certificate[]>>(
-      "/certificates/my-certificates"
-    );
+  async getUserCertificates(): Promise<Certificate[]> {
+    return this.request<Certificate[]>("/certificates/my-certificates");
   }
 
   async verifyCertificate(

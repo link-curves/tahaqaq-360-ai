@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ContactMessage, Prisma } from '@prisma/client';
-import { ApiResponse } from '../../../../web/src/lib/api';
 import { Public } from '../../common/decorators/public.decorator';
+import { ApiResponse } from '../../common/interfaces/api-response.interface';
 import { ContactService } from './contact.service';
 
 @Controller('contact')

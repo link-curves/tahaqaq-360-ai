@@ -49,11 +49,16 @@ export class EventsController {
   @ApiQuery({ name: 'status', required: false, enum: EventStatus })
   @ApiQuery({ name: 'upcoming', required: false, type: Boolean })
   findAll(
-    @Query() paginationDto: PaginationDto,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
     @Query('type') type?: EventType,
     @Query('status') status?: EventStatus,
     @Query('upcoming') upcoming?: boolean,
   ) {
+    const paginationDto: PaginationDto = {
+      page: page || 1,
+      limit: limit || 10,
+    };
     return this.eventsService.findAll(paginationDto, type, status, upcoming);
   }
 

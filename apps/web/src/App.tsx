@@ -19,6 +19,7 @@ import FAQ from "./pages/FAQ";
 import HelpCenter from "./pages/HelpCenter";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import MyCourses from "./pages/MyCourses";
 import MySubmissions from "./pages/MySubmissions";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -62,6 +63,8 @@ const App = () => (
               <Route path="/events/:slug" element={<EventDetail />} />
               <Route path="/research" element={<Research />} />
               <Route path="/research/:slug" element={<ResearchDetail />} />
+              <Route path="/learning" element={<Courses />} />
+              <Route path="/learning/:slug" element={<CourseDetail />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/:slug" element={<CourseDetail />} />
 
@@ -77,6 +80,14 @@ const App = () => (
               />
 
               {/* Protected Routes */}
+              <Route
+                path="/my-courses"
+                element={
+                  <ProtectedRoute fallback={<Login />}>
+                    <MyCourses />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/submit"
                 element={

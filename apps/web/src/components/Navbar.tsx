@@ -10,6 +10,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import {
   FileText,
+  GraduationCap,
   LogIn,
   LogOut,
   Menu,
@@ -42,7 +43,10 @@ const Navbar = () => {
     { name: "الرئيسية", href: "/", isRoute: true },
     { name: "فحص الحقائق", href: "/fact-checks", isRoute: true },
     { name: "الفعاليات", href: "/events", isRoute: true },
-    { name: "الدورات", href: "/courses", isRoute: true },
+    { name: "الدورات", href: "/learning", isRoute: true },
+    ...(isAuthenticated
+      ? [{ name: "دوراتي", href: "/my-courses", isRoute: true }]
+      : []),
     { name: "الأبحاث", href: "/research", isRoute: true },
     { name: "الميزات", href: "#features", isRoute: false },
     { name: "التعليم", href: "#education", isRoute: false },
@@ -71,6 +75,8 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout();
+      navigate("/"); // Redirect to home after logout
+      setIsOpen(false);
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -80,6 +86,8 @@ const Navbar = () => {
     if (!firstName || !lastName) return "U";
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
+
+  console.log("User in Navbar:", user, isAuthenticated);
 
   return (
     <nav
@@ -151,26 +159,40 @@ const Navbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="relative h-8 w-8 rounded-full hover:bg-gray-100"
+                      className="relative h-10 w-10 rounded-full hover:bg-gray-100 hover:ring-2 hover:ring-red-200 transition-all duration-200 transform hover:scale-105"
                     >
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-9 w-9">
                         <AvatarImage
                           src={user.avatar}
                           alt={`${user.firstName} ${user.lastName}`}
                         />
-                        <AvatarFallback className="bg-red-600 text-white text-sm">
+                        <AvatarFallback className="bg-red-600 text-white text-sm font-semibold">
                           {getUserInitials(user.firstName, user.lastName)}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <div className="flex items-center justify-start gap-2 p-2">
-                      <div className="flex flex-col space-y-1 leading-none">
-                        <p className="font-medium">
+                  <DropdownMenuContent
+                    className="w-56"
+                    align="start"
+                    alignOffset={0}
+                    forceMount
+                  >
+                    <div className="flex items-center justify-start gap-3 p-3 bg-gradient-to-r from-red-50 to-rose-50 rounded-md mb-1">
+                      <Avatar className="h-10 w-10 ring-2 ring-red-200">
+                        <AvatarImage
+                          src={user.avatar}
+                          alt={`${user.firstName} ${user.lastName}`}
+                        />
+                        <AvatarFallback className="bg-red-600 text-white text-sm font-semibold">
+                          {getUserInitials(user.firstName, user.lastName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-0.5 leading-none">
+                        <p className="font-semibold text-gray-900">
                           {user.firstName} {user.lastName}
                         </p>
-                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        <p className="w-[160px] truncate text-xs text-gray-600">
                           {user.email}
                         </p>
                       </div>
@@ -185,6 +207,10 @@ const Navbar = () => {
                     >
                       <FileText className="mr-2 h-4 w-4" />
                       <span>طلباتي</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/my-courses")}>
+                      <GraduationCap className="mr-2 h-4 w-4" />
+                      <span>دوراتي</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => navigate("/profile")}>
@@ -295,9 +321,24 @@ const Navbar = () => {
                   <Button
                     variant="ghost"
                     className="w-full justify-end font-['Cairo'] text-gray-700 hover:text-red-600 hover:bg-red-50"
+                    onClick={() => {
+                      navigate("/profile");
+                      setIsOpen(false);
+                    }}
                   >
                     <User className="h-4 w-4 ml-2" />
                     الملف الشخصي
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-end font-['Cairo'] text-gray-700 hover:text-red-600 hover:bg-red-50"
+                    onClick={() => {
+                      navigate("/my-courses");
+                      setIsOpen(false);
+                    }}
+                  >
+                    <GraduationCap className="h-4 w-4 ml-2" />
+                    دوراتي
                   </Button>
                   <Button
                     variant="ghost"
@@ -333,7 +374,7 @@ const Navbar = () => {
                 // Not authenticated - mobile
                 <Button
                   onClick={() => {
-                    navigate("/auth");
+                    navigate("/login");
                     setIsOpen(false);
                   }}
                   className="w-full justify-end bg-red-600 hover:bg-red-700 text-white font-['Cairo'] font-semibold"

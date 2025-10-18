@@ -1,6 +1,9 @@
-import { EventType, VeracityRating } from "@/lib/api";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+// Import const objects as values
+import { EventType, VeracityRating } from "./api";
+// Import type aliases separately
+import type { EventTypeValue, VeracityRatingValue } from "./api";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -58,8 +61,8 @@ export const getRelativeTime = (
 };
 
 // Veracity rating utilities
-export const getVeracityLabel = (rating: VeracityRating): string => {
-  const labels: Record<VeracityRating, string> = {
+export const getVeracityLabel = (rating: VeracityRatingValue): string => {
+  const labels: Record<VeracityRatingValue, string> = {
     [VeracityRating.TRUE]: "صحيح",
     [VeracityRating.MOSTLY_TRUE]: "صحيح إلى حد كبير",
     [VeracityRating.HALF_TRUE]: "صحيح جزئياً",
@@ -72,8 +75,8 @@ export const getVeracityLabel = (rating: VeracityRating): string => {
   return labels[rating] || "غير محدد";
 };
 
-export const getVeracityColor = (rating: VeracityRating): string => {
-  const colors: Record<VeracityRating, string> = {
+export const getVeracityColor = (rating: VeracityRatingValue): string => {
+  const colors: Record<VeracityRatingValue, string> = {
     [VeracityRating.TRUE]: "text-green-600 bg-green-100",
     [VeracityRating.MOSTLY_TRUE]: "text-green-500 bg-green-50",
     [VeracityRating.HALF_TRUE]: "text-yellow-600 bg-yellow-100",
@@ -87,8 +90,8 @@ export const getVeracityColor = (rating: VeracityRating): string => {
 };
 
 // Event type utilities
-export const getEventTypeLabel = (type: EventType): string => {
-  const labels: Record<EventType, string> = {
+export const getEventTypeLabel = (type: EventTypeValue): string => {
+  const labels: Record<EventTypeValue, string> = {
     [EventType.WORKSHOP]: "ورشة عمل",
     [EventType.WEBINAR]: "ندوة عبر الإنترنت",
     [EventType.EXHIBITION]: "معرض",
@@ -98,8 +101,8 @@ export const getEventTypeLabel = (type: EventType): string => {
   return labels[type] || "فعالية";
 };
 
-export const getEventTypeColor = (type: EventType): string => {
-  const colors: Record<EventType, string> = {
+export const getEventTypeColor = (type: EventTypeValue): string => {
+  const colors: Record<EventTypeValue, string> = {
     [EventType.WORKSHOP]: "text-blue-600 bg-blue-100",
     [EventType.WEBINAR]: "text-green-600 bg-green-100",
     [EventType.EXHIBITION]: "text-purple-600 bg-purple-100",

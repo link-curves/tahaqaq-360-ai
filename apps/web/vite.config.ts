@@ -26,4 +26,12 @@ export default defineConfig(({ mode }) => ({
     assetsDir: "assets",
     sourcemap: false,
   },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "es2020",
+    },
+  },
+  esbuild: {
+    logOverride: { "this-is-undefined-in-esm": "silent" },
+  },
 }));

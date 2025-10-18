@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubmissions } from "@/hooks/useApi";
-import { SubmissionStatus } from "@/lib/api";
+import { SubmissionStatus, SubmissionStatusValue } from "@/lib/api";
 import {
   AlertCircle,
   CheckCircle2,
@@ -24,9 +24,9 @@ import { useNavigate } from "react-router-dom";
 const MySubmissions = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [filterStatus, setFilterStatus] = useState<SubmissionStatus | "ALL">(
-    "ALL"
-  );
+  const [filterStatus, setFilterStatus] = useState<
+    SubmissionStatusValue | "ALL"
+  >("ALL");
 
   const { data: submissionsData, isLoading } = useSubmissions();
   const submissions = submissionsData?.data || [];
@@ -181,7 +181,7 @@ const MySubmissions = () => {
             {Object.entries(statusConfig).map(([status, config]) => (
               <button
                 key={status}
-                onClick={() => setFilterStatus(status as SubmissionStatus)}
+                onClick={() => setFilterStatus(status as SubmissionStatusValue)}
                 className={`px-4 py-2 rounded-xl font-medium transition-all ${
                   filterStatus === status
                     ? `${config.bg} ${config.text} border-2 ${config.border}`

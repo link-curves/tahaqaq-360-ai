@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateSubmission } from "@/hooks/useApi";
-import { SubmissionType } from "@/lib/api";
+import { SubmissionType, SubmissionTypeValue } from "@/lib/api";
 import {
   AlertCircle,
   CheckCircle2,
@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface FormData {
-  type: SubmissionType;
+  type: SubmissionTypeValue;
   content: string;
   sourceUrl: string;
   mediaUrls: string[];
@@ -149,9 +149,11 @@ const SubmitContent = () => {
         >
           {/* Submission Type Selection */}
           <div className="space-y-3">
-            <Label className="text-lg font-semibold text-slate-900">
-              نوع المحتوى *
-            </Label>
+            <div>
+              <Label className="text-lg font-semibold text-slate-900">
+                نوع المحتوى *
+              </Label>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {submissionTypes.map((type) => {
                 const Icon = type.icon;
@@ -163,7 +165,7 @@ const SubmitContent = () => {
                     onClick={() =>
                       setFormData({
                         ...formData,
-                        type: type.value as SubmissionType,
+                        type: type.value as SubmissionTypeValue,
                       })
                     }
                     className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
@@ -203,12 +205,14 @@ const SubmitContent = () => {
 
           {/* Content Field */}
           <div className="space-y-3">
-            <Label
-              htmlFor="content"
-              className="text-lg font-semibold text-slate-900"
-            >
-              المحتوى المراد التحقق منه *
-            </Label>
+            <div>
+              <Label
+                htmlFor="content"
+                className="text-lg font-semibold text-slate-900"
+              >
+                المحتوى المراد التحقق منه *
+              </Label>
+            </div>
             <Textarea
               id="content"
               value={formData.content}
@@ -226,15 +230,17 @@ const SubmitContent = () => {
 
           {/* Source URL */}
           <div className="space-y-3">
-            <Label
-              htmlFor="sourceUrl"
-              className="text-lg font-semibold text-slate-900"
-            >
-              رابط المصدر
-              <span className="text-sm font-normal text-gray-500 mr-2">
-                (اختياري)
-              </span>
-            </Label>
+            <div>
+              <Label
+                htmlFor="sourceUrl"
+                className="text-lg font-semibold text-slate-900"
+              >
+                رابط المصدر
+                <span className="text-sm font-normal text-gray-500 mr-2">
+                  (اختياري)
+                </span>
+              </Label>
+            </div>
             <div className="relative">
               <LinkIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
@@ -253,12 +259,14 @@ const SubmitContent = () => {
 
           {/* Media URLs */}
           <div className="space-y-3">
-            <Label className="text-lg font-semibold text-slate-900">
-              روابط الوسائط
-              <span className="text-sm font-normal text-gray-500 mr-2">
-                (صور، فيديوهات)
-              </span>
-            </Label>
+            <div>
+              <Label className="text-lg font-semibold text-slate-900">
+                روابط الوسائط
+                <span className="text-sm font-normal text-gray-500 mr-2">
+                  (صور، فيديوهات)
+                </span>
+              </Label>
+            </div>
             <div className="flex gap-2">
               <Input
                 type="url"
@@ -277,7 +285,7 @@ const SubmitContent = () => {
               <Button
                 type="button"
                 onClick={handleAddMediaUrl}
-                className="h-12 px-6 bg-gray-600 hover:bg-gray-700"
+                className="h-12 px-6 bg-gray-600 hover:bg-gray-700 text-white"
               >
                 إضافة
               </Button>
@@ -313,15 +321,17 @@ const SubmitContent = () => {
 
           {/* Context */}
           <div className="space-y-3">
-            <Label
-              htmlFor="context"
-              className="text-lg font-semibold text-slate-900"
-            >
-              سياق إضافي
-              <span className="text-sm font-normal text-gray-500 mr-2">
-                (لماذا تعتقد أن هذا المحتوى مضلل؟)
-              </span>
-            </Label>
+            <div>
+              <Label
+                htmlFor="context"
+                className="text-lg font-semibold text-slate-900"
+              >
+                سياق إضافي
+                <span className="text-sm font-normal text-gray-500 mr-2">
+                  (لماذا تعتقد أن هذا المحتوى مضلل؟)
+                </span>
+              </Label>
+            </div>
             <Textarea
               id="context"
               value={formData.context}

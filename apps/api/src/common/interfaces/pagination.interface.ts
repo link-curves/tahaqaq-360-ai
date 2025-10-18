@@ -9,5 +9,10 @@ export interface IPaginationMeta {
 
 export interface IPaginatedResult<T> {
   data: T[];
-  meta: IPaginationMeta;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
