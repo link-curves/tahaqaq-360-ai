@@ -26,6 +26,9 @@ export const useFactChecks = (params?: FactCheckParams) => {
     queryKey: ["factChecks", params],
     queryFn: () => apiClient.getFactChecks(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnMount: false, // Don't refetch on component mount if data exists
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    retry: 1, // Only retry once on failure to avoid rate limiting
   });
 };
 
@@ -89,8 +92,12 @@ export const useEvent = (slug: string) => {
 
 // Specialized hooks for home page
 export const useFeaturedFactChecks = (limit: number = 6) => {
-  // Use basic query without filters due to backend validation issues
-  return useFactChecks();
+  // Query for featured fact checks with pagination
+  return useFactChecks({
+    page: 1,
+    limit,
+    featured: true,
+  });
 };
 
 export const useUpcomingEvents = (limit: number = 3) => {

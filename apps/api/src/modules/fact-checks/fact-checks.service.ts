@@ -1,13 +1,17 @@
 import {
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
-import { ContentStatus, Role } from '@prisma/client';
+import { ContentStatus, Prisma, Role } from '@prisma/client';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { createSlug } from '../../common/utils/slug.util';
 import { PrismaService } from '../../database/prisma.service';
-import { CreateFactCheckDto, FactCheckFilterDto, UpdateFactCheckDto } from './dto/create-fact-check.dto';
+import {
+  CreateFactCheckDto,
+  FactCheckFilterDto,
+  UpdateFactCheckDto,
+} from './dto/create-fact-check.dto';
 
 @Injectable()
 export class FactChecksService {
@@ -22,9 +26,7 @@ export class FactChecksService {
         slug,
         authorId: userId,
         publishedAt:
-          createDto.status === ContentStatus.PUBLISHED
-            ? new Date()
-            : null,
+          createDto.status === ContentStatus.PUBLISHED ? new Date() : null,
       },
       include: {
         author: {
@@ -42,11 +44,16 @@ export class FactChecksService {
   }
 
   async findAll(paginationDto: PaginationDto, filterDto: FactCheckFilterDto) {
-    const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.FactCheckWhereInput = {};
 
     if (filterDto.verdict) {
       where.verdict = filterDto.verdict;
@@ -200,7 +207,10 @@ export class FactChecksService {
     }
 
     // Authorization check
-    if (factCheck.authorId !== userId && !['ADMIN', 'SUPER_ADMIN'].includes(userRole)) {
+    if (
+      factCheck.authorId !== userId &&
+      !['ADMIN', 'SUPER_ADMIN'].includes(userRole)
+    ) {
       throw new ForbiddenException('You can only edit your own fact checks');
     }
 
@@ -238,7 +248,10 @@ export class FactChecksService {
     }
 
     // Authorization check
-    if (factCheck.authorId !== userId && !['ADMIN', 'SUPER_ADMIN'].includes(userRole)) {
+    if (
+      factCheck.authorId !== userId &&
+      !['ADMIN', 'SUPER_ADMIN'].includes(userRole)
+    ) {
       throw new ForbiddenException('You can only delete your own fact checks');
     }
 
@@ -346,4 +359,3 @@ export class FactChecksService {
     }
   }
 }
-

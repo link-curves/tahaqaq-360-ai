@@ -27,7 +27,7 @@ const ResearchDetail = () => {
     );
   }
 
-  if (error || !researchData?.data) {
+  if (error || !researchData) {
     return (
       <div className="min-h-screen bg-gray-50" dir="rtl">
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
@@ -42,7 +42,7 @@ const ResearchDetail = () => {
     );
   }
 
-  const research = researchData.data;
+  const research = researchData;
   const textDirection = getTextDirection(research.title);
 
   return (

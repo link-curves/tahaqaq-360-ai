@@ -2,8 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFeaturedFactChecks } from "@/hooks/useApi";
-import { VeracityRating } from "@/lib/api";
+import { useFactChecks } from "@/hooks/useApi";
+import { VeracityRating, VeracityRatingValue } from "@/lib/api";
 import {
   formatDate,
   generateExcerpt,
@@ -15,16 +15,42 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
+  Loader2,
   Search,
   XCircle,
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const FactCheckingSection = () => {
-  const { data: factChecksData, isLoading, error } = useFeaturedFactChecks(6);
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
 
-  const getStatusIcon = (rating: VeracityRating) => {
+  // Fetch fact checks with pagination and featured filter
+  const {
+    data: factChecksData,
+    isLoading,
+    error,
+  } = useFactChecks({
+    page: currentPage,
+    limit: pageSize,
+    isFeatured: true,
+  });
+
+  const factChecks = factChecksData?.data || [];
+  const totalPages = factChecksData?.totalPages || 1;
+  const hasMore = currentPage < totalPages;
+
+  const handleLoadMore = () => {
+    setCurrentPage((prev) => prev + 1);
+  };
+
+  const handleLoadPrevious = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const getStatusIcon = (rating: VeracityRatingValue) => {
     switch (rating) {
       case VeracityRating.TRUE:
       case VeracityRating.MOSTLY_TRUE:
@@ -70,6 +96,12 @@ const FactCheckingSection = () => {
 
   // Error state
   if (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "حدث خطأ غير متوقع";
+    const isRateLimit =
+      errorMessage.includes("429") ||
+      errorMessage.includes("Too Many Requests");
+
     return (
       <div
         id="fact-checking"
@@ -77,16 +109,29 @@ const FactCheckingSection = () => {
         dir="rtl"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="text-red-600 mb-4">
-            <XCircle className="h-12 w-12 mx-auto mb-4" />
-            <p>حدث خطأ في تحميل البيانات</p>
+          <div
+            className={`${isRateLimit ? "text-amber-600" : "text-red-600"} mb-4`}
+          >
+            {isRateLimit ? (
+              <Clock className="h-12 w-12 mx-auto mb-4" />
+            ) : (
+              <XCircle className="h-12 w-12 mx-auto mb-4" />
+            )}
+            <p className="text-lg font-semibold mb-2">
+              {isRateLimit
+                ? "تم تجاوز الحد المسموح من الطلبات"
+                : "حدث خطأ في تحميل البيانات"}
+            </p>
+            {isRateLimit && (
+              <p className="text-sm text-gray-600">
+                يرجى الانتظار لحظة قبل المحاولة مرة أخرى
+              </p>
+            )}
           </div>
         </div>
       </div>
     );
   }
-
-  const factChecks = factChecksData?.data || [];
 
   return (
     <div
@@ -230,6 +275,40 @@ const FactCheckingSection = () => {
               ))}
             </div>
           )}
+          {/* Pagination Controls */}
+          {factChecks.length > 0 &&
+            (factChecksData?.hasNextPage ||
+              factChecksData?.hasPreviousPage) && (
+              <div className="flex justify-center items-center gap-4 mt-12">
+                <Button
+                  onClick={handleLoadPrevious}
+                  disabled={!factChecksData?.hasPreviousPage || isLoading}
+                  variant="outline"
+                  className="font-['Cairo'] disabled:opacity-50"
+                >
+                  {isLoading && currentPage > 1 ? (
+                    <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                  ) : null}
+                  السابق
+                </Button>
+
+                <span className="text-sm text-gray-600 font-['Cairo']">
+                  صفحة {currentPage} من {totalPages}
+                </span>
+
+                <Button
+                  onClick={handleLoadMore}
+                  disabled={!hasMore || isLoading}
+                  variant="outline"
+                  className="font-['Cairo'] disabled:opacity-50"
+                >
+                  {isLoading && hasMore ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  التالي
+                </Button>
+              </div>
+            )}
           {/* CTA Section */}
           <div className="text-center mt-16">
             <Button

@@ -19,7 +19,6 @@ import { Role } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { PaginationDto } from '../../common/dto/pagination.dto';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import {
   CreateFactCheckDto,
@@ -50,11 +49,8 @@ export class FactChecksController {
   @ApiOperation({ summary: 'Get all fact checks with pagination and filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  findAll(
-    @Query() paginationDto: PaginationDto,
-    @Query() filterDto: FactCheckFilterDto,
-  ) {
-    return this.factChecksService.findAll(paginationDto, filterDto);
+  findAll(@Query() filterDto: FactCheckFilterDto) {
+    return this.factChecksService.findAll(filterDto, filterDto);
   }
 
   @Public()

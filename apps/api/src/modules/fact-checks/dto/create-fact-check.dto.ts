@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ContentStatus, VeracityRating } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsOptional,
@@ -9,6 +11,7 @@ import {
   IsUrl,
   MinLength,
 } from 'class-validator';
+import { PaginationDto } from '../../../common/dto/pagination.dto';
 
 export class CreateFactCheckDto {
   @ApiProperty({ example: 'Breaking: Major Scientific Discovery' })
@@ -59,7 +62,11 @@ export class CreateFactCheckDto {
   @IsUrl({}, { each: true })
   mediaUrls?: string[];
 
-  @ApiProperty({ type: [String], example: ['health', 'science'], required: false })
+  @ApiProperty({
+    type: [String],
+    example: ['health', 'science'],
+    required: false,
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -93,7 +100,7 @@ export class CreateFactCheckDto {
 
 export class UpdateFactCheckDto extends CreateFactCheckDto {}
 
-export class FactCheckFilterDto {
+export class FactCheckFilterDto extends PaginationDto {
   @IsOptional()
   @IsEnum(VeracityRating)
   verdict?: VeracityRating;
@@ -122,4 +129,13 @@ export class FactCheckFilterDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
+  @IsBoolean()
+  isFeatured?: boolean;
 }

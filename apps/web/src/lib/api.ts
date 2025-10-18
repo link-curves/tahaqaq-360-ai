@@ -336,6 +336,8 @@ export interface ApiResponse<T> {
 export interface PaginationParams {
   page?: number;
   limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 export interface FactCheckParams extends PaginationParams {
@@ -343,6 +345,7 @@ export interface FactCheckParams extends PaginationParams {
   status?: ContentStatusValue;
   search?: string;
   featured?: boolean;
+  isFeatured?: boolean;
 }
 
 export interface EventParams extends PaginationParams {
@@ -492,6 +495,15 @@ class ApiClient {
   ): Promise<PaginatedResponse<FactCheck>> {
     const searchParams = new URLSearchParams();
 
+    if (params) {
+      if (params.page) searchParams.append("page", params.page.toString());
+      if (params.limit) searchParams.append("limit", params.limit.toString());
+      if (params.search) searchParams.append("search", params.search);
+      if (params.verdict) searchParams.append("verdict", params.verdict);
+      if (params.isFeatured !== undefined)
+        searchParams.append("isFeatured", params.isFeatured.toString());
+    }
+
     const queryString = searchParams.toString();
     const endpoint = `/fact-checks${queryString ? `?${queryString}` : ""}`;
 
@@ -513,6 +525,18 @@ class ApiClient {
   // Events endpoints
   async getEvents(params?: EventParams): Promise<PaginatedResponse<Event>> {
     const searchParams = new URLSearchParams();
+
+    if (params) {
+      if (params.page) searchParams.append("page", params.page.toString());
+      if (params.limit) searchParams.append("limit", params.limit.toString());
+      if (params.sortBy) searchParams.append("sortBy", params.sortBy);
+      if (params.sortOrder) searchParams.append("sortOrder", params.sortOrder);
+      if (params.search) searchParams.append("search", params.search);
+      if (params.type) searchParams.append("type", params.type);
+      if (params.status) searchParams.append("status", params.status);
+      if (params.upcoming !== undefined)
+        searchParams.append("upcoming", params.upcoming.toString());
+    }
 
     const queryString = searchParams.toString();
     const endpoint = `/events${queryString ? `?${queryString}` : ""}`;
@@ -580,9 +604,16 @@ class ApiClient {
     params?: ResearchParams
   ): Promise<PaginatedResponse<Research>> {
     const searchParams = new URLSearchParams();
-    if (params?.search) searchParams.append("search", params.search);
-    if (params?.category) searchParams.append("category", params.category);
-    if (params?.status) searchParams.append("status", params.status);
+
+    if (params) {
+      if (params.page) searchParams.append("page", params.page.toString());
+      if (params.limit) searchParams.append("limit", params.limit.toString());
+      if (params.sortBy) searchParams.append("sortBy", params.sortBy);
+      if (params.sortOrder) searchParams.append("sortOrder", params.sortOrder);
+      if (params.search) searchParams.append("search", params.search);
+      if (params.category) searchParams.append("category", params.category);
+      if (params.status) searchParams.append("status", params.status);
+    }
 
     const queryString = searchParams.toString();
     const endpoint = `/research${queryString ? `?${queryString}` : ""}`;

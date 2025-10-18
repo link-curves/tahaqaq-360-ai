@@ -35,7 +35,7 @@ const AnimatedCounter: React.FC<{
     };
   }, [end, duration]);
 
-  const displayValue = formatAsNumber ? count.toLocaleString("ar-SA") : count;
+  const displayValue = formatAsNumber ? count.toLocaleString("en-US") : count;
 
   return (
     <span>
@@ -91,11 +91,11 @@ const StatsSection = () => {
 
   // Use real data if available, otherwise use defaults
   const stats =
-    statsData?.data && !isLoading
+    statsData && !isLoading
       ? [
           {
             icon: Shield,
-            value: statsData.data.totalFactChecks || 12000,
+            value: statsData.totalFactChecks || 12000,
             suffix: "+",
             label: "حقيقة تم التحقق منها",
             color: "text-red-500",

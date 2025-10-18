@@ -161,6 +161,7 @@ model FactCheck {
   shares        Int            @default(0)
   status        ContentStatus  @default(DRAFT)
   featuredImage String?
+  isFeatured    Boolean        @default(false)
 
   // SEO
   metaTitle       String?
@@ -533,6 +534,7 @@ model Research {
   authors     String[]
   category    String
   tags        String[]
+  isFeatured  Boolean  @default(false)
 
   // Media
   coverImage  String?
