@@ -1,3 +1,4 @@
-export class UpdateFaqDto {
-  // TODO: Define update faq DTO
-}
+import { PartialType } from '@nestjs/swagger';
+import { CreateFaqDto } from './create-faq.dto';
+
+export class UpdateFaqDto extends PartialType(CreateFaqDto) {}

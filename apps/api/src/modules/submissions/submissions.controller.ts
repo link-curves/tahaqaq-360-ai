@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -8,13 +9,21 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Role, SubmissionStatus } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { CreateSubmissionDto, UpdateSubmissionStatusDto } from './dto/create-submission.dto';
+import {
+  CreateSubmissionDto,
+  UpdateSubmissionStatusDto,
+} from './dto/create-submission.dto';
 import { SubmissionsService } from './submissions.service';
 
 @ApiTags('Submissions')
@@ -95,11 +104,16 @@ export class SubmissionsController {
   @Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Assign priority to submission' })
-  assignPriority(
-    @Param('id') id: string,
-    @Body('priority') priority: number,
-  ) {
+  assignPriority(@Param('id') id: string, @Body('priority') priority: number) {
     return this.submissionsService.assignPriority(id, priority);
   }
-}
 
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Delete a submission (Admin only)' })
+  deleteSubmission(@Param('id') id: string) {
+    return this.submissionsService.deleteSubmission(id);
+  }
+}

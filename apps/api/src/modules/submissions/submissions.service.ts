@@ -290,4 +290,18 @@ export class SubmissionsService {
       data: { priority },
     });
   }
+
+  async deleteSubmission(id: string) {
+    const submission = await this.prisma.submission.findUnique({
+      where: { id },
+    });
+
+    if (!submission) {
+      throw new NotFoundException('Submission not found');
+    }
+
+    return this.prisma.submission.delete({
+      where: { id },
+    });
+  }
 }

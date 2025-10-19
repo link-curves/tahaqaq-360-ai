@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,6 +8,8 @@ import { Course, Prisma } from '@prisma/client';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { IPaginatedResult } from '../../common/interfaces/pagination.interface';
 import { PrismaService } from '../../database/prisma.service';
+import { CreateCourseDto, UpdateCourseDto } from './dto/course.dto';
+import { CreateLessonDto, UpdateLessonDto } from './dto/lesson.dto';
 
 @Injectable()
 export class MediaLiteracyService {
@@ -390,5 +393,212 @@ export class MediaLiteracyService {
         totalLessons: enrollment.course.lessons.length,
       },
     }));
+  }
+
+  // ============================================
+  // ADMIN CRUD METHODS FOR COURSES
+  // ============================================
+
+  async createCourse(createCourseDto: CreateCourseDto) {
+    // Check for duplicate slug
+    const existingCourse = await this.prisma.course.findUnique({
+      where: { slug: createCourseDto.slug },
+    });
+
+    if (existingCourse) {
+      throw new ConflictException('A course with this slug already exists');
+    }
+
+    return this.prisma.course.create({
+      data: {
+        title: createCourseDto.title,
+        slug: createCourseDto.slug,
+        description: createCourseDto.description,
+        difficulty: createCourseDto.difficulty,
+        duration: createCourseDto.duration,
+        order: createCourseDto.order ?? 0,
+        prerequisites: createCourseDto.prerequisites ?? [],
+        learningObjectives: createCourseDto.learningObjectives ?? [],
+        coverImage: createCourseDto.coverImage,
+        isPublished: createCourseDto.isPublished ?? false,
+      },
+    });
+  }
+
+  async updateCourse(slug: string, updateCourseDto: UpdateCourseDto) {
+    const course = await this.prisma.course.findUnique({
+      where: { slug },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    // Check for slug conflict if slug is being updated
+    if (updateCourseDto.slug && updateCourseDto.slug !== slug) {
+      const existingCourse = await this.prisma.course.findUnique({
+        where: { slug: updateCourseDto.slug },
+      });
+
+      if (existingCourse) {
+        throw new ConflictException('A course with this slug already exists');
+      }
+    }
+
+    const updateData: Prisma.CourseUpdateInput = {};
+
+    if (updateCourseDto.title) updateData.title = updateCourseDto.title;
+    if (updateCourseDto.slug) updateData.slug = updateCourseDto.slug;
+    if (updateCourseDto.description)
+      updateData.description = updateCourseDto.description;
+    if (updateCourseDto.difficulty)
+      updateData.difficulty = updateCourseDto.difficulty;
+    if (updateCourseDto.duration)
+      updateData.duration = updateCourseDto.duration;
+    if (updateCourseDto.order !== undefined)
+      updateData.order = updateCourseDto.order;
+    if (updateCourseDto.prerequisites)
+      updateData.prerequisites = updateCourseDto.prerequisites;
+    if (updateCourseDto.learningObjectives)
+      updateData.learningObjectives = updateCourseDto.learningObjectives;
+    if (updateCourseDto.coverImage)
+      updateData.coverImage = updateCourseDto.coverImage;
+    if (updateCourseDto.isPublished !== undefined)
+      updateData.isPublished = updateCourseDto.isPublished;
+
+    return this.prisma.course.update({
+      where: { slug },
+      data: updateData,
+    });
+  }
+
+  async deleteCourse(slug: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { slug },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    return this.prisma.course.delete({
+      where: { slug },
+    });
+  }
+
+  async toggleCoursePublish(slug: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { slug },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    return this.prisma.course.update({
+      where: { slug },
+      data: {
+        isPublished: !course.isPublished,
+      },
+    });
+  }
+
+  // ============================================
+  // ADMIN CRUD METHODS FOR LESSONS
+  // ============================================
+
+  async createLesson(courseSlug: string, createLessonDto: CreateLessonDto) {
+    // Find course by slug
+    const course = await this.prisma.course.findUnique({
+      where: { slug: courseSlug },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    // Generate lesson slug from title
+    const lessonSlug = createLessonDto.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    // Check for duplicate slug within the course
+    const existingLesson = await this.prisma.lesson.findUnique({
+      where: {
+        courseId_slug: {
+          courseId: course.id,
+          slug: lessonSlug,
+        },
+      },
+    });
+
+    if (existingLesson) {
+      throw new ConflictException(
+        'A lesson with this title already exists in this course',
+      );
+    }
+
+    return this.prisma.lesson.create({
+      data: {
+        courseId: course.id,
+        title: createLessonDto.title,
+        slug: lessonSlug,
+        content: createLessonDto.content,
+        duration: createLessonDto.duration,
+        order: createLessonDto.order,
+        videoUrl: createLessonDto.videoUrl,
+        resources: createLessonDto.resources ?? [],
+      },
+    });
+  }
+
+  async updateLesson(lessonId: string, updateLessonDto: UpdateLessonDto) {
+    const lesson = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+    });
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    const updateData: Prisma.LessonUpdateInput = {};
+
+    if (updateLessonDto.title) {
+      updateData.title = updateLessonDto.title;
+      // Regenerate slug if title changes
+      updateData.slug = updateLessonDto.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+    if (updateLessonDto.content) updateData.content = updateLessonDto.content;
+    if (updateLessonDto.duration)
+      updateData.duration = updateLessonDto.duration;
+    if (updateLessonDto.order !== undefined)
+      updateData.order = updateLessonDto.order;
+    if (updateLessonDto.videoUrl !== undefined)
+      updateData.videoUrl = updateLessonDto.videoUrl;
+    if (updateLessonDto.resources !== undefined)
+      updateData.resources = updateLessonDto.resources;
+
+    return this.prisma.lesson.update({
+      where: { id: lessonId },
+      data: updateData,
+    });
+  }
+
+  async deleteLesson(lessonId: string) {
+    const lesson = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+    });
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    return this.prisma.lesson.delete({
+      where: { id: lessonId },
+    });
   }
 }

@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, Research } from '@prisma/client';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { IPaginatedResult } from '../../common/interfaces/pagination.interface';
 import { PrismaService } from '../../database/prisma.service';
+import { CreateResearchDto } from './dto/create-research.dto';
+import { UpdateResearchDto } from './dto/update-research.dto';
 
 @Injectable()
 export class ResearchService {
@@ -73,5 +79,140 @@ export class ResearchService {
     });
 
     return { ...article, views: article.views + 1 };
+  }
+
+  // ============================================
+  // ADMIN METHODS
+  // ============================================
+
+  async createResearch(userId: string, createDto: CreateResearchDto) {
+    // Check if slug already exists
+    const existing = await this.prisma.research.findUnique({
+      where: { slug: createDto.slug },
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        'Research article with this slug already exists',
+      );
+    }
+
+    return this.prisma.research.create({
+      data: {
+        title: createDto.title,
+        slug: createDto.slug,
+        summary: createDto.summary,
+        fullContent: createDto.content,
+        authors: createDto.authors || [],
+        category: createDto.category,
+        tags: createDto.tags || [],
+        coverImage: createDto.featuredImage,
+        isFeatured: createDto.isFeatured || false,
+        status: createDto.isPublished ? 'PUBLISHED' : 'DRAFT',
+        publishedAt: createDto.isPublished ? new Date() : null,
+        attachments: [],
+      },
+    });
+  }
+
+  async updateResearch(slug: string, updateDto: UpdateResearchDto) {
+    const article = await this.prisma.research.findUnique({
+      where: { slug },
+    });
+
+    if (!article) {
+      throw new NotFoundException('Research article not found');
+    }
+
+    // If slug is being updated, check for conflicts
+    if (updateDto.slug && updateDto.slug !== slug) {
+      const existing = await this.prisma.research.findUnique({
+        where: { slug: updateDto.slug },
+      });
+
+      if (existing) {
+        throw new BadRequestException(
+          'Research article with this slug already exists',
+        );
+      }
+    }
+
+    const updateData: any = {};
+    if (updateDto.title) updateData.title = updateDto.title;
+    if (updateDto.slug) updateData.slug = updateDto.slug;
+    if (updateDto.summary) updateData.summary = updateDto.summary;
+    if (updateDto.content) updateData.fullContent = updateDto.content;
+    if (updateDto.authors) updateData.authors = updateDto.authors;
+    if (updateDto.category) updateData.category = updateDto.category;
+    if (updateDto.tags) updateData.tags = updateDto.tags;
+    if (updateDto.featuredImage)
+      updateData.coverImage = updateDto.featuredImage;
+    if (updateDto.isFeatured !== undefined)
+      updateData.isFeatured = updateDto.isFeatured;
+
+    if (updateDto.isPublished !== undefined) {
+      updateData.status = updateDto.isPublished ? 'PUBLISHED' : 'DRAFT';
+      if (updateDto.isPublished && !article.publishedAt) {
+        updateData.publishedAt = new Date();
+      }
+    }
+
+    return this.prisma.research.update({
+      where: { slug },
+      data: updateData,
+    });
+  }
+
+  async deleteResearch(slug: string) {
+    const article = await this.prisma.research.findUnique({
+      where: { slug },
+    });
+
+    if (!article) {
+      throw new NotFoundException('Research article not found');
+    }
+
+    await this.prisma.research.delete({
+      where: { slug },
+    });
+
+    return { message: 'Research article deleted successfully' };
+  }
+
+  async togglePublish(slug: string) {
+    const article = await this.prisma.research.findUnique({
+      where: { slug },
+    });
+
+    if (!article) {
+      throw new NotFoundException('Research article not found');
+    }
+
+    const isPublished = article.status === 'PUBLISHED';
+
+    return this.prisma.research.update({
+      where: { slug },
+      data: {
+        status: isPublished ? 'DRAFT' : 'PUBLISHED',
+        publishedAt: !isPublished ? new Date() : article.publishedAt,
+      },
+    });
+  }
+
+  async toggleFeatured(slug: string) {
+    const article = await this.prisma.research.findUnique({
+      where: { slug },
+    });
+
+    if (!article) {
+      throw new NotFoundException('Research article not found');
+    }
+
+    return this.prisma.research.update({
+      where: { slug },
+      data: {
+        isFeatured: !article.isFeatured,
+      },
+    });
   }
 }

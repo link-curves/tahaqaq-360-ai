@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import AccessibilityStatement from "./pages/AccessibilityStatement";
-import Admin from "./pages/Admin";
 import AuthSuccessPage from "./pages/AuthSuccess";
 import ContactUs from "./pages/ContactUs";
 import CourseDetail from "./pages/CourseDetail";
@@ -44,79 +43,76 @@ const queryClient = new QueryClient({
   },
 });
 
+// Main Website Routes Wrapper Component
+const MainRoutes = () => (
+  <AuthProvider>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/auth/success" element={<AuthSuccessPage />} />
+        <Route path="/fact-checks" element={<FactChecks />} />
+        <Route path="/fact-checks/:slug" element={<FactCheckDetail />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/events/:slug" element={<EventDetail />} />
+        <Route path="/research" element={<Research />} />
+        <Route path="/research/:slug" element={<ResearchDetail />} />
+        <Route path="/learning" element={<Courses />} />
+        <Route path="/learning/:slug" element={<CourseDetail />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/courses/:slug" element={<CourseDetail />} />
+
+        {/* Public Support Pages */}
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/help" element={<HelpCenter />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/accessibility" element={<AccessibilityStatement />} />
+
+        {/* Protected Routes */}
+        <Route
+          path="/my-courses"
+          element={
+            <ProtectedRoute fallback={<Login />}>
+              <MyCourses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/submit"
+          element={
+            <ProtectedRoute fallback={<Login />}>
+              <SubmitContent />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-submissions"
+          element={
+            <ProtectedRoute fallback={<Login />}>
+              <MySubmissions />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch-all for 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Layout>
+  </AuthProvider>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AuthProvider>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/auth/success" element={<AuthSuccessPage />} />
-              <Route path="/fact-checks" element={<FactChecks />} />
-              <Route path="/fact-checks/:slug" element={<FactCheckDetail />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/:slug" element={<EventDetail />} />
-              <Route path="/research" element={<Research />} />
-              <Route path="/research/:slug" element={<ResearchDetail />} />
-              <Route path="/learning" element={<Courses />} />
-              <Route path="/learning/:slug" element={<CourseDetail />} />
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/courses/:slug" element={<CourseDetail />} />
-
-              {/* Public Support Pages */}
-              <Route path="/contact" element={<ContactUs />} />
-              <Route path="/help" element={<HelpCenter />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route
-                path="/accessibility"
-                element={<AccessibilityStatement />}
-              />
-
-              {/* Protected Routes */}
-              <Route
-                path="/my-courses"
-                element={
-                  <ProtectedRoute fallback={<Login />}>
-                    <MyCourses />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/submit"
-                element={
-                  <ProtectedRoute fallback={<Login />}>
-                    <SubmitContent />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/my-submissions"
-                element={
-                  <ProtectedRoute fallback={<Login />}>
-                    <MySubmissions />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute fallback={<Login />}>
-                    <Admin />
-                  </ProtectedRoute>
-                }
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
-        </AuthProvider>
+        <Routes>
+          <Route path="/*" element={<MainRoutes />} />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

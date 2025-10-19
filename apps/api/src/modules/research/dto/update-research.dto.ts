@@ -1,3 +1,4 @@
-export class UpdateResearchDto {
-  // TODO: Define update research DTO
-}
+import { PartialType } from '@nestjs/swagger';
+import { CreateResearchDto } from './create-research.dto';
+
+export class UpdateResearchDto extends PartialType(CreateResearchDto) {}

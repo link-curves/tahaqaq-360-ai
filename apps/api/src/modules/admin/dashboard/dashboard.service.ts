@@ -6,6 +6,155 @@ import { PrismaService } from '../../../database/prisma.service';
 export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
+  async getComprehensiveStats() {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [
+      // Users
+      totalUsers,
+      newUsersThisMonth,
+      activeUsersLastWeek,
+
+      // Content
+      totalFactChecks,
+      publishedFactChecks,
+      totalResearch,
+      publishedResearch,
+      totalEvents,
+      upcomingEvents,
+      totalCourses,
+      publishedCourses,
+      totalFAQs,
+
+      // Submissions & Engagement
+      totalSubmissions,
+      pendingSubmissions,
+      verifiedSubmissions,
+      totalComments,
+      totalCertificates,
+
+      // Recent activity counts
+      newUsersToday,
+      newFactChecksToday,
+      newSubmissionsToday,
+    ] = await Promise.all([
+      // Users
+      this.prisma.user.count(),
+      this.prisma.user.count({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+      }),
+      this.prisma.user.count({
+        where: { lastLoginAt: { gte: sevenDaysAgo } },
+      }),
+
+      // Fact Checks
+      this.prisma.factCheck.count(),
+      this.prisma.factCheck.count({
+        where: { status: ContentStatus.PUBLISHED },
+      }),
+
+      // Research
+      this.prisma.research.count(),
+      this.prisma.research.count({
+        where: { status: ContentStatus.PUBLISHED },
+      }),
+
+      // Events
+      this.prisma.event.count(),
+      this.prisma.event.count({
+        where: {
+          startDate: { gte: now },
+          status: 'UPCOMING',
+        },
+      }),
+
+      // Courses
+      this.prisma.course.count(),
+      this.prisma.course.count({
+        where: { isPublished: true },
+      }),
+
+      // FAQ
+      this.prisma.fAQ.count(),
+
+      // Submissions
+      this.prisma.submission.count(),
+      this.prisma.submission.count({
+        where: { status: SubmissionStatus.PENDING },
+      }),
+      this.prisma.submission.count({
+        where: { status: SubmissionStatus.VERIFIED },
+      }),
+
+      // Comments & Certificates
+      this.prisma.comment.count(),
+      this.prisma.certificate.count(),
+
+      // Today's activity
+      this.prisma.user.count({
+        where: { createdAt: { gte: new Date(now.setHours(0, 0, 0, 0)) } },
+      }),
+      this.prisma.factCheck.count({
+        where: { createdAt: { gte: new Date(now.setHours(0, 0, 0, 0)) } },
+      }),
+      this.prisma.submission.count({
+        where: { createdAt: { gte: new Date(now.setHours(0, 0, 0, 0)) } },
+      }),
+    ]);
+
+    return {
+      users: {
+        total: totalUsers,
+        newThisMonth: newUsersThisMonth,
+        activeLastWeek: activeUsersLastWeek,
+        newToday: newUsersToday,
+      },
+      content: {
+        factChecks: {
+          total: totalFactChecks,
+          published: publishedFactChecks,
+          draft: totalFactChecks - publishedFactChecks,
+          newToday: newFactChecksToday,
+        },
+        research: {
+          total: totalResearch,
+          published: publishedResearch,
+          draft: totalResearch - publishedResearch,
+        },
+        events: {
+          total: totalEvents,
+          upcoming: upcomingEvents,
+        },
+        courses: {
+          total: totalCourses,
+          published: publishedCourses,
+          draft: totalCourses - publishedCourses,
+        },
+        faqs: {
+          total: totalFAQs,
+        },
+      },
+      engagement: {
+        submissions: {
+          total: totalSubmissions,
+          pending: pendingSubmissions,
+          verified: verifiedSubmissions,
+          rejected: totalSubmissions - pendingSubmissions - verifiedSubmissions,
+          newToday: newSubmissionsToday,
+        },
+        comments: {
+          total: totalComments,
+        },
+        certificates: {
+          total: totalCertificates,
+        },
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   async getOverview() {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -100,11 +249,14 @@ export class DashboardService {
     });
 
     // Group by day
-    const groupedData = users.reduce((acc, user) => {
-      const date = user.createdAt.toISOString().split('T')[0];
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const groupedData = users.reduce(
+      (acc, user) => {
+        const date = user.createdAt.toISOString().split('T')[0];
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(groupedData).map(([date, count]) => ({
       date,
@@ -126,16 +278,21 @@ export class DashboardService {
       select: { createdAt: true, status: true },
     });
 
-    const groupedData = submissions.reduce((acc, submission) => {
-      const date = submission.createdAt.toISOString().split('T')[0];
-      if (!acc[date]) {
-        acc[date] = { pending: 0, verified: 0, rejected: 0 };
-      }
-      if (submission.status === SubmissionStatus.PENDING) acc[date].pending++;
-      if (submission.status === SubmissionStatus.VERIFIED) acc[date].verified++;
-      if (submission.status === SubmissionStatus.REJECTED) acc[date].rejected++;
-      return acc;
-    }, {} as Record<string, any>);
+    const groupedData = submissions.reduce(
+      (acc, submission) => {
+        const date = submission.createdAt.toISOString().split('T')[0];
+        if (!acc[date]) {
+          acc[date] = { pending: 0, verified: 0, rejected: 0 };
+        }
+        if (submission.status === SubmissionStatus.PENDING) acc[date].pending++;
+        if (submission.status === SubmissionStatus.VERIFIED)
+          acc[date].verified++;
+        if (submission.status === SubmissionStatus.REJECTED)
+          acc[date].rejected++;
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
 
     return Object.entries(groupedData).map(([date, counts]) => ({
       date,
@@ -145,10 +302,7 @@ export class DashboardService {
 
   async getTopContributors(limit: number = 10) {
     const users = await this.prisma.user.findMany({
-      orderBy: [
-        { reputation: 'desc' },
-        { totalPoints: 'desc' },
-      ],
+      orderBy: [{ reputation: 'desc' }, { totalPoints: 'desc' }],
       take: limit,
       select: {
         id: true,
@@ -209,14 +363,20 @@ export class DashboardService {
       ]);
 
     return {
-      factChecksByVerdict: factChecksByVerdict.reduce((acc: Record<string, number>, item) => {
-        acc[item.verdict] = item._count;
-        return acc;
-      }, {}),
-      submissionsByType: submissionsByType.reduce((acc: Record<string, number>, item) => {
-        acc[item.type] = item._count;
-        return acc;
-      }, {}),
+      factChecksByVerdict: factChecksByVerdict.reduce(
+        (acc: Record<string, number>, item) => {
+          acc[item.verdict] = item._count;
+          return acc;
+        },
+        {},
+      ),
+      submissionsByType: submissionsByType.reduce(
+        (acc: Record<string, number>, item) => {
+          acc[item.type] = item._count;
+          return acc;
+        },
+        {},
+      ),
       eventsByType: eventsByType.reduce((acc: Record<string, number>, item) => {
         acc[item.type] = item._count;
         return acc;
@@ -226,12 +386,8 @@ export class DashboardService {
 
   async getSystemHealth() {
     const dbHealthy = await this.prisma.healthCheck();
-    
-    const [
-      avgResponseTime,
-      errorRate,
-      totalRequests,
-    ] = await Promise.all([
+
+    const [avgResponseTime, errorRate, totalRequests] = await Promise.all([
       // These would come from your logging system
       Promise.resolve(120), // ms
       Promise.resolve(0.5), // %

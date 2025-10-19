@@ -1,6 +1,12 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Calendar, CheckCircle, Users, TrendingUp, Eye } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle,
+  Eye,
+  FileText,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 
 const DashboardOverview = () => {
   const stats = [
@@ -10,7 +16,7 @@ const DashboardOverview = () => {
       change: "+12%",
       icon: FileText,
       color: "text-blue-600",
-      bgColor: "bg-blue-50"
+      bgColor: "bg-blue-50",
     },
     {
       title: "الأحداث النشطة",
@@ -18,7 +24,7 @@ const DashboardOverview = () => {
       change: "+5%",
       icon: Calendar,
       color: "text-green-600",
-      bgColor: "bg-green-50"
+      bgColor: "bg-green-50",
     },
     {
       title: "التحققات المنجزة",
@@ -26,7 +32,7 @@ const DashboardOverview = () => {
       change: "+18%",
       icon: CheckCircle,
       color: "text-red-600",
-      bgColor: "bg-red-50"
+      bgColor: "bg-red-50",
     },
     {
       title: "المستخدمون النشطون",
@@ -34,7 +40,7 @@ const DashboardOverview = () => {
       change: "+25%",
       icon: Users,
       color: "text-purple-600",
-      bgColor: "bg-purple-50"
+      bgColor: "bg-purple-50",
     },
     {
       title: "نمو الزيارات",
@@ -42,7 +48,7 @@ const DashboardOverview = () => {
       change: "+8%",
       icon: TrendingUp,
       color: "text-orange-600",
-      bgColor: "bg-orange-50"
+      bgColor: "bg-orange-50",
     },
     {
       title: "إجمالي المشاهدات",
@@ -50,14 +56,16 @@ const DashboardOverview = () => {
       change: "+15%",
       icon: Eye,
       color: "text-teal-600",
-      bgColor: "bg-teal-50"
-    }
+      bgColor: "bg-teal-50",
+    },
   ];
 
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">مرحباً بك في لوحة التحكم</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          مرحباً بك في لوحة التحكم
+        </h2>
         <p className="text-gray-600">نظرة عامة على أداء منصة تحقق 360</p>
       </div>
 
@@ -95,20 +103,39 @@ const DashboardOverview = () => {
           <CardContent>
             <div className="space-y-4">
               {[
-                { title: "كيفية التحقق من الأخبار المزيفة", date: "منذ ساعتين", status: "منشور" },
-                { title: "تحليل الصور المفبركة", date: "منذ 4 ساعات", status: "مراجعة" },
-                { title: "دليل محو الأمية الإعلامية", date: "أمس", status: "منشور" },
+                {
+                  title: "كيفية التحقق من الأخبار المزيفة",
+                  date: "منذ ساعتين",
+                  status: "منشور",
+                },
+                {
+                  title: "تحليل الصور المفبركة",
+                  date: "منذ 4 ساعات",
+                  status: "مراجعة",
+                },
+                {
+                  title: "دليل محو الأمية الإعلامية",
+                  date: "أمس",
+                  status: "منشور",
+                },
               ].map((article, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div>
-                    <h4 className="font-medium text-gray-900">{article.title}</h4>
+                    <h4 className="font-medium text-gray-900">
+                      {article.title}
+                    </h4>
                     <p className="text-sm text-gray-500">{article.date}</p>
                   </div>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    article.status === "منشور" 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-yellow-100 text-yellow-800"
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      article.status === "منشور"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
                     {article.status}
                   </span>
                 </div>
@@ -124,14 +151,31 @@ const DashboardOverview = () => {
           <CardContent>
             <div className="space-y-4">
               {[
-                { title: "ورشة محو الأمية الإعلامية", date: "15 يونيو 2025", location: "الرياض" },
-                { title: "مؤتمر التحقق من الأخبار", date: "20 يونيو 2025", location: "جدة" },
-                { title: "ندوة الذكاء الاصطناعي", date: "25 يونيو 2025", location: "الدمام" },
+                {
+                  title: "ورشة محو الأمية الإعلامية",
+                  date: "15 يونيو 2025",
+                  location: "الرياض",
+                },
+                {
+                  title: "مؤتمر التحقق من الأخبار",
+                  date: "20 يونيو 2025",
+                  location: "جدة",
+                },
+                {
+                  title: "ندوة الذكاء الاصطناعي",
+                  date: "25 يونيو 2025",
+                  location: "الدمام",
+                },
               ].map((event, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div>
                     <h4 className="font-medium text-gray-900">{event.title}</h4>
-                    <p className="text-sm text-gray-500">{event.date} • {event.location}</p>
+                    <p className="text-sm text-gray-500">
+                      {event.date} • {event.location}
+                    </p>
                   </div>
                 </div>
               ))}

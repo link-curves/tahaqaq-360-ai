@@ -1,0 +1,97 @@
+# ==================================
+# API Production Dockerfile
+# ==================================
+# Multi-stage build optimized for production deployment
+# Build time: ~3-5 minutes (first build), ~30s (cached)
+# Final image size: ~400MB
+
+# ---------------------------------
+# Stage 1: Dependencies
+# ---------------------------------
+FROM node:22-alpine AS deps
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@8.15.6
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+
+# Install dependencies with cache mount for faster builds
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --filter=@tahaqaq/api...
+
+# ---------------------------------
+# Stage 2: Builder
+# ---------------------------------
+FROM node:22-alpine AS builder
+WORKDIR /app
+
+# Install pnpm and OpenSSL (needed for Prisma)
+RUN npm install -g pnpm@8.15.6 && \
+    apk add --no-cache openssl
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+
+# Copy source files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api ./apps/api
+
+# Generate Prisma Client
+WORKDIR /app/apps/api
+RUN pnpm db:generate
+
+# Build the application
+RUN pnpm build
+
+# ---------------------------------
+# Stage 3: Production Runner
+# ---------------------------------
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+# Install OpenSSL for Prisma runtime
+RUN apk add --no-cache openssl
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
+
+# Install pnpm
+RUN npm install -g pnpm@8.15.6
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+
+# Copy built application
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
+
+# Copy Prisma files (schema and migrations)
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/src/prisma ./apps/api/src/prisma
+
+# Copy generated Prisma Client
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# Install production dependencies only (skip scripts to avoid Prisma download)
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --prod --frozen-lockfile --filter=@tahaqaq/api... --ignore-scripts
+
+# Set environment to production
+ENV NODE_ENV=production
+
+# Switch to non-root user
+USER nestjs
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:5000/api/v1/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) })"
+
+EXPOSE 5000
+
+# Start the application
+CMD ["node", "apps/api/dist/main.js"]

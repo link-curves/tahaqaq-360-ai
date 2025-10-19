@@ -13,6 +13,12 @@ import { DashboardService } from './dashboard.service';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Get comprehensive dashboard statistics' })
+  getStats() {
+    return this.dashboardService.getComprehensiveStats();
+  }
+
   @Get('overview')
   @ApiOperation({ summary: 'Get dashboard overview statistics' })
   getOverview() {
@@ -55,4 +61,3 @@ export class DashboardController {
     return this.dashboardService.getSystemHealth();
   }
 }
-

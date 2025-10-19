@@ -49,11 +49,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     queryKey: ["currentUser"],
     queryFn: () => apiClient.getCurrentUser(),
     enabled: isAuthenticated, // Only run if we think user is authenticated
-    retry: 1,
-    staleTime: 1000 * 60 * 60, // 1 hour - keep user data cached longer
+    retry: false, // Don't retry to avoid rate limiting
+    staleTime: Infinity, // Never consider data stale automatically
     gcTime: 1000 * 60 * 60 * 24, // 24 hours - don't garbage collect
     refetchOnWindowFocus: false, // Don't refetch on every window focus
-    refetchOnMount: true, // Always check on mount
+    refetchOnMount: false, // Don't automatically refetch on mount
+    refetchInterval: false, // Disable automatic refetching
   });
 
   // Check cookie on mount and periodically
@@ -72,8 +73,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check on mount
     checkAuth();
 
-    // Check periodically (every 30 seconds)
-    const interval = setInterval(checkAuth, 30000);
+    // Check less frequently (every 5 minutes instead of 30 seconds)
+    const interval = setInterval(checkAuth, 300000);
 
     return () => clearInterval(interval);
   }, [isAuthenticated, queryClient, refetch]);
@@ -106,18 +107,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Now enable the query
       setIsAuthenticated(true);
 
-      // Immediately refetch to verify authentication with backend
-      // This will use the cookies that were just set
-      setTimeout(async () => {
-        try {
-          console.log("[AUTH] Refetching user data from /auth/me...");
-          await refetch();
-        } catch (error) {
-          console.error("[AUTH] Failed to refetch after login:", error);
-          // Keep using the login response data if refetch fails
-        }
-      }, 200);
-
       toast.success(`مرحباً ${data.user.firstName}! تم تسجيل الدخول بنجاح`);
     },
     onError: (error: Error) => {
@@ -137,15 +126,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Now enable the query
       setIsAuthenticated(true);
-
-      // Refetch to verify
-      setTimeout(async () => {
-        try {
-          await refetch();
-        } catch (error) {
-          console.error("[AUTH] Failed to refetch after register:", error);
-        }
-      }, 200);
 
       toast.success(`مرحباً ${data.user.firstName}! تم إنشاء حسابك بنجاح`);
     },

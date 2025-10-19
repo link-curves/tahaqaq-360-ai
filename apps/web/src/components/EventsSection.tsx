@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUpcomingEvents } from "@/hooks/useApi";
-import { EventType } from "@/lib/api";
+import { EventType, EventTypeValue } from "@/lib/api";
 import { formatDate, generateExcerpt, getImageUrl } from "@/lib/utils";
 import { AlertCircle, Calendar, MapPin, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ const EventsSection = () => {
   const { data: eventsData, isLoading, error } = useUpcomingEvents(4);
   const navigate = useNavigate();
 
-  const getEventTypeLabel = (type: EventType) => {
+  const getEventTypeLabel = (type: EventTypeValue) => {
     switch (type) {
       case EventType.WORKSHOP:
         return "ورشة عمل";
