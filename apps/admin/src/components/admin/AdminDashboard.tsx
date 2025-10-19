@@ -2,9 +2,9 @@ import AnalyticsView from "./AnalyticsView";
 import BlogManagement from "./BlogManagement";
 import CourseManagement from "./CourseManagement";
 import DashboardOverviewNew from "./DashboardOverviewNew";
-import EducationManagement from "./EducationManagement";
-import EventManagement from "./EventManagement";
-import FactCheckManagement from "./FactCheckManagement";
+import EducationManagementNew from "./EducationManagementNew";
+import EventManagementNew from "./EventManagementNew";
+import FactCheckManagementNew from "./FactCheckManagementNew";
 import FAQManagement from "./FAQManagement";
 import ResearchManagement from "./ResearchManagement";
 import SettingsView from "./SettingsView";
@@ -21,11 +21,11 @@ const AdminDashboard = ({ activeSection }: AdminDashboardProps) => {
       case "blogs":
         return <BlogManagement />;
       case "events":
-        return <EventManagement />;
+        return <EventManagementNew />;
       case "factchecks":
-        return <FactCheckManagement />;
+        return <FactCheckManagementNew />;
       case "education":
-        return <EducationManagement />;
+        return <EducationManagementNew />;
       case "research":
         return <ResearchManagement />;
       case "courses":

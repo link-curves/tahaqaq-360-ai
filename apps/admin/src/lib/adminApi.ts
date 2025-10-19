@@ -221,10 +221,20 @@ export interface PaginatedResponse<T> {
 // ==================== HELPER FUNCTION ====================
 
 const getAuthHeaders = (): HeadersInit => {
-  const token = localStorage.getItem("accessToken");
   return {
     "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+};
+
+// Fetch options that include credentials for cookie-based auth
+const getFetchOptions = (options: RequestInit = {}): RequestInit => {
+  return {
+    ...options,
+    credentials: "include", // Always include cookies
+    headers: {
+      ...getAuthHeaders(),
+      ...(options.headers || {}),
+    },
   };
 };
 
@@ -242,9 +252,10 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
 
 export const dashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
-    const response = await fetch(`${API_BASE_URL}/admin/dashboard/stats`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/admin/dashboard/stats`,
+      getFetchOptions()
+    );
     return handleResponse<DashboardStats>(response);
   },
 };
@@ -253,44 +264,64 @@ export const dashboardApi = {
 
 export const researchApi = {
   create: async (data: CreateResearchDto): Promise<Research> => {
-    const response = await fetch(`${API_BASE_URL}/research`, {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/research`,
+      getFetchOptions({
+        method: "POST",
+        credentials: "include" as RequestCredentials,
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      })
+    );
     return handleResponse<Research>(response);
   },
 
   update: async (slug: string, data: UpdateResearchDto): Promise<Research> => {
-    const response = await fetch(`${API_BASE_URL}/research/${slug}`, {
-      method: "PATCH",
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/research/${slug}`,
+      getFetchOptions({
+        method: "PATCH",
+        credentials: "include" as RequestCredentials,
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      })
+    );
     return handleResponse<Research>(response);
   },
 
   delete: async (slug: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/research/${slug}`, {
-      method: "DELETE",
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/research/${slug}`,
+      getFetchOptions({
+        method: "DELETE",
+        credentials: "include" as RequestCredentials,
+        headers: getAuthHeaders(),
+      })
+    );
     return handleResponse<void>(response);
   },
 
   togglePublish: async (slug: string): Promise<Research> => {
-    const response = await fetch(`${API_BASE_URL}/research/${slug}/publish`, {
-      method: "PATCH",
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/research/${slug}/publish`,
+      getFetchOptions({
+        method: "PATCH",
+        credentials: "include" as RequestCredentials,
+        headers: getAuthHeaders(),
+      })
+    );
     return handleResponse<Research>(response);
   },
 
   toggleFeatured: async (slug: string): Promise<Research> => {
-    const response = await fetch(`${API_BASE_URL}/research/${slug}/feature`, {
-      method: "PATCH",
-      headers: getAuthHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/research/${slug}/feature`,
+      getFetchOptions({
+        method: "PATCH",
+        credentials: "include" as RequestCredentials,
+        headers: getAuthHeaders(),
+      })
+    );
     return handleResponse<Research>(response);
   },
 };
@@ -301,7 +332,9 @@ export const coursesApi = {
   create: async (data: CreateCourseDto): Promise<Course> => {
     const response = await fetch(`${API_BASE_URL}/media-literacy/courses`, {
       method: "POST",
+      credentials: "include" as RequestCredentials,
       headers: getAuthHeaders(),
+
       body: JSON.stringify(data),
     });
     return handleResponse<Course>(response);
@@ -312,7 +345,9 @@ export const coursesApi = {
       `${API_BASE_URL}/media-literacy/courses/${slug}`,
       {
         method: "PATCH",
+        credentials: "include" as RequestCredentials,
         headers: getAuthHeaders(),
+
         body: JSON.stringify(data),
       }
     );
@@ -324,6 +359,7 @@ export const coursesApi = {
       `${API_BASE_URL}/media-literacy/courses/${slug}`,
       {
         method: "DELETE",
+        credentials: "include" as RequestCredentials,
         headers: getAuthHeaders(),
       }
     );
@@ -335,6 +371,7 @@ export const coursesApi = {
       `${API_BASE_URL}/media-literacy/courses/${slug}/publish`,
       {
         method: "PATCH",
+        credentials: "include" as RequestCredentials,
         headers: getAuthHeaders(),
       }
     );
@@ -350,7 +387,9 @@ export const coursesApi = {
       `${API_BASE_URL}/media-literacy/courses/${courseSlug}/lessons`,
       {
         method: "POST",
+        credentials: "include" as RequestCredentials,
         headers: getAuthHeaders(),
+
         body: JSON.stringify(data),
       }
     );
@@ -365,7 +404,9 @@ export const coursesApi = {
       `${API_BASE_URL}/media-literacy/lessons/${lessonId}`,
       {
         method: "PATCH",
+        credentials: "include" as RequestCredentials,
         headers: getAuthHeaders(),
+
         body: JSON.stringify(data),
       }
     );
@@ -377,6 +418,7 @@ export const coursesApi = {
       `${API_BASE_URL}/media-literacy/lessons/${lessonId}`,
       {
         method: "DELETE",
+        credentials: "include" as RequestCredentials,
         headers: getAuthHeaders(),
       }
     );
@@ -387,18 +429,27 @@ export const coursesApi = {
 // ==================== FAQ API ====================
 
 export const faqApi = {
-  getAll: async (): Promise<FAQ[]> => {
-    const response = await fetch(`${API_BASE_URL}/faq`, {
+  getAll: async (params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: FAQ[]; meta: any }> => {
+    const query = new URLSearchParams();
+    if (params?.page) query.append("page", params.page.toString());
+    if (params?.limit) query.append("limit", params.limit.toString());
+
+    const response = await fetch(`${API_BASE_URL}/faq?${query}`, {
+      credentials: "include",
       headers: getAuthHeaders(),
     });
-    const result = await handleResponse<{ data: FAQ[] }>(response);
-    return result.data;
+    return handleResponse<{ data: FAQ[]; meta: any }>(response);
   },
 
   create: async (data: CreateFaqDto): Promise<FAQ> => {
     const response = await fetch(`${API_BASE_URL}/faq`, {
       method: "POST",
+      credentials: "include" as RequestCredentials,
       headers: getAuthHeaders(),
+
       body: JSON.stringify(data),
     });
     return handleResponse<FAQ>(response);
@@ -407,7 +458,9 @@ export const faqApi = {
   update: async (id: string, data: UpdateFaqDto): Promise<FAQ> => {
     const response = await fetch(`${API_BASE_URL}/faq/${id}`, {
       method: "PATCH",
+      credentials: "include" as RequestCredentials,
       headers: getAuthHeaders(),
+
       body: JSON.stringify(data),
     });
     return handleResponse<FAQ>(response);
@@ -416,6 +469,7 @@ export const faqApi = {
   delete: async (id: string): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/faq/${id}`, {
       method: "DELETE",
+      credentials: "include" as RequestCredentials,
       headers: getAuthHeaders(),
     });
     return handleResponse<void>(response);
@@ -424,6 +478,7 @@ export const faqApi = {
   togglePublish: async (id: string): Promise<FAQ> => {
     const response = await fetch(`${API_BASE_URL}/faq/${id}/publish`, {
       method: "PATCH",
+      credentials: "include" as RequestCredentials,
       headers: getAuthHeaders(),
     });
     return handleResponse<FAQ>(response);
@@ -436,8 +491,212 @@ export const submissionsApi = {
   delete: async (id: string): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/submissions/${id}`, {
       method: "DELETE",
+      credentials: "include" as RequestCredentials,
       headers: getAuthHeaders(),
     });
     return handleResponse<void>(response);
+  },
+};
+
+// ==================== EVENTS API ====================
+
+export interface Event {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  type: EventTypeValue;
+  status: "DRAFT" | "PUBLISHED" | "CANCELLED";
+  startDate: string;
+  endDate: string;
+  location: string;
+  onlineLink?: string;
+  capacity: number;
+  registeredCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEventDto {
+  title: string;
+  slug: string;
+  description: string;
+  type: EventTypeValue;
+  startDate: string;
+  endDate: string;
+  location: string;
+  onlineLink?: string;
+  capacity: number;
+}
+
+export interface UpdateEventDto extends Partial<CreateEventDto> {
+  status?: "DRAFT" | "PUBLISHED" | "CANCELLED";
+}
+
+export const eventsApi = {
+  getAll: async (params?: {
+    page?: number;
+    limit?: number;
+    type?: string;
+    status?: string;
+  }): Promise<{ data: Event[]; meta: any }> => {
+    const query = new URLSearchParams();
+    if (params?.page) query.append("page", params.page.toString());
+    if (params?.limit) query.append("limit", params.limit.toString());
+    if (params?.type) query.append("type", params.type);
+    if (params?.status) query.append("status", params.status);
+
+    const response = await fetch(`${API_BASE_URL}/events?${query}`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<{ data: Event[]; meta: any }>(response);
+  },
+
+  getOne: async (slug: string): Promise<Event> => {
+    const response = await fetch(`${API_BASE_URL}/events/${slug}`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<Event>(response);
+  },
+
+  create: async (data: CreateEventDto): Promise<Event> => {
+    const response = await fetch(`${API_BASE_URL}/events`, {
+      method: "POST",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Event>(response);
+  },
+
+  update: async (slug: string, data: UpdateEventDto): Promise<Event> => {
+    const response = await fetch(`${API_BASE_URL}/events/${slug}`, {
+      method: "PATCH",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Event>(response);
+  },
+
+  delete: async (slug: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/events/${slug}`, {
+      method: "DELETE",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<void>(response);
+  },
+};
+
+// ==================== FACT CHECKS API ====================
+
+export interface FactCheck {
+  id: string;
+  title: string;
+  slug: string;
+  claim: string;
+  verdict: VeracityRatingValue;
+  explanation: string;
+  sources: any[];
+  claimDate?: string;
+  publishedAt?: string;
+  featured: boolean;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  author?: {
+    firstName: string;
+    lastName: string;
+  };
+}
+
+export interface CreateFactCheckDto {
+  title: string;
+  slug: string;
+  claim: string;
+  verdict: VeracityRatingValue;
+  explanation: string;
+  sources?: any[];
+  claimDate?: string;
+  featured?: boolean;
+}
+
+export interface UpdateFactCheckDto extends Partial<CreateFactCheckDto> {}
+
+export const factChecksApi = {
+  getAll: async (params?: {
+    page?: number;
+    limit?: number;
+    verdict?: string;
+  }): Promise<{ data: FactCheck[]; meta: any }> => {
+    const query = new URLSearchParams();
+    if (params?.page) query.append("page", params.page.toString());
+    if (params?.limit) query.append("limit", params.limit.toString());
+    if (params?.verdict) query.append("verdict", params.verdict);
+
+    const response = await fetch(`${API_BASE_URL}/fact-checks?${query}`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<{ data: FactCheck[]; meta: any }>(response);
+  },
+
+  getOne: async (slug: string): Promise<FactCheck> => {
+    const response = await fetch(`${API_BASE_URL}/fact-checks/${slug}`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<FactCheck>(response);
+  },
+
+  create: async (data: CreateFactCheckDto): Promise<FactCheck> => {
+    const response = await fetch(`${API_BASE_URL}/fact-checks`, {
+      method: "POST",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+
+      body: JSON.stringify(data),
+    });
+    return handleResponse<FactCheck>(response);
+  },
+
+  update: async (
+    slug: string,
+    data: UpdateFactCheckDto
+  ): Promise<FactCheck> => {
+    const response = await fetch(`${API_BASE_URL}/fact-checks/${slug}`, {
+      method: "PATCH",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+
+      body: JSON.stringify(data),
+    });
+    return handleResponse<FactCheck>(response);
+  },
+
+  delete: async (slug: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/fact-checks/${slug}`, {
+      method: "DELETE",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<void>(response);
+  },
+
+  toggleFeatured: async (slug: string): Promise<FactCheck> => {
+    const response = await fetch(
+      `${API_BASE_URL}/fact-checks/${slug}/toggle-featured`,
+      {
+        method: "PATCH",
+        credentials: "include" as RequestCredentials,
+        headers: getAuthHeaders(),
+      }
+    );
+    return handleResponse<FactCheck>(response);
   },
 };

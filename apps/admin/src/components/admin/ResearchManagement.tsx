@@ -35,13 +35,15 @@ const ResearchManagement = () => {
   }>({ open: false, research: null });
 
   const [createDialog, setCreateDialog] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  // Fetch research from the main API
+  // Fetch research from the main API with pagination
   const { data: researchData, isLoading } = useQuery({
-    queryKey: ["research"],
+    queryKey: ["research", currentPage, pageSize],
     queryFn: async () => {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"}/research`
+        `${import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"}/research?page=${currentPage}&limit=${pageSize}`
       );
       return response.json();
     },
@@ -111,7 +113,7 @@ const ResearchManagement = () => {
       header: "المشاهدات",
       accessor: "views",
       sortable: true,
-      cell: (value) => value.toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-SA"),
     },
     {
       header: "تاريخ الإنشاء",
@@ -170,6 +172,13 @@ const ResearchManagement = () => {
         searchPlaceholder="البحث في الأبحاث..."
         isLoading={isLoading}
         emptyMessage="لا توجد أبحاث"
+        pagination={{
+          currentPage,
+          pageSize,
+          totalItems: researchData?.meta?.total || research.length,
+          onPageChange: setCurrentPage,
+          onPageSizeChange: setPageSize,
+        }}
       />
 
       <ConfirmDialog

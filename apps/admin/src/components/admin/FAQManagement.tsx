@@ -31,12 +31,16 @@ const FAQManagement = () => {
   }>({ open: false, faq: null });
 
   const [createDialog, setCreateDialog] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Fetch FAQs
-  const { data: faqs = [], isLoading } = useQuery({
-    queryKey: ["faqs"],
-    queryFn: faqApi.getAll,
+  const { data: faqsResponse, isLoading } = useQuery({
+    queryKey: ["faqs", currentPage, pageSize],
+    queryFn: () => faqApi.getAll({ page: currentPage, limit: pageSize }),
   });
+
+  const faqs = faqsResponse?.data || [];
 
   // Mutations
   const deleteMutation = useMutation({
@@ -85,7 +89,7 @@ const FAQManagement = () => {
       header: "المشاهدات",
       accessor: "views",
       sortable: true,
-      cell: (value) => value.toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-SA"),
     },
     {
       header: "تاريخ الإنشاء",
@@ -134,6 +138,13 @@ const FAQManagement = () => {
         searchPlaceholder="البحث في الأسئلة..."
         isLoading={isLoading}
         emptyMessage="لا توجد أسئلة"
+        pagination={{
+          currentPage,
+          pageSize,
+          totalItems: faqsResponse?.meta?.total || faqs.length,
+          onPageChange: setCurrentPage,
+          onPageSizeChange: setPageSize,
+        }}
       />
 
       <ConfirmDialog

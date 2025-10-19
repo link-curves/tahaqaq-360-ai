@@ -41,6 +41,14 @@ interface DataTableProps<T> {
   onSearch?: (query: string) => void;
   isLoading?: boolean;
   emptyMessage?: string;
+  // Pagination props
+  pagination?: {
+    currentPage: number;
+    pageSize: number;
+    totalItems: number;
+    onPageChange: (page: number) => void;
+    onPageSizeChange?: (size: number) => void;
+  };
 }
 
 export function DataTable<T extends { id: string }>({
@@ -52,6 +60,7 @@ export function DataTable<T extends { id: string }>({
   onSearch,
   isLoading = false,
   emptyMessage = "لا توجد بيانات",
+  pagination,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -213,6 +222,106 @@ export function DataTable<T extends { id: string }>({
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls */}
+      {pagination && (
+        <div className="flex items-center justify-between px-2 py-4">
+          <div className="text-sm text-muted-foreground">
+            عرض {(pagination.currentPage - 1) * pagination.pageSize + 1} إلى{" "}
+            {Math.min(
+              pagination.currentPage * pagination.pageSize,
+              pagination.totalItems
+            )}{" "}
+            من {pagination.totalItems} نتيجة
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                pagination.onPageChange(pagination.currentPage - 1)
+              }
+              disabled={pagination.currentPage === 1}
+            >
+              السابق
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from(
+                {
+                  length: Math.ceil(
+                    pagination.totalItems / pagination.pageSize
+                  ),
+                },
+                (_, i) => i + 1
+              )
+                .filter((page) => {
+                  // Show first, last, current, and adjacent pages
+                  const totalPages = Math.ceil(
+                    pagination.totalItems / pagination.pageSize
+                  );
+                  return (
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - pagination.currentPage) <= 1
+                  );
+                })
+                .map((page, idx, array) => {
+                  // Add ellipsis if there's a gap
+                  const prevPage = array[idx - 1];
+                  const showEllipsis = prevPage && page - prevPage > 1;
+                  return (
+                    <div key={page} className="flex items-center gap-1">
+                      {showEllipsis && <span className="px-2">...</span>}
+                      <Button
+                        variant={
+                          pagination.currentPage === page
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        onClick={() => pagination.onPageChange(page)}
+                        className={
+                          pagination.currentPage === page
+                            ? "bg-red-600 hover:bg-red-700"
+                            : ""
+                        }
+                      >
+                        {page}
+                      </Button>
+                    </div>
+                  );
+                })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                pagination.onPageChange(pagination.currentPage + 1)
+              }
+              disabled={
+                pagination.currentPage >=
+                Math.ceil(pagination.totalItems / pagination.pageSize)
+              }
+            >
+              التالي
+            </Button>
+            {pagination.onPageSizeChange && (
+              <select
+                value={pagination.pageSize}
+                onChange={(e) =>
+                  pagination.onPageSizeChange?.(Number(e.target.value))
+                }
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

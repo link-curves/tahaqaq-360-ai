@@ -47,20 +47,22 @@ const CourseManagement = () => {
 
   const [createDialog, setCreateDialog] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Fetch courses
   const { data: coursesData, isLoading } = useQuery({
-    queryKey: ["courses"],
+    queryKey: ["courses", currentPage, pageSize],
     queryFn: async () => {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"}/media-literacy/courses`
+        `${import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"}/media-literacy/courses?page=${currentPage}&limit=${pageSize}`
       );
       const result = await response.json();
-      return result.data || [];
+      return result;
     },
   });
 
-  const courses = coursesData || [];
+  const courses = coursesData?.data || [];
 
   // Mutations
   const deleteMutation = useMutation({
@@ -106,7 +108,7 @@ const CourseManagement = () => {
       header: "المدة (دقيقة)",
       accessor: "duration",
       sortable: true,
-      cell: (value) => value.toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-SA"),
     },
     {
       header: "الحالة",
@@ -117,12 +119,12 @@ const CourseManagement = () => {
     {
       header: "الدروس",
       accessor: (row) => row._count?.lessons || 0,
-      cell: (value) => value.toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-SA"),
     },
     {
       header: "المشتركون",
       accessor: (row) => row._count?.enrollments || 0,
-      cell: (value) => value.toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-SA"),
     },
   ];
 
@@ -170,6 +172,13 @@ const CourseManagement = () => {
         searchPlaceholder="البحث في الدورات..."
         isLoading={isLoading}
         emptyMessage="لا توجد دورات"
+        pagination={{
+          currentPage,
+          pageSize,
+          totalItems: coursesData?.meta?.total || courses.length,
+          onPageChange: setCurrentPage,
+          onPageSizeChange: setPageSize,
+        }}
       />
 
       <ConfirmDialog

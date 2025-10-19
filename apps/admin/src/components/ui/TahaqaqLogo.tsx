@@ -11,7 +11,7 @@ export const TahqaqLogo: React.FC<TahqaqLogoProps> = ({
 }) => {
   return (
     <img
-      src="/tahaqa_360_logo.png"
+      src="/tahaqaq_360_logo.png"
       alt="Tahqaq 360 Logo"
       width={width}
       height={height}
