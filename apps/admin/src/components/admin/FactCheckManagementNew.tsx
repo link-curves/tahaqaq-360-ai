@@ -250,14 +250,14 @@ const FactCheckManagementNew = () => {
       header: "المشاهدات",
       accessor: "viewCount",
       sortable: true,
-      cell: (value) => (value || 0).toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-EG"),
     },
     {
       header: "تاريخ النشر",
       accessor: "publishedAt",
       sortable: true,
       cell: (value) =>
-        value ? new Date(value).toLocaleDateString("ar-SA") : "غير منشور",
+        value ? new Date(value).toLocaleDateString("ar-EG") : "غير منشور",
     },
   ];
 
@@ -290,7 +290,7 @@ const FactCheckManagementNew = () => {
             resetForm();
             setIsDialogOpen(true);
           }}
-          className="bg-red-600 hover:bg-red-700"
+          className="bg-red-600 hover:bg-red-700 text-white"
         >
           <Plus className="w-4 h-4 ml-2" />
           تحقق جديد

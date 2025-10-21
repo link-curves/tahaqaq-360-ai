@@ -7,7 +7,6 @@ import EventManagementNew from "./EventManagementNew";
 import FactCheckManagementNew from "./FactCheckManagementNew";
 import FAQManagement from "./FAQManagement";
 import ResearchManagement from "./ResearchManagement";
-import SettingsView from "./SettingsView";
 
 interface AdminDashboardProps {
   activeSection: string;
@@ -34,8 +33,8 @@ const AdminDashboard = ({ activeSection }: AdminDashboardProps) => {
         return <FAQManagement />;
       case "analytics":
         return <AnalyticsView />;
-      case "settings":
-        return <SettingsView />;
+      // case "settings":
+      //   return <SettingsView />;
       default:
         return <DashboardOverviewNew />;
     }

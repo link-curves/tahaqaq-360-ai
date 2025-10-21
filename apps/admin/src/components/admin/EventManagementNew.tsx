@@ -174,7 +174,7 @@ const EventManagementNew = () => {
       cell: (value) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="ml-2 h-4 w-4" />
-          {new Date(value).toLocaleDateString("ar-SA")}
+          {new Date(value).toLocaleDateString("ar-EG")}
         </div>
       ),
     },
@@ -253,7 +253,7 @@ const EventManagementNew = () => {
             resetForm();
             setIsDialogOpen(true);
           }}
-          className="bg-red-600 hover:bg-red-700"
+          className="bg-red-600 hover:bg-red-700 text-white"
         >
           <Plus className="w-4 h-4 ml-2" />
           حدث جديد

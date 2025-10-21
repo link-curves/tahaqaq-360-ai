@@ -46,7 +46,7 @@ export class AuthController {
       httpOnly: true,
       secure: this.config.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: '/',
     });
 
@@ -63,7 +63,7 @@ export class AuthController {
       httpOnly: false, // This can be read by JS for UI state
       secure: this.config.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: '/',
     });
 
@@ -88,7 +88,7 @@ export class AuthController {
       httpOnly: true,
       secure: this.config.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: '/',
     });
 
@@ -105,7 +105,7 @@ export class AuthController {
       httpOnly: false, // This can be read by JS for UI state
       secure: this.config.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: '/',
     });
 
@@ -167,11 +167,20 @@ export class AuthController {
         httpOnly: true,
         secure: this.config.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax' as const,
-        maxAge: 15 * 60 * 1000, // 15 minutes
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
         path: '/',
       };
 
       res.cookie('access_token', tokens.accessToken, accessCookieOptions);
+
+      // Update logged_in cookie as well
+      res.cookie('logged_in', 'true', {
+        httpOnly: false,
+        secure: this.config.get<string>('NODE_ENV') === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        path: '/',
+      });
 
       return res.json({ message: 'Token refreshed successfully' });
     } catch (error) {

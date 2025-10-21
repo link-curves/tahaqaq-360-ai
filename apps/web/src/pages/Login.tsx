@@ -61,7 +61,7 @@ const Login = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-red-900 to-rose-900 flex items-center justify-center p-4 relative overflow-hidden mt-18"
+      className="h-screen bg-gradient-to-br from-slate-900 via-red-900 to-rose-900 flex items-center justify-center p-4 relative overflow-hidden"
       dir="rtl"
     >
       {/* Animated Background Elements */}

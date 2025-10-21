@@ -265,7 +265,7 @@ const MySubmissions = () => {
                           </span>
                           <span className="text-xs text-gray-500">
                             {new Date(submission.createdAt).toLocaleDateString(
-                              "ar-SA"
+                              "ar-EG"
                             )}
                           </span>
                         </div>

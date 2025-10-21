@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TahqaqLogo } from "@/components/ui/TahaqaqLogo";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
-import { Bell, LogOut, Menu, User } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface AdminNavbarProps {
@@ -58,14 +58,6 @@ const AdminNavbar = ({ sidebarOpen, setSidebarOpen }: AdminNavbarProps) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-gray-600 hover:text-gray-900"
-          >
-            <Bell className="h-5 w-5" />
-          </Button>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

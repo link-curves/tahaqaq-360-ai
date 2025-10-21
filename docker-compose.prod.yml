@@ -50,7 +50,7 @@ services:
       PORT: 5000
 
       # CORS
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost:3001}
 
       # JWT
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-your-secret-key-change-in-production}
@@ -101,7 +101,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile.prod
+      dockerfile: apps/web/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api/v1}
     container_name: tahaqaq-web
@@ -110,6 +110,26 @@ services:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api/v1}
     ports:
       - "${WEB_PORT:-3000}:80"
+    depends_on:
+      - api
+    networks:
+      - tahaqaq-network
+
+  # ---------------------------------
+  # Admin Panel (Nginx)
+  # ---------------------------------
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile.prod
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api/v1}
+    container_name: tahaqaq-admin
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api/v1}
+    ports:
+      - "${ADMIN_PORT:-3001}:80"
     depends_on:
       - api
     networks:

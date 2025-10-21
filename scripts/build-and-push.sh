@@ -9,7 +9,7 @@
 set -e
 
 # Configuration
-DOCKER_USERNAME="${DOCKER_USERNAME:-yourusername}"
+DOCKER_USERNAME="${DOCKER_USERNAME:-alitraboulsi}"
 VERSION="${1:-latest}"
 REGISTRY="docker.io"
 
@@ -18,6 +18,16 @@ echo "======================================"
 echo "Version: $VERSION"
 echo "Registry: $REGISTRY"
 echo "Username: $DOCKER_USERNAME"
+echo ""
+
+# Run pre-build checks and preparations
+echo "🔧 Running pre-build preparations..."
+if [ -f "scripts/pre-build.sh" ]; then
+  chmod +x scripts/pre-build.sh
+  ./scripts/pre-build.sh
+else
+  echo "⚠️  Warning: pre-build.sh not found, skipping preparation"
+fi
 echo ""
 
 # Build API image

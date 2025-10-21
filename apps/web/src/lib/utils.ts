@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
 // Date formatting utilities
 export const formatDate = (
   dateString: string,
-  locale: string = "ar-SA"
+  locale: string = "ar-EG"
 ): string => {
   const date = new Date(dateString);
   return date.toLocaleDateString(locale, {
@@ -24,7 +24,7 @@ export const formatDate = (
 
 export const formatDateTime = (
   dateString: string,
-  locale: string = "ar-SA"
+  locale: string = "ar-EG"
 ): string => {
   const date = new Date(dateString);
   return date.toLocaleString(locale, {
@@ -38,7 +38,7 @@ export const formatDateTime = (
 
 export const getRelativeTime = (
   dateString: string,
-  locale: string = "ar-SA"
+  locale: string = "ar-EG"
 ): string => {
   const date = new Date(dateString);
   const now = new Date();
@@ -125,7 +125,7 @@ export const stripHtml = (html: string): string => {
 };
 
 // Number formatting
-export const formatNumber = (num: number, locale: string = "ar-SA"): string => {
+export const formatNumber = (num: number, locale: string = "ar-EG"): string => {
   return num.toLocaleString(locale);
 };
 

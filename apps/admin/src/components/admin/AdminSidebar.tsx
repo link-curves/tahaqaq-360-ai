@@ -9,7 +9,6 @@ import {
   GraduationCap,
   HelpCircle,
   LayoutDashboard,
-  Settings,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -33,12 +32,12 @@ const AdminSidebar = ({
     { id: "courses", label: "الدورات", icon: GraduationCap },
     { id: "faqs", label: "الأسئلة الشائعة", icon: HelpCircle },
     { id: "analytics", label: "الإحصائيات", icon: BarChart3 },
-    { id: "settings", label: "الإعدادات", icon: Settings },
+    // { id: "settings", label: "الإعدادات", icon: Settings },
   ];
 
   return (
     <aside
-      className={`fixed right-0 top-[3.75rem] h-[calc(100vh-3.75rem)] bg-white border-l border-gray-200 shadow-sm transition-all duration-300 z-20 ${
+      className={`fixed right-0 top-[3.75rem] h-[calc(100vh-3.75rem)] bg-white border-l border-gray-200 shadow-sm transition-all duration-300 z-20 pt-5 ${
         isOpen ? "w-64" : "w-16"
       }`}
     >

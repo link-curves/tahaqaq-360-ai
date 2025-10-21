@@ -1,12 +1,13 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, TrendingUp, Users, Eye } from "lucide-react";
+import { BarChart3, TrendingUp } from "lucide-react";
 
 const AnalyticsView = () => {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">الإحصائيات والتحليلات</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          الإحصائيات والتحليلات
+        </h2>
         <p className="text-gray-600">تحليل أداء الموقع وتفاعل المستخدمين</p>
       </div>
 

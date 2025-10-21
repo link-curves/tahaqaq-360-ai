@@ -89,13 +89,13 @@ const FAQManagement = () => {
       header: "المشاهدات",
       accessor: "views",
       sortable: true,
-      cell: (value) => (value || 0).toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-EG"),
     },
     {
       header: "تاريخ الإنشاء",
       accessor: "createdAt",
       sortable: true,
-      cell: (value) => new Date(value).toLocaleDateString("ar-SA"),
+      cell: (value) => new Date(value).toLocaleDateString("ar-EG"),
     },
   ];
 
@@ -108,7 +108,10 @@ const FAQManagement = () => {
             إدارة الأسئلة والأجوبة الشائعة
           </p>
         </div>
-        <Button onClick={() => setCreateDialog(true)}>
+        <Button
+          onClick={() => setCreateDialog(true)}
+          className="bg-red-600 hover:bg-red-700 text-white"
+        >
           <Plus className="w-4 h-4 ml-2" />
           إضافة سؤال جديد
         </Button>

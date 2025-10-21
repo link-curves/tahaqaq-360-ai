@@ -1,8 +1,10 @@
 import { registerAs } from '@nestjs/config';
 
 export const jwtConfig = registerAs('jwt', () => ({
-  accessSecret: process.env.JWT_ACCESS_SECRET || 'access-secret-change-in-production',
-  refreshSecret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-change-in-production',
-  accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+  accessSecret:
+    process.env.JWT_ACCESS_SECRET || 'access-secret-change-in-production',
+  refreshSecret:
+    process.env.JWT_REFRESH_SECRET || 'refresh-secret-change-in-production',
+  accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '24h',
   refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
 }));

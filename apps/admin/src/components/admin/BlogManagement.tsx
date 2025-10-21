@@ -1,9 +1,6 @@
-
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,6 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Edit, Eye, Plus, Search, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 const BlogManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,7 +22,7 @@ const BlogManagement = () => {
       author: "أحمد محمد",
       date: "2025-06-20",
       status: "منشور",
-      views: 1250
+      views: 1250,
     },
     {
       id: 2,
@@ -31,7 +30,7 @@ const BlogManagement = () => {
       author: "سارة أحمد",
       date: "2025-06-19",
       status: "مراجعة",
-      views: 890
+      views: 890,
     },
     {
       id: 3,
@@ -39,7 +38,7 @@ const BlogManagement = () => {
       author: "محمد علي",
       date: "2025-06-18",
       status: "منشور",
-      views: 2100
+      views: 2100,
     },
   ];
 
@@ -47,7 +46,9 @@ const BlogManagement = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">إدارة المقالات</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            إدارة المقالات
+          </h2>
           <p className="text-gray-600">إنشاء وتحرير مقالات المدونة</p>
         </div>
         <Button className="bg-red-600 hover:bg-red-700">
@@ -92,11 +93,13 @@ const BlogManagement = () => {
                   <TableCell>{post.author}</TableCell>
                   <TableCell>{post.date}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      post.status === "منشور" 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        post.status === "منشور"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
                       {post.status}
                     </span>
                   </TableCell>
@@ -109,7 +112,11 @@ const BlogManagement = () => {
                       <Button variant="ghost" size="icon">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-600 hover:text-red-700"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

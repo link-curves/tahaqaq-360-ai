@@ -7,27 +7,29 @@ version: "3.9"
 
 services:
   # ---------------------------------
-  # PostgreSQL Database
+  # PostgreSQL Database (COMMENTED OUT - Using Supabase)
   # ---------------------------------
-  postgres:
-    image: postgres:16-alpine
-    container_name: tahaqaq-db-dev
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: tahaqaq
-      POSTGRES_PASSWORD: tahaqaq_dev
-      POSTGRES_DB: tahaqaq_dev
-    volumes:
-      - postgres_data_dev:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tahaqaq"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - tahaqaq-network
+  # Uncomment this section if you want to use local PostgreSQL instead of Supabase
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: tahaqaq-db-dev
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: tahaqaq
+  #     POSTGRES_PASSWORD: tahaqaq_dev
+  #     POSTGRES_DB: tahaqaq_dev
+  #     PGDATA: /var/lib/postgresql/data/pgdata
+  #   volumes:
+  #     - postgres_data_dev:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U tahaqaq -d tahaqaq_dev"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - tahaqaq-network
 
   # ---------------------------------
   # NestJS API Backend (Dev Mode)
@@ -40,11 +42,12 @@ services:
     container_name: tahaqaq-api-dev
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://tahaqaq:tahaqaq_dev@postgres:5432/tahaqaq_dev?schema=public
-      DATABASE_DIRECT_URL: postgresql://tahaqaq:tahaqaq_dev@postgres:5432/tahaqaq_dev?schema=public
+      # Use Supabase database instead of local PostgreSQL
+      DATABASE_URL: postgresql://postgres.mkowxfbbazrjkhihmpea:***REMOVED-ROTATE-ME***@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+      DATABASE_DIRECT_URL: postgresql://postgres.mkowxfbbazrjkhihmpea:***REMOVED-ROTATE-ME***@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
       NODE_ENV: development
-      PORT: 3000
-      CORS_ORIGIN: http://localhost:5173,http://localhost:3000
+      PORT: 5000
+      CORS_ORIGIN: http://localhost:5173,http://localhost:3000,http://localhost:3001
       JWT_ACCESS_SECRET: dev-secret-key
       JWT_REFRESH_SECRET: dev-refresh-secret
       THROTTLE_TTL: 60000
@@ -54,13 +57,10 @@ services:
       - /app/node_modules
       - /app/apps/api/node_modules
     ports:
-      - "3000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "5000:5000"
     networks:
       - tahaqaq-network
-    command: sh -c "cd apps/api && pnpm db:generate && pnpm dev"
+    command: sh -c "cd apps/api && pnpm db:generate && pnpm db:deploy && pnpm dev"
 
   # ---------------------------------
   # React + Vite Frontend (Dev Mode)
@@ -73,22 +73,47 @@ services:
     container_name: tahaqaq-web-dev
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:3000/api/v1
+      VITE_API_URL: http://localhost:5000/api/v1
     volumes:
       - ./apps/web:/app/apps/web
       - /app/node_modules
       - /app/apps/web/node_modules
     ports:
-      - "5173:5173"
+      - "3000:3000"
     depends_on:
       - api
     networks:
       - tahaqaq-network
     command: sh -c "cd apps/web && pnpm dev --host"
 
-volumes:
-  postgres_data_dev:
-    driver: local
+  # ---------------------------------
+  # Admin Panel (Dev Mode)
+  # ---------------------------------
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile.prod
+      target: builder
+    container_name: tahaqaq-admin-dev
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:5000/api/v1
+    volumes:
+      - ./apps/admin:/app/apps/admin
+      - /app/node_modules
+      - /app/apps/admin/node_modules
+    ports:
+      - "3001:3001"
+    depends_on:
+      - api
+    networks:
+      - tahaqaq-network
+    command: sh -c "cd apps/admin && pnpm dev --host --port 3001"
+
+# Volumes (commented out since using Supabase)
+# volumes:
+#   postgres_data_dev:
+#     driver: local
 
 networks:
   tahaqaq-network:

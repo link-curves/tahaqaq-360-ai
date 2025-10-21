@@ -18,7 +18,7 @@ FROM base AS deps
 WORKDIR /app
 
 # Copy package files for all workspaces
-COPY apps/web/package.json ./apps/web/
+COPY apps/admin/package.json ./apps/admin/
 COPY packages ./packages
 
 # Install dependencies (use --no-frozen-lockfile to allow updates)
@@ -32,10 +32,10 @@ WORKDIR /app
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/apps/admin/node_modules ./apps/admin/node_modules
 
 # Copy source code
-COPY apps/web ./apps/web
+COPY apps/admin ./apps/admin
 COPY packages ./packages
 COPY turbo.json ./
 COPY pnpm-workspace.yaml ./
@@ -45,7 +45,7 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
 # Build the application
-RUN pnpm turbo build --filter=web
+RUN pnpm turbo build --filter=admin
 
 # ===========================================
 # Stage 4: Production - Serve with Nginx
@@ -53,15 +53,15 @@ RUN pnpm turbo build --filter=web
 FROM nginx:alpine AS production
 
 # Copy custom nginx config
-COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+COPY apps/admin/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built assets from builder
-COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
+COPY --from=builder /app/apps/admin/dist /usr/share/nginx/html
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3001/ || exit 1
 
-EXPOSE 3000
+EXPOSE 3001
 
 CMD ["nginx", "-g", "daemon off;"]

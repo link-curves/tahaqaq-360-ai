@@ -131,6 +131,28 @@ const AdminLogin = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-white">مخصص للمسؤولين والمشرفين فقط</p>
             </div>
+
+            {/* Development Hint */}
+            {import.meta.env.DEV && (
+              <div className="mt-4 p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+                <p className="text-xs text-yellow-200 font-medium mb-1">
+                  🔧 وضع التطوير - حسابات تجريبية:
+                </p>
+                <div className="text-xs text-yellow-100 space-y-1 text-right">
+                  <p>• المدير العام: admin@tahaqaq360.com</p>
+                  <p>
+                    • مديرين: admin1@tahaqaq360.com إلى admin5@tahaqaq360.com
+                  </p>
+                  <p>
+                    • مشرفين: moderator1@tahaqaq360.com إلى
+                    moderator10@tahaqaq360.com
+                  </p>
+                  <p className="font-semibold mt-1">
+                    كلمة المرور لجميع الحسابات: Password123!
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

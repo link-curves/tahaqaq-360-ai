@@ -20,7 +20,7 @@ import { AdminService } from './admin.service';
 @ApiTags('Admin')
 @Controller('admin')
 @UseGuards(RolesGuard)
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
 @ApiBearerAuth('JWT-auth')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}

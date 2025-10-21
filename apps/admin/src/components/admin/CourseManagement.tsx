@@ -108,7 +108,7 @@ const CourseManagement = () => {
       header: "المدة (دقيقة)",
       accessor: "duration",
       sortable: true,
-      cell: (value) => (value || 0).toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-EG"),
     },
     {
       header: "الحالة",
@@ -119,12 +119,12 @@ const CourseManagement = () => {
     {
       header: "الدروس",
       accessor: (row) => row._count?.lessons || 0,
-      cell: (value) => (value || 0).toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-EG"),
     },
     {
       header: "المشتركون",
       accessor: (row) => row._count?.enrollments || 0,
-      cell: (value) => (value || 0).toLocaleString("ar-SA"),
+      cell: (value) => (value || 0).toLocaleString("ar-EG"),
     },
   ];
 
@@ -137,7 +137,10 @@ const CourseManagement = () => {
             إدارة دورات محو الأمية الإعلامية
           </p>
         </div>
-        <Button onClick={() => setCreateDialog(true)}>
+        <Button
+          onClick={() => setCreateDialog(true)}
+          className="bg-red-600 hover:bg-red-700 text-white"
+        >
           <Plus className="w-4 h-4 ml-2" />
           إضافة دورة جديدة
         </Button>

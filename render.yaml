@@ -1,0 +1,81 @@
+# Render deployment configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  # API Backend
+  - type: web
+    name: tahaqaq-360-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    region: frankfurt # Change to your preferred region
+    plan: free # or starter, standard
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tahaqaq-360-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 24h
+      - key: JWT_REFRESH_EXPIRATION
+        value: 7d
+      - key: THROTTLE_TTL
+        value: 60000
+      - key: THROTTLE_LIMIT
+        value: 1000
+      - key: CORS_ORIGIN
+        sync: false # Set manually in Render dashboard
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        sync: false
+    healthCheckPath: /api/v1/health
+    
+  # Main Website
+  - type: web
+    name: tahaqaq-360-web
+    runtime: docker
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: .
+    region: frankfurt
+    plan: free
+    buildCommand: echo "Using Docker build"
+    envVars:
+      - key: VITE_API_URL
+        value: https://tahaqaq-360-api.onrender.com/api/v1
+    
+  # Admin Panel
+  - type: web
+    name: tahaqaq-360-admin
+    runtime: docker
+    dockerfilePath: ./apps/admin/Dockerfile.prod
+    dockerContext: .
+    region: frankfurt
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        value: https://tahaqaq-360-api.onrender.com/api/v1
+
+# Database
+databases:
+  - name: tahaqaq-360-db
+    region: frankfurt
+    plan: free # 90 days free, then $7/month
+    databaseName: tahaqaq360
+    user: tahaqaq360user
