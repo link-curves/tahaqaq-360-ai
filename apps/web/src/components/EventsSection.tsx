@@ -1,3 +1,4 @@
+import { TrainingRequestModal } from "@/components/TrainingRequestModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -5,11 +6,13 @@ import { useUpcomingEvents } from "@/hooks/useApi";
 import { EventType, EventTypeValue } from "@/lib/api";
 import { formatDate, generateExcerpt, getImageUrl } from "@/lib/utils";
 import { AlertCircle, Calendar, MapPin, Users } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const EventsSection = () => {
   const { data: eventsData, isLoading, error } = useUpcomingEvents(4);
   const navigate = useNavigate();
+  const [isTrainingModalOpen, setIsTrainingModalOpen] = useState(false);
 
   const getEventTypeLabel = (type: EventTypeValue) => {
     switch (type) {
@@ -145,31 +148,34 @@ const EventsSection = () => {
 
                 {/* Card Content */}
                 <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 text-right font-['Cairo'] leading-relaxed group-hover:text-red-600 transition-colors duration-300 flex-grow-0">
+                  {/* Title - Fixed height for 2 lines */}
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 text-right font-['Cairo'] leading-tight group-hover:text-red-600 transition-colors duration-300 min-h-[3.5rem] overflow-hidden">
                     {event.title}
                   </h3>
-                  <p className="text-gray-600 mb-4 text-sm text-right font-['Cairo'] leading-relaxed flex-grow">
-                    {generateExcerpt(event.description, 20)}
+
+                  {/* Description - Fixed height for 3 lines */}
+                  <p className="text-gray-600 mb-4 text-sm text-right font-['Cairo'] leading-relaxed min-h-[4rem] overflow-hidden">
+                    {generateExcerpt(event.description, 100)}
                   </p>
 
-                  {/* Event Details */}
-                  <div className="space-y-3 mb-6">
+                  {/* Event Details - Fixed height */}
+                  <div className="space-y-3 mb-6 min-h-[4rem]">
                     <div className="flex items-center text-sm text-gray-600 text-right font-['Cairo']">
                       <span>{formatDate(event.startDate)}</span>
                       <Calendar className="h-4 w-4 ml-3 text-red-500" />
                     </div>
                     <div className="flex items-center text-sm text-gray-600 text-right font-['Cairo']">
-                      <span>
+                      <span className="line-clamp-1">
                         {event.location ||
                           (event.isVirtual
                             ? "فعالية افتراضية"
                             : "الموقع سيحدد لاحقاً")}
                       </span>
-                      <MapPin className="h-4 w-4 ml-3 text-red-500" />
+                      <MapPin className="h-4 w-4 ml-3 text-red-500 flex-shrink-0" />
                     </div>
                   </div>
 
-                  {/* Register Button */}
+                  {/* Register Button - Always at bottom */}
                   <Button className="w-full mt-auto bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-semibold py-3 rounded-lg text-white">
                     <span className="flex items-center justify-center space-x-2 space-x-reverse text-white">
                       <span>سجل الآن</span>
@@ -208,7 +214,10 @@ const EventsSection = () => {
               مدرستك أو مجتمعك. نحن نقدم ورش عمل وبرامج تدريبية مخصصة
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-bold py-3 px-8 rounded-lg text-amber-50">
+              <Button
+                onClick={() => setIsTrainingModalOpen(true)}
+                className="bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-bold py-3 px-8 rounded-lg text-amber-50"
+              >
                 اطلب تدريباً
               </Button>
               <Button
@@ -222,6 +231,12 @@ const EventsSection = () => {
           </div>
         </div>
       </div>
+
+      {/* Training Request Modal */}
+      <TrainingRequestModal
+        isOpen={isTrainingModalOpen}
+        onClose={() => setIsTrainingModalOpen(false)}
+      />
     </div>
   );
 };

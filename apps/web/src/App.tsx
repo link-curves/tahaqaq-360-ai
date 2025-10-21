@@ -5,6 +5,7 @@ import { AuthProvider, ProtectedRoute } from "@/contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
+import ScrollToTop from "./components/ScrollToTop";
 import AccessibilityStatement from "./pages/AccessibilityStatement";
 import AuthSuccessPage from "./pages/AuthSuccess";
 import ContactUs from "./pages/ContactUs";
@@ -49,6 +50,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <AuthProvider>
           <Routes>
             {/* Auth routes without Layout */}

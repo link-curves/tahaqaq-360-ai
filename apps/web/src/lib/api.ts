@@ -316,6 +316,46 @@ export interface CreateSubmissionRequest {
   submitterEmail?: string;
 }
 
+// Training Request Types
+export interface TrainingRequest {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  organization: string;
+  position?: string;
+  trainingTopic: string;
+  description: string;
+  preferredDate?: string;
+  alternativeDate?: string;
+  expectedAttendees: number;
+  location: string;
+  targetAudience?: string;
+  specificNeeds?: string;
+  status: string;
+  reviewNotes?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTrainingRequestRequest {
+  name: string;
+  email: string;
+  phone?: string;
+  organization: string;
+  position?: string;
+  trainingTopic: string;
+  description: string;
+  preferredDate?: string;
+  alternativeDate?: string;
+  expectedAttendees: number;
+  location: string;
+  targetAudience?: string;
+  specificNeeds?: string;
+}
+
 // API Response Types
 export interface PaginatedResponse<T> {
   data: T[];
@@ -672,6 +712,16 @@ class ApiClient {
 
   async getSubmission(id: string): Promise<ApiResponse<Submission>> {
     return this.request<ApiResponse<Submission>>(`/submissions/${id}`);
+  }
+
+  // Training Requests
+  async submitTrainingRequest(
+    data: CreateTrainingRequestRequest
+  ): Promise<ApiResponse<TrainingRequest>> {
+    return this.request<ApiResponse<TrainingRequest>>("/training-requests", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 
   // Helper method for building query strings

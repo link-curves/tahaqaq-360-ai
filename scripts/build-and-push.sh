@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==================================
-# Build and Push Docker Images to Docker Hub
+# Build and Push Docker Images to Docker Hub using Docker Compose
 # ==================================
 # Usage: ./scripts/build-and-push.sh [version]
 # Example: ./scripts/build-and-push.sh v1.0.0
@@ -9,15 +9,15 @@
 set -e
 
 # Configuration
-DOCKER_USERNAME="${DOCKER_USERNAME:-alitraboulsi}"
+DOCKER_USERNAME="${DOCKER_USERNAME:-alitraboulsi96}"
 VERSION="${1:-latest}"
-REGISTRY="docker.io"
+COMPOSE_FILE="docker-compose.dev.yml"
 
-echo "🚀 Building Tahaqaq-360 Docker Images"
-echo "======================================"
+echo "🚀 Building Tahaqaq-360 Docker Images with Docker Compose"
+echo "=========================================================="
 echo "Version: $VERSION"
-echo "Registry: $REGISTRY"
 echo "Username: $DOCKER_USERNAME"
+echo "Compose File: $COMPOSE_FILE"
 echo ""
 
 # Run pre-build checks and preparations
@@ -30,50 +30,69 @@ else
 fi
 echo ""
 
-# Build API image
-echo "📦 Building API image..."
-docker build \
-  -f apps/api/Dockerfile.prod \
-  -t $DOCKER_USERNAME/tahaqaq-api:$VERSION \
-  -t $DOCKER_USERNAME/tahaqaq-api:latest \
-  --platform linux/amd64 \
-  .
-
-echo "✅ API image built successfully"
-echo ""
-
-# Build Web image
-echo "📦 Building Web image..."
-docker build \
-  -f apps/web/Dockerfile.prod \
-  -t $DOCKER_USERNAME/tahaqaq-web:$VERSION \
-  -t $DOCKER_USERNAME/tahaqaq-web:latest \
-  --platform linux/amd64 \
-  .
-
-echo "✅ Web image built successfully"
-echo ""
-
 # Login to Docker Hub
-echo "🔐 Logging in to Docker Hub..."
+echo "� Logging in to Docker Hub..."
 docker login -u $DOCKER_USERNAME
+echo ""
 
-# Push images
-echo "⬆️  Pushing API image to Docker Hub..."
+# Build all images using docker compose
+echo "📦 Building all images with Docker Compose..."
+docker compose -f $COMPOSE_FILE build \
+  --build-arg BUILDKIT_INLINE_CACHE=1 \
+  --progress=plain \
+  api web admin
+
+echo "✅ All images built successfully"
+echo ""
+
+# Tag images with version and latest
+echo "🏷️  Tagging images..."
+
+# Tag API
+docker tag tahaqaq-360-api:latest $DOCKER_USERNAME/tahaqaq-api:$VERSION
+docker tag tahaqaq-360-api:latest $DOCKER_USERNAME/tahaqaq-api:latest
+
+# Tag Web
+docker tag tahaqaq-360-web:latest $DOCKER_USERNAME/tahaqaq-web:$VERSION
+docker tag tahaqaq-360-web:latest $DOCKER_USERNAME/tahaqaq-web:latest
+
+# Tag Admin
+docker tag tahaqaq-360-admin:latest $DOCKER_USERNAME/tahaqaq-admin:$VERSION
+docker tag tahaqaq-360-admin:latest $DOCKER_USERNAME/tahaqaq-admin:latest
+
+echo "✅ Images tagged successfully"
+echo ""
+
+# Push images to Docker Hub
+echo "⬆️  Pushing images to Docker Hub..."
+echo ""
+
+echo "📤 Pushing API image..."
 docker push $DOCKER_USERNAME/tahaqaq-api:$VERSION
 docker push $DOCKER_USERNAME/tahaqaq-api:latest
 
-echo "⬆️  Pushing Web image to Docker Hub..."
+echo "📤 Pushing Web image..."
 docker push $DOCKER_USERNAME/tahaqaq-web:$VERSION
 docker push $DOCKER_USERNAME/tahaqaq-web:latest
+
+echo "📤 Pushing Admin image..."
+docker push $DOCKER_USERNAME/tahaqaq-admin:$VERSION
+docker push $DOCKER_USERNAME/tahaqaq-admin:latest
 
 echo ""
 echo "✨ All images pushed successfully!"
 echo ""
+echo "📋 Summary:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 echo "Pull commands:"
 echo "  docker pull $DOCKER_USERNAME/tahaqaq-api:$VERSION"
 echo "  docker pull $DOCKER_USERNAME/tahaqaq-web:$VERSION"
+echo "  docker pull $DOCKER_USERNAME/tahaqaq-admin:$VERSION"
 echo ""
 echo "Docker Hub URLs:"
-echo "  https://hub.docker.com/r/$DOCKER_USERNAME/tahaqaq-api"
-echo "  https://hub.docker.com/r/$DOCKER_USERNAME/tahaqaq-web"
+echo "  🔗 API:   https://hub.docker.com/r/$DOCKER_USERNAME/tahaqaq-api"
+echo "  🔗 Web:   https://hub.docker.com/r/$DOCKER_USERNAME/tahaqaq-web"
+echo "  🔗 Admin: https://hub.docker.com/r/$DOCKER_USERNAME/tahaqaq-admin"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

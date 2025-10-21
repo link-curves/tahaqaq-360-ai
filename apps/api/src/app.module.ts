@@ -17,6 +17,7 @@ import { MediaLiteracyModule } from './modules/media-literacy/media-literacy.mod
 import { ResearchModule } from './modules/research/research.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { SubmissionsModule } from './modules/submissions/submissions.module';
+import { TrainingRequestsModule } from './modules/training-requests/training-requests.module';
 import { UsersModule } from './modules/users/users.module';
 
 // Additional Modules
@@ -100,6 +101,7 @@ import { PrivacyPolicyModule } from './modules/privacypolicy/privacypolicy.modul
     SessionsModule,
     ResearchModule,
     ContactModule,
+    TrainingRequestsModule,
 
     // ============================================
     // SUPPORTING MODULES

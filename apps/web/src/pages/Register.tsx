@@ -112,13 +112,16 @@ const Register = () => {
         {/* Left Side - Branding & Benefits */}
         <div className="hidden md:flex flex-col items-center justify-center text-white space-y-8 p-8">
           {/* Logo */}
-          <div className="relative group">
-            <div className="absolute -inset-8 bg-white/15 rounded-full blur-2xl"></div>
-            <div className="absolute -inset-6 bg-gradient-to-r from-white/20 to-gray-200/20 rounded-full blur-xl"></div>
-            <div className="relative z-10 bg-white/95 backdrop-blur-md rounded-full p-6 shadow-2xl">
+          <div
+            className="relative group cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            <div className="absolute -inset-8 bg-white/15 rounded-full blur-2xl group-hover:bg-white/25 transition-all duration-300"></div>
+            <div className="absolute -inset-6 bg-gradient-to-r from-white/20 to-gray-200/20 rounded-full blur-xl group-hover:from-white/30 group-hover:to-gray-200/30 transition-all duration-300"></div>
+            <div className="relative z-10 bg-white/95 backdrop-blur-md rounded-full p-6 shadow-2xl group-hover:shadow-3xl group-hover:scale-105 transition-all duration-300">
               <TahqaqLogo className="h-24 w-24" />
             </div>
-            <div className="absolute -inset-2 border-2 border-white/30 rounded-full animate-pulse"></div>
+            <div className="absolute -inset-2 border-2 border-white/30 rounded-full animate-pulse group-hover:border-white/50 transition-all duration-300"></div>
           </div>
 
           {/* Title */}
@@ -170,9 +173,12 @@ const Register = () => {
         <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-8 border border-white/20 max-h-[95vh] overflow-hidden flex flex-col">
           {/* Mobile Logo */}
           <div className="md:hidden flex justify-center mb-6">
-            <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-red-500/20 to-rose-500/20 rounded-full blur-xl"></div>
-              <div className="relative bg-white rounded-full p-4 shadow-lg">
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <div className="absolute -inset-4 bg-gradient-to-r from-red-500/20 to-rose-500/20 rounded-full blur-xl group-hover:from-red-500/30 group-hover:to-rose-500/30 transition-all duration-300"></div>
+              <div className="relative bg-white rounded-full p-4 shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
                 <TahqaqLogo className="h-16 w-16" />
               </div>
             </div>

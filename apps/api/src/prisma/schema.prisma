@@ -489,6 +489,42 @@ model HostRequest {
   @@map("host_requests")
 }
 
+model TrainingRequest {
+  id String @id @default(cuid())
+
+  // Requester info
+  name         String
+  email        String
+  phone        String?
+  organization String
+  position     String?
+
+  // Training details
+  trainingTopic     String
+  description       String    @db.Text
+  preferredDate     DateTime?
+  alternativeDate   DateTime?
+  expectedAttendees Int
+  location          String
+  targetAudience    String? // e.g., "Students", "Teachers", "Journalists"
+  specificNeeds     String?   @db.Text
+
+  // Status
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, CONTACTED
+  reviewNotes String?   @db.Text
+  reviewedBy  String?
+  reviewedAt  DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+  @@map("training_requests")
+}
+
 // ============================================
 // RECORDED SESSIONS
 // ============================================

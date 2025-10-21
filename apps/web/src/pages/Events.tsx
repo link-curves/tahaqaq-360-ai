@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEvents } from "@/hooks/useApi";
-import { EventType } from "@/lib/api";
+import { EventType, EventTypeValue } from "@/lib/api";
 import { formatDate, getImageUrl, getTextDirection } from "@/lib/utils";
 import {
   Calendar,
@@ -27,7 +27,7 @@ const Events = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [eventType, setEventType] = useState<EventType | "">("");
+  const [eventType, setEventType] = useState<EventTypeValue | "">("");
 
   // Build params object - NO page parameter (backend doesn't support it)
   const params = {
@@ -47,7 +47,7 @@ const Events = () => {
   const endIndex = startIndex + itemsPerPage;
   const events = allEvents.slice(startIndex, endIndex);
 
-  const getEventTypeLabel = (type: EventType) => {
+  const getEventTypeLabel = (type: EventTypeValue) => {
     switch (type) {
       case EventType.WORKSHOP:
         return "ورشة عمل";
@@ -62,7 +62,7 @@ const Events = () => {
     }
   };
 
-  const getEventTypeBadgeColor = (type: EventType) => {
+  const getEventTypeBadgeColor = (type: EventTypeValue) => {
     switch (type) {
       case EventType.WORKSHOP:
         return "bg-blue-100 text-blue-800 hover:bg-blue-200";
@@ -115,7 +115,7 @@ const Events = () => {
             <Select
               value={eventType || "all"}
               onValueChange={(value) => {
-                setEventType(value === "all" ? "" : (value as EventType));
+                setEventType(value === "all" ? "" : (value as EventTypeValue));
                 setPage(1);
               }}
             >
@@ -189,12 +189,12 @@ const Events = () => {
                 return (
                   <Card
                     key={event.id}
-                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer flex flex-col"
                     onClick={() => handleEventClick(event.slug)}
                     dir={cardDirection}
                   >
                     {/* Event Image */}
-                    <div className="relative h-48 bg-gradient-to-br from-red-600 to-red-800">
+                    <div className="relative h-48 bg-gradient-to-br from-red-600 to-red-800 flex-shrink-0">
                       {event.coverImage && (
                         <img
                           src={getImageUrl(event.coverImage)}
@@ -221,21 +221,24 @@ const Events = () => {
                     </div>
 
                     {/* Event Content */}
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 font-['Cairo']">
+                    <div className="p-6 flex flex-col flex-grow">
+                      {/* Title - Fixed height for 2 lines */}
+                      <h3 className="text-xl font-bold text-gray-900 mb-3 font-['Cairo'] leading-tight min-h-[3.5rem] overflow-hidden">
                         {event.title}
                       </h3>
 
+                      {/* Description - Fixed height for 3 lines */}
                       <div
-                        className="text-gray-600 text-sm mb-4 line-clamp-3 font-['Cairo']"
+                        className="text-gray-600 text-sm mb-4 font-['Cairo'] leading-relaxed min-h-[4.5rem] overflow-hidden"
                         dangerouslySetInnerHTML={{
-                          __html: event.description.substring(0, 150) + "...",
+                          __html: event.description.substring(0, 200) + "...",
                         }}
                       />
 
-                      <div className="space-y-2 text-sm text-gray-700">
+                      {/* Event Details - Fixed height */}
+                      <div className="space-y-2 text-sm text-gray-700 mb-4 min-h-[3.5rem]">
                         <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-red-600" />
+                          <Calendar className="h-4 w-4 text-red-600 flex-shrink-0" />
                           <span className="font-['Cairo']">
                             {formatDate(event.startDate)}
                           </span>
@@ -243,14 +246,14 @@ const Events = () => {
 
                         {event.location ? (
                           <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-red-600" />
+                            <MapPin className="h-4 w-4 text-red-600 flex-shrink-0" />
                             <span className="line-clamp-1 font-['Cairo']">
                               {event.location}
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-red-600" />
+                            <MapPin className="h-4 w-4 text-red-600 flex-shrink-0" />
                             <span className="line-clamp-1 font-['Cairo']">
                               {event.isVirtual
                                 ? "فعالية افتراضية"
@@ -260,28 +263,31 @@ const Events = () => {
                         )}
                       </div>
 
-                      {event.tags && event.tags.length > 0 && (
-                        <div className="mt-4 pt-4 border-t flex flex-wrap gap-2">
-                          {event.tags
-                            .slice(0, 3)
-                            .map((tag: string, index: number) => (
-                              <Badge
-                                key={index}
-                                variant="secondary"
-                                className="text-xs font-['Cairo']"
-                              >
-                                {tag}
-                              </Badge>
-                            ))}
-                        </div>
-                      )}
-                    </div>
+                      {/* Tags Section - Fixed height whether tags exist or not */}
+                      <div className="min-h-[3rem] mb-4">
+                        {event.tags && event.tags.length > 0 && (
+                          <div className="pt-4 border-t flex flex-wrap gap-2">
+                            {event.tags
+                              .slice(0, 3)
+                              .map((tag: string, index: number) => (
+                                <Badge
+                                  key={index}
+                                  variant="secondary"
+                                  className="text-xs font-['Cairo']"
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Footer */}
-                    <div className="px-6 pb-6">
-                      <Button className="w-full bg-red-600 hover:bg-red-700 text-amber-50 font-bold">
-                        التفاصيل والتسجيل
-                      </Button>
+                      {/* Footer Button - Always at bottom */}
+                      <div className="mt-auto">
+                        <Button className="w-full bg-red-600 hover:bg-red-700 text-amber-50 font-bold font-['Cairo']">
+                          التفاصيل والتسجيل
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 );
