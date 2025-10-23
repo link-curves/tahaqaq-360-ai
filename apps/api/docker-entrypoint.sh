@@ -5,7 +5,9 @@ echo "Starting API container..."
 
 # Run database migrations
 echo "Running database migrations..."
-npx prisma migrate deploy --schema=src/prisma/schema.prisma
+if ! npx prisma migrate deploy --schema=src/prisma/schema.prisma; then
+  echo "⚠️  Migration failed — continuing startup"
+fi
 
 # Check if database is seeded and run seed if needed
 echo "Checking if database needs seeding..."
@@ -49,6 +51,9 @@ if [ $? -eq 1 ]; then
   
   echo "Seeding completed!"
 fi
+
+echo "Environment variables at runtime:"
+env | grep -E "PORT|DATABASE|NODE_ENV"
 
 # Start the application
 echo "Starting NestJS application..."
