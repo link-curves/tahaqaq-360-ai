@@ -377,7 +377,7 @@ const CourseFormDialog = ({
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="Beginner">مبتدئ</SelectItem>
                   <SelectItem value="Intermediate">متوسط</SelectItem>
                   <SelectItem value="Advanced">متقدم</SelectItem>

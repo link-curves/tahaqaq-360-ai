@@ -356,6 +356,59 @@ export interface CreateTrainingRequestRequest {
   specificNeeds?: string;
 }
 
+// Blog Post Types
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  coverImage?: string;
+  author: string;
+  category: string;
+  tags: string[];
+  isFeatured: boolean;
+  status: ContentStatusValue;
+  publishedAt?: string;
+  views: number;
+  readTime?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBlogPostRequest {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  coverImage?: string;
+  author: string;
+  category: string;
+  tags?: string[];
+  isFeatured?: boolean;
+  status?: ContentStatusValue;
+  readTime?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+export interface UpdateBlogPostRequest extends Partial<CreateBlogPostRequest> {}
+
+export interface BlogFilterParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  category?: string;
+  tag?: string;
+  status?: ContentStatusValue;
+  search?: string;
+  isFeatured?: boolean;
+  author?: string;
+}
+
 // API Response Types
 export interface PaginatedResponse<T> {
   data: T[];
@@ -722,6 +775,42 @@ class ApiClient {
       method: "POST",
       body: JSON.stringify(data),
     });
+  }
+
+  // Blog Posts endpoints
+  async getBlogPosts(
+    params?: BlogFilterParams
+  ): Promise<PaginatedResponse<BlogPost>> {
+    const searchParams = new URLSearchParams();
+
+    if (params?.page) searchParams.append("page", params.page.toString());
+    if (params?.limit) searchParams.append("limit", params.limit.toString());
+    if (params?.sortBy) searchParams.append("sortBy", params.sortBy);
+    if (params?.sortOrder) searchParams.append("sortOrder", params.sortOrder);
+    if (params?.category) searchParams.append("category", params.category);
+    if (params?.tag) searchParams.append("tag", params.tag);
+    if (params?.status) searchParams.append("status", params.status);
+    if (params?.search) searchParams.append("search", params.search);
+    if (params?.isFeatured !== undefined)
+      searchParams.append("isFeatured", params.isFeatured.toString());
+    if (params?.author) searchParams.append("author", params.author);
+
+    const queryString = searchParams.toString();
+    const endpoint = `/blog${queryString ? `?${queryString}` : ""}`;
+
+    return this.request<PaginatedResponse<BlogPost>>(endpoint);
+  }
+
+  async getBlogPost(slug: string): Promise<BlogPost> {
+    return this.request<BlogPost>(`/blog/${slug}`);
+  }
+
+  async getBlogCategories(): Promise<string[]> {
+    return this.request<string[]>("/blog/categories");
+  }
+
+  async getBlogTags(): Promise<string[]> {
+    return this.request<string[]>("/blog/tags");
   }
 
   // Helper method for building query strings

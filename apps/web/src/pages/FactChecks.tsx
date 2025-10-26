@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFactChecks } from "@/hooks/useApi";
-import { VeracityRating } from "@/lib/api";
+import { VeracityRating, VeracityRatingValue } from "@/lib/api";
 import {
   formatDate,
   generateExcerpt,
@@ -21,14 +21,16 @@ import {
   getVeracityLabel,
 } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Filter, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const FactChecksPage = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [verdictFilter, setVerdictFilter] = useState<VeracityRating | "">("");
+  const [verdictFilter, setVerdictFilter] = useState<VeracityRatingValue | "">(
+    ""
+  );
 
   // Build params object - NO page parameter (backend doesn't support it)
   const params = {
@@ -47,6 +49,11 @@ const FactChecksPage = () => {
   const startIndex = (page - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const factChecks = allFactChecks.slice(startIndex, endIndex);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   return (
     <div className="min-h-screen bg-gray-50 mt-18" dir="rtl">
@@ -86,7 +93,7 @@ const FactChecksPage = () => {
               value={verdictFilter || "all"}
               onValueChange={(value) => {
                 setVerdictFilter(
-                  value === "all" ? "" : (value as VeracityRating)
+                  value === "all" ? "" : (value as VeracityRatingValue)
                 );
                 setPage(1);
               }}
@@ -95,7 +102,7 @@ const FactChecksPage = () => {
                 <Filter className="h-4 w-4 ml-2" />
                 <SelectValue placeholder="تصفية حسب الحكم" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="all">الكل</SelectItem>
                 <SelectItem value={VeracityRating.TRUE}>صحيح</SelectItem>
                 <SelectItem value={VeracityRating.MOSTLY_TRUE}>

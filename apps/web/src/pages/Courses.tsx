@@ -21,7 +21,7 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Courses = () => {
@@ -46,6 +46,11 @@ const Courses = () => {
   const startIndex = (page - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const courses = allCourses.slice(startIndex, endIndex);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   const getDifficultyLabel = (difficulty: CourseDifficultyValue) => {
     switch (difficulty) {
@@ -228,8 +233,8 @@ const Courses = () => {
                     onClick={() => setPage(i + 1)}
                     className={
                       page === i + 1
-                        ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                        : ""
+                        ? "bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                        : "cursor-pointer"
                     }
                   >
                     {i + 1}

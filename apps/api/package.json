@@ -24,6 +24,7 @@
     "db:studio": "npx prisma studio --schema=src/prisma/schema.prisma",
     "db:seed": "ts-node src/prisma/seed/seed.ts",
     "db:seed:ar": "ts-node src/prisma/seed/arabic.seed.ts",
+    "db:migrate:html-md": "ts-node src/prisma/migrate-html-to-markdown.ts",
     "db:pull": "npx prisma db pull --schema=src/prisma/schema.prisma",
     "db:push": "npx prisma db push --schema=src/prisma/schema.prisma",
     "db:reset": "npx prisma migrate reset --schema=src/prisma/schema.prisma",
@@ -46,6 +47,7 @@
     "@nestjs/websockets": "^10.3.0",
     "@prisma/client": "^5.8.0",
     "@supabase/supabase-js": "^2.39.0",
+    "@types/turndown": "^5.0.5",
     "argon2": "^0.31.2",
     "cache-manager": "^5.4.0",
     "cache-manager-redis-store": "^3.0.1",
@@ -67,6 +69,7 @@
     "rxjs": "^7.8.1",
     "slugify": "^1.6.6",
     "socket.io": "^4.6.1",
+    "turndown": "^7.2.2",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

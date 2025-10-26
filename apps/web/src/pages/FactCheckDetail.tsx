@@ -22,7 +22,11 @@ import {
   Share2,
   XCircle,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import remarkGfm from "remark-gfm";
 
 const FactCheckDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -61,7 +65,7 @@ const FactCheckDetail = () => {
     );
   }
 
-  if (error || !factCheckData?.data) {
+  if (error || !factCheckData) {
     return (
       <div className="min-h-screen bg-gray-50" dir="rtl">
         <Navbar />
@@ -78,8 +82,8 @@ const FactCheckDetail = () => {
     );
   }
 
-  const factCheck = factCheckData.data;
-  const related = relatedData?.data || [];
+  const factCheck = factCheckData;
+  const related = relatedData || [];
 
   // Detect text direction based on the title
   const textDirection = getTextDirection(factCheck.title);
@@ -175,26 +179,96 @@ const FactCheckDetail = () => {
         </div>
 
         {/* Full Analysis */}
-        <div className="mb-8">
+        <div className="mb-8 bg-white rounded-2xl shadow-sm p-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-4 font-['Cairo']">
             التحليل الكامل
           </h2>
           <div
-            className="prose prose-lg max-w-none text-gray-700 leading-relaxed font-['Cairo']"
-            dangerouslySetInnerHTML={{ __html: factCheck.fullAnalysis }}
-          />
+            className="prose prose-xl max-w-none
+            [&>*]:font-['Cairo']
+            [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mb-6 [&_h1]:mt-8 [&_h1]:leading-tight [&_h1]:border-b [&_h1]:border-gray-200 [&_h1]:pb-4
+            [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:text-gray-900 [&_h2]:mb-5 [&_h2]:mt-10 [&_h2]:leading-snug [&_h2]:border-b [&_h2]:border-gray-200 [&_h2]:pb-3
+            [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-gray-800 [&_h3]:mb-4 [&_h3]:mt-8 [&_h3]:leading-normal
+            [&_h4]:text-xl [&_h4]:font-semibold [&_h4]:text-gray-800 [&_h4]:mb-3 [&_h4]:mt-6
+            [&_h5]:text-lg [&_h5]:font-semibold [&_h5]:text-gray-700 [&_h5]:mb-2 [&_h5]:mt-4
+            [&_p]:text-gray-700 [&_p]:text-lg [&_p]:leading-loose [&_p]:mb-6
+            [&_a]:text-red-600 [&_a]:font-semibold [&_a]:no-underline [&_a:hover]:text-red-700 [&_a:hover]:underline
+            [&_strong]:font-bold [&_strong]:text-gray-900 [&_strong]:bg-yellow-50 [&_strong]:px-1 [&_strong]:py-0.5 [&_strong]:rounded
+            [&_em]:italic [&_em]:text-gray-800
+            [&_ul]:my-6 [&_ul]:space-y-2 [&_ul]:pr-6
+            [&_ol]:my-6 [&_ol]:space-y-2 [&_ol]:pr-6
+            [&_li]:text-gray-700 [&_li]:text-lg [&_li]:leading-relaxed [&_li]:mb-2
+            [&_ul>li]:list-disc [&_ul>li]:marker:text-red-600 [&_ul>li]:marker:text-xl
+            [&_ol>li]:list-decimal [&_ol>li]:marker:text-red-600 [&_ol>li]:marker:font-bold
+            [&_blockquote]:border-r-4 [&_blockquote]:border-red-600 [&_blockquote]:bg-gradient-to-l [&_blockquote]:from-red-50 [&_blockquote]:to-transparent
+            [&_blockquote]:pr-6 [&_blockquote]:pl-4 [&_blockquote]:py-5 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-gray-800
+            [&_blockquote]:rounded-r-lg [&_blockquote]:shadow-sm
+            [&_code]:font-mono [&_code]:bg-gray-100 [&_code]:text-red-600 [&_code]:px-2 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
+            [&_pre]:bg-gray-900 [&_pre]:text-gray-100 [&_pre]:rounded-xl [&_pre]:p-6 [&_pre]:my-8 [&_pre]:overflow-x-auto [&_pre]:shadow-lg
+            [&_pre_code]:bg-transparent [&_pre_code]:text-gray-100 [&_pre_code]:p-0
+            [&_img]:rounded-2xl [&_img]:shadow-xl [&_img]:my-8 [&_img]:w-full
+            [&_hr]:border-gray-300 [&_hr]:my-10
+            [&_table]:w-full [&_table]:my-8 [&_table]:border-collapse [&_table]:border [&_table]:border-gray-200
+            [&_thead]:bg-red-50 [&_thead]:border-b-2 [&_thead]:border-red-600
+            [&_th]:px-6 [&_th]:py-3 [&_th]:text-right [&_th]:font-bold [&_th]:text-gray-900
+            [&_td]:px-6 [&_td]:py-3 [&_td]:border-b [&_td]:border-gray-200 [&_td]:text-gray-700
+            [&>*:first-child]:mt-0
+            [&>*:last-child]:mb-0"
+          >
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw, rehypeSanitize]}
+            >
+              {factCheck.fullAnalysis}
+            </ReactMarkdown>
+          </div>
         </div>
 
         {/* Methodology */}
         {factCheck.methodology && (
-          <div className="mb-8">
+          <div className="mb-8 bg-white rounded-2xl shadow-sm p-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 font-['Cairo']">
               المنهجية
             </h2>
             <div
-              className="prose prose-lg max-w-none text-gray-700 leading-relaxed font-['Cairo']"
-              dangerouslySetInnerHTML={{ __html: factCheck.methodology }}
-            />
+              className="prose prose-xl max-w-none
+              [&>*]:font-['Cairo']
+              [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mb-6 [&_h1]:mt-8 [&_h1]:leading-tight [&_h1]:border-b [&_h1]:border-gray-200 [&_h1]:pb-4
+              [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:text-gray-900 [&_h2]:mb-5 [&_h2]:mt-10 [&_h2]:leading-snug [&_h2]:border-b [&_h2]:border-gray-200 [&_h2]:pb-3
+              [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-gray-800 [&_h3]:mb-4 [&_h3]:mt-8 [&_h3]:leading-normal
+              [&_h4]:text-xl [&_h4]:font-semibold [&_h4]:text-gray-800 [&_h4]:mb-3 [&_h4]:mt-6
+              [&_h5]:text-lg [&_h5]:font-semibold [&_h5]:text-gray-700 [&_h5]:mb-2 [&_h5]:mt-4
+              [&_p]:text-gray-700 [&_p]:text-lg [&_p]:leading-loose [&_p]:mb-6
+              [&_a]:text-red-600 [&_a]:font-semibold [&_a]:no-underline [&_a:hover]:text-red-700 [&_a:hover]:underline
+              [&_strong]:font-bold [&_strong]:text-gray-900 [&_strong]:bg-yellow-50 [&_strong]:px-1 [&_strong]:py-0.5 [&_strong]:rounded
+              [&_em]:italic [&_em]:text-gray-800
+              [&_ul]:my-6 [&_ul]:space-y-2 [&_ul]:pr-6
+              [&_ol]:my-6 [&_ol]:space-y-2 [&_ol]:pr-6
+              [&_li]:text-gray-700 [&_li]:text-lg [&_li]:leading-relaxed [&_li]:mb-2
+              [&_ul>li]:list-disc [&_ul>li]:marker:text-red-600 [&_ul>li]:marker:text-xl
+              [&_ol>li]:list-decimal [&_ol>li]:marker:text-red-600 [&_ol>li]:marker:font-bold
+              [&_blockquote]:border-r-4 [&_blockquote]:border-red-600 [&_blockquote]:bg-gradient-to-l [&_blockquote]:from-red-50 [&_blockquote]:to-transparent
+              [&_blockquote]:pr-6 [&_blockquote]:pl-4 [&_blockquote]:py-5 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-gray-800
+              [&_blockquote]:rounded-r-lg [&_blockquote]:shadow-sm
+              [&_code]:font-mono [&_code]:bg-gray-100 [&_code]:text-red-600 [&_code]:px-2 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
+              [&_pre]:bg-gray-900 [&_pre]:text-gray-100 [&_pre]:rounded-xl [&_pre]:p-6 [&_pre]:my-8 [&_pre]:overflow-x-auto [&_pre]:shadow-lg
+              [&_pre_code]:bg-transparent [&_pre_code]:text-gray-100 [&_pre_code]:p-0
+              [&_img]:rounded-2xl [&_img]:shadow-xl [&_img]:my-8 [&_img]:w-full
+              [&_hr]:border-gray-300 [&_hr]:my-10
+              [&_table]:w-full [&_table]:my-8 [&_table]:border-collapse [&_table]:border [&_table]:border-gray-200
+              [&_thead]:bg-red-50 [&_thead]:border-b-2 [&_thead]:border-red-600
+              [&_th]:px-6 [&_th]:py-3 [&_th]:text-right [&_th]:font-bold [&_th]:text-gray-900
+              [&_td]:px-6 [&_td]:py-3 [&_td]:border-b [&_td]:border-gray-200 [&_td]:text-gray-700
+              [&>*:first-child]:mt-0
+              [&>*:last-child]:mb-0"
+            >
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeSanitize]}
+              >
+                {factCheck.methodology}
+              </ReactMarkdown>
+            </div>
           </div>
         )}
 
@@ -243,7 +317,10 @@ const FactCheckDetail = () => {
                 <Badge
                   key={index}
                   variant="secondary"
-                  className="font-['Cairo']"
+                  className="text-sm font-['Cairo'] bg-red-50 text-red-700 hover:bg-red-100 cursor-pointer"
+                  onClick={() =>
+                    navigate(`/fact-checks?tag=${encodeURIComponent(tag)}`)
+                  }
                 >
                   {tag}
                 </Badge>

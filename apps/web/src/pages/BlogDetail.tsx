@@ -1,29 +1,31 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useResearchArticle } from "@/hooks/useApi";
+import { useBlogPost } from "@/hooks/useApi";
 import { formatDate, getImageUrl, getTextDirection } from "@/lib/utils";
-import { ArrowLeft, Calendar, Download, Eye, Share2, User } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Eye, Share2, User } from "lucide-react";
+import { useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
-const ResearchDetail = () => {
+const BlogDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const {
-    data: researchData,
-    isLoading,
-    error,
-  } = useResearchArticle(slug || "");
+  const { data: blogPost, isLoading, error } = useBlogPost(slug || "");
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50" dir="rtl">
         <div className="max-w-4xl mx-auto px-4 py-12">
-          <Skeleton className="h-64 w-full mb-8 rounded-xl" />
+          <Skeleton className="h-96 w-full mb-8 rounded-xl" />
           <Skeleton className="h-12 w-3/4 mb-4" />
           <Skeleton className="h-96 w-full" />
         </div>
@@ -31,111 +33,115 @@ const ResearchDetail = () => {
     );
   }
 
-  if (error || !researchData) {
+  if (error || !blogPost) {
     return (
-      <div className="min-h-screen bg-gray-50 mt-18" dir="rtl">
+      <div className="min-h-screen bg-gray-50" dir="rtl">
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4 font-['Cairo']">
-            لم يتم العثور على البحث
+            لم يتم العثور على المقال
           </h1>
-          <Button onClick={() => navigate("/research")}>
-            العودة إلى قائمة الأبحاث
+          <Button onClick={() => navigate("/blog")}>
+            العودة إلى قائمة المقالات
           </Button>
         </div>
       </div>
     );
   }
 
-  const research = researchData;
-  const textDirection = getTextDirection(research.title);
+  const textDirection = getTextDirection(blogPost.title);
 
   return (
-    <div className="min-h-screen bg-gray-50" dir={textDirection}>
+    <div className="min-h-screen bg-gray-50 mt-18" dir={textDirection}>
       {/* Hero Section */}
-      <div className="relative h-96 bg-gradient-to-br from-red-600 to-red-800">
-        {research.coverImage && (
+      <div className="relative h-[28rem] bg-gradient-to-br from-red-600 to-red-800">
+        {blogPost.coverImage && (
           <>
             <img
-              src={getImageUrl(research.coverImage)}
-              alt={research.title}
-              className="absolute inset-0 w-full h-full object-cover opacity-20"
+              src={getImageUrl(blogPost.coverImage)}
+              alt={blogPost.title}
+              className="absolute inset-0 w-full h-full object-cover opacity-30"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           </>
         )}
         <div className="relative max-w-4xl mx-auto px-4 h-full flex flex-col justify-end pb-12">
           <Button
             variant="ghost"
             className="text-white hover:bg-white/20 mb-4 self-start"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/blog")}
           >
             <ArrowLeft className="h-5 w-5 ml-2" />
             رجوع
           </Button>
 
-          <Badge className="bg-white text-red-600 border-0 shadow-lg mb-4 self-start text-lg px-4 py-2 font-['Cairo']">
-            {research.category}
-          </Badge>
+          {blogPost.category && (
+            <Badge className="bg-white text-red-600 border-0 shadow-lg mb-4 self-start text-base px-4 py-1.5 font-['Cairo']">
+              {blogPost.category}
+            </Badge>
+          )}
 
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 font-['Cairo']">
-            {research.title}
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 font-['Cairo'] leading-tight">
+            {blogPost.title}
           </h1>
 
+          {blogPost.excerpt && (
+            <p className="text-lg text-white/90 mb-6 font-['Cairo'] leading-relaxed max-w-3xl">
+              {blogPost.excerpt}
+            </p>
+          )}
+
           <div className="flex items-center gap-6 text-white/90 text-sm flex-wrap">
-            {research.authors && research.authors.length > 0 && (
+            {blogPost.author && (
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4" />
-                <span className="font-['Cairo']">
-                  {research.authors.join(", ")}
-                </span>
+                <span className="font-['Cairo']">{blogPost.author}</span>
               </div>
             )}
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span className="font-['Cairo']">
-                {formatDate(research.publishedAt || research.createdAt)}
+                {formatDate(blogPost.publishedAt || blogPost.createdAt)}
               </span>
             </div>
+            {blogPost.readTime && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span className="font-['Cairo']">
+                  {blogPost.readTime} دقيقة
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
-              <span className="font-['Cairo']">{research.views} مشاهدة</span>
+              <span className="font-['Cairo']">{blogPost.views} مشاهدة</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
               className="text-white hover:bg-white/20"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: blogPost.title,
+                    text: blogPost.excerpt,
+                    url: window.location.href,
+                  });
+                } else {
+                  navigator.clipboard.writeText(window.location.href);
+                }
+              }}
             >
               <Share2 className="h-4 w-4 ml-2" />
               مشاركة
             </Button>
-            {research.downloads > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20"
-              >
-                <Download className="h-4 w-4 ml-2" />
-                تحميل ({research.downloads})
-              </Button>
-            )}
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Summary */}
-        <div className="mb-8 bg-red-50/50 p-8 rounded-xl border-r-4 border-red-600">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 font-['Cairo']">
-            ملخص البحث
-          </h2>
-          <p className="text-lg text-gray-700 leading-relaxed font-['Cairo']">
-            {research.summary}
-          </p>
-        </div>
-
-        {/* Full Content */}
-        <div className="mb-8 bg-white rounded-2xl shadow-sm p-8 md:p-12">
+        {/* Main Content */}
+        <article className="mb-12 bg-white rounded-2xl shadow-sm p-8 md:p-12">
           <div
             className="prose prose-xl max-w-none
             [&>*]:font-['Cairo']
@@ -172,25 +178,25 @@ const ResearchDetail = () => {
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeSanitize]}
             >
-              {research.fullContent}
+              {blogPost.content}
             </ReactMarkdown>
           </div>
-        </div>
+        </article>
 
         {/* Tags */}
-        {research.tags && research.tags.length > 0 && (
-          <div className="mb-8">
+        {blogPost.tags && blogPost.tags.length > 0 && (
+          <div className="mb-12 pb-12 border-b border-gray-200">
             <h3 className="text-xl font-bold text-gray-900 mb-4 font-['Cairo']">
               الوسوم
             </h3>
             <div className="flex flex-wrap gap-2">
-              {research.tags.map((tag: string, index: number) => (
+              {blogPost.tags.map((tag: string, index: number) => (
                 <Badge
                   key={index}
                   variant="secondary"
                   className="text-sm font-['Cairo'] bg-red-50 text-red-700 hover:bg-red-100 cursor-pointer"
                   onClick={() =>
-                    navigate(`/research?tag=${encodeURIComponent(tag)}`)
+                    navigate(`/blog?tag=${encodeURIComponent(tag)}`)
                   }
                 >
                   {tag}
@@ -200,37 +206,45 @@ const ResearchDetail = () => {
           </div>
         )}
 
-        {/* Attachments */}
-        {research.attachments && research.attachments.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4 font-['Cairo']">
-              المرفقات
-            </h3>
-            <div className="space-y-3">
-              {research.attachments.map((attachment: any, index: number) => (
-                <div
-                  key={index}
-                  className="p-4 bg-white rounded-lg border hover:shadow-md transition-shadow"
-                >
-                  <a
-                    href={attachment.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between text-red-600 hover:text-red-700"
-                  >
-                    <span className="font-['Cairo']">
-                      {attachment.name || attachment.url}
-                    </span>
-                    <Download className="h-4 w-4 mr-2" />
-                  </a>
-                </div>
-              ))}
-            </div>
+        {/* Call to Action */}
+        <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-8 text-center text-white shadow-xl">
+          <h3 className="text-2xl font-bold mb-3 font-['Cairo']">
+            هل أعجبك هذا المقال؟
+          </h3>
+          <p className="text-white/90 mb-6 font-['Cairo']">
+            اكتشف المزيد من المقالات حول التحقق من الحقائق والتربية الإعلامية
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Button
+              size="lg"
+              variant="secondary"
+              className="bg-white text-red-600 hover:bg-gray-100 font-['Cairo']"
+              onClick={() => navigate("/blog")}
+            >
+              تصفح جميع المقالات
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white/10 font-['Cairo']"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: blogPost.title,
+                    text: blogPost.excerpt,
+                    url: window.location.href,
+                  });
+                }
+              }}
+            >
+              <Share2 className="h-5 w-5 ml-2" />
+              مشاركة المقال
+            </Button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default ResearchDetail;
+export default BlogDetail;

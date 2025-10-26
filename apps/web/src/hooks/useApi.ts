@@ -1,6 +1,8 @@
 import {
   apiClient,
   ApiResponse,
+  BlogFilterParams,
+  BlogPost,
   Certificate,
   Course,
   CourseParams,
@@ -255,5 +257,42 @@ export const useCreateSubmission = () => {
       // Invalidate submissions list to refetch
       queryClient.invalidateQueries({ queryKey: ["mySubmissions"] });
     },
+  });
+};
+
+// Blog Posts Hooks
+export const useBlogPosts = (params?: BlogFilterParams) => {
+  return useQuery<PaginatedResponse<BlogPost>>({
+    queryKey: ["blogPosts", params],
+    queryFn: () => apiClient.getBlogPosts(params),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+};
+
+export const useBlogPost = (slug: string) => {
+  return useQuery<BlogPost>({
+    queryKey: ["blogPost", slug],
+    queryFn: () => apiClient.getBlogPost(slug),
+    enabled: !!slug,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+};
+
+export const useBlogCategories = () => {
+  return useQuery<string[]>({
+    queryKey: ["blogCategories"],
+    queryFn: () => apiClient.getBlogCategories(),
+    staleTime: 1000 * 60 * 30, // 30 minutes - categories don't change often
+  });
+};
+
+export const useBlogTags = () => {
+  return useQuery<string[]>({
+    queryKey: ["blogTags"],
+    queryFn: () => apiClient.getBlogTags(),
+    staleTime: 1000 * 60 * 30, // 30 minutes
   });
 };

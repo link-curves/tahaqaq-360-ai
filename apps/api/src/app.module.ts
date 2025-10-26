@@ -43,6 +43,7 @@ import {
 } from './config/database.config';
 import { emailConfig } from './config/email.config';
 import { AccessibilityStatementModule } from './modules/accessiblitystatement/accessiblitystatement.module';
+import { BlogModule } from './modules/blog/blog.module';
 import { FaqModule } from './modules/faq/faq.module';
 import { PrivacyPolicyModule } from './modules/privacypolicy/privacypolicy.module';
 
@@ -102,6 +103,7 @@ import { PrivacyPolicyModule } from './modules/privacypolicy/privacypolicy.modul
     ResearchModule,
     ContactModule,
     TrainingRequestsModule,
+    BlogModule,
 
     // ============================================
     // SUPPORTING MODULES

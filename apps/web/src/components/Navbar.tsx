@@ -48,9 +48,9 @@ const Navbar = () => {
       ? [{ name: "دوراتي", href: "/my-courses", isRoute: true }]
       : []),
     { name: "الأبحاث", href: "/research", isRoute: true },
+    { name: "المدونة", href: "/blog", isRoute: true },
     { name: "الميزات", href: "#features", isRoute: false },
     { name: "التعليم", href: "#education", isRoute: false },
-    { name: "المدونة", href: "#blog", isRoute: false },
   ];
 
   const scrollToSection = (href: string) => {

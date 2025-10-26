@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLatestResearch } from "@/hooks/useApi";
+import { useBlogPosts } from "@/hooks/useApi";
 import {
   formatDate,
   generateExcerpt,
@@ -13,9 +13,16 @@ import { useNavigate } from "react-router-dom";
 
 const BlogSection = () => {
   const navigate = useNavigate();
-  const { data, isLoading } = useLatestResearch();
+  const { data, isLoading } = useBlogPosts({
+    limit: 6,
+    sortBy: "publishedAt",
+    sortOrder: "desc",
+    status: "PUBLISHED",
+  });
 
-  const research = data?.data || [];
+  const blogPosts = data?.data || [];
+
+  console.log("BlogSection: blogPosts =", blogPosts);
 
   return (
     <div
@@ -26,10 +33,10 @@ const BlogSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            أحدث الرؤى والأبحاث
+            أحدث المقالات والرؤى
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            ابق على اطلاع بأحدث أبحاثنا وتحليلاتنا ورؤانا حول اتجاهات المعلومات
+            ابق على اطلاع بأحدث مقالاتنا وتحليلاتنا ورؤانا حول اتجاهات المعلومات
             المضللة وأفضل ممارسات محو الأمية الإعلامية ومنهجيات فحص الحقائق
           </p>
         </div>
@@ -48,21 +55,21 @@ const BlogSection = () => {
                 </div>
               </Card>
             ))
-          ) : research.length === 0 ? (
+          ) : blogPosts.length === 0 ? (
             <div className="col-span-3 text-center py-12">
               <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 text-xl font-['Cairo']">
-                لا توجد أبحاث متاحة حالياً
+                لا توجد مقالات متاحة حالياً
               </p>
             </div>
           ) : (
-            research.slice(0, 6).map((article) => {
+            blogPosts.map((article) => {
               const cardDirection = getTextDirection(article.title);
               return (
                 <Card
                   key={article.id}
                   className="group overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white border-0 shadow-lg rounded-xl flex flex-col h-full relative cursor-pointer"
-                  onClick={() => navigate(`/research/${article.slug}`)}
+                  onClick={() => navigate(`/blog/${article.slug}`)}
                   dir={cardDirection}
                 >
                   {/* Article Image */}
@@ -91,10 +98,21 @@ const BlogSection = () => {
                     <div className="absolute bottom-4 left-4">
                       <div className="px-3 py-1 bg-red-600/90 backdrop-blur-sm rounded-full shadow-lg">
                         <span className="text-xs text-white font-medium font-['Cairo']">
-                          {article.views} مشاهدة
+                          {article.views.toLocaleString()} مشاهدة
                         </span>
                       </div>
                     </div>
+
+                    {/* Reading Time Badge */}
+                    {article.readTime && (
+                      <div className="absolute bottom-4 right-4">
+                        <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-lg">
+                          <span className="text-xs text-gray-700 font-medium font-['Cairo']">
+                            {article.readTime} دقيقة
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Card Content */}
@@ -104,8 +122,22 @@ const BlogSection = () => {
                     </h3>
 
                     <p className="text-gray-600 mb-4 text-sm text-right font-['Cairo'] leading-relaxed flex-grow">
-                      {generateExcerpt(article.summary, 25)}
+                      {generateExcerpt(article.excerpt, 25)}
                     </p>
+
+                    {/* Tags */}
+                    {article.tags && article.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {article.tags.slice(0, 3).map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-full font-['Cairo']"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Author and Date Info */}
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-6 font-['Cairo']">
@@ -115,12 +147,10 @@ const BlogSection = () => {
                           {formatDate(article.publishedAt || article.createdAt)}
                         </span>
                       </div>
-                      {article.authors && article.authors.length > 0 && (
-                        <div className="flex items-center">
-                          <User className="h-3 w-3 ml-1" />
-                          <span>{article.authors[0]}</span>
-                        </div>
-                      )}
+                      <div className="flex items-center">
+                        <User className="h-3 w-3 ml-1" />
+                        <span>{article.author}</span>
+                      </div>
                     </div>
 
                     {/* Read More Button */}
@@ -145,9 +175,9 @@ const BlogSection = () => {
           <Button
             size="lg"
             className="bg-red-600 hover:bg-red-700 text-white font-['Cairo'] px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-            onClick={() => navigate("/research")}
+            onClick={() => navigate("/blog")}
           >
-            عرض جميع الأبحاث
+            عرض جميع المقالات
           </Button>
         </div>
       </div>

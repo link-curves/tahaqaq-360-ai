@@ -24,7 +24,7 @@ import {
   Search,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Research = () => {
@@ -48,6 +48,11 @@ const Research = () => {
   const startIndex = (page - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const research = allResearch.slice(startIndex, endIndex);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   // Get unique categories
   const categories = Array.from(new Set(allResearch.map((r) => r.category)));

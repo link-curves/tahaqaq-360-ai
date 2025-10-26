@@ -559,6 +559,45 @@ model Session {
 }
 
 // ============================================
+// BLOG POSTS
+// ============================================
+
+model Blog {
+  id         String   @id @default(cuid())
+  title      String
+  slug       String   @unique
+  excerpt    String   @db.Text
+  content    String   @db.Text
+  coverImage String?
+  author     String
+  category   String
+  tags       String[]
+  isFeatured Boolean  @default(false)
+
+  // Publishing
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  // Metrics
+  views    Int  @default(0)
+  readTime Int? // in minutes
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([category])
+  @@index([publishedAt])
+  @@map("blog_posts")
+}
+
+// ============================================
 // RESEARCH & INSIGHTS
 // ============================================
 

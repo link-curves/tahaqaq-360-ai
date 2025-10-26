@@ -143,7 +143,7 @@ const MediaLiteracySection = () => {
                       </span>
                     </div>
 
-                    <Button className="w-full mt-auto bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-semibold py-3 rounded-lg text-white">
+                    <Button className="w-full mt-auto bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-semibold py-3 rounded-lg text-white cursor-pointer">
                       <span className="flex items-center justify-center space-x-2 space-x-reverse text-white">
                         <span className="text-white">ابدأ التعلم</span>
                         <svg
@@ -218,7 +218,7 @@ const MediaLiteracySection = () => {
 
             <Button
               size="lg"
-              className="bg-white text-red-600 hover:bg-gray-100 font-bold font-['Cairo'] text-lg px-8 py-6 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="bg-white text-red-600 hover:bg-gray-100 font-bold font-['Cairo'] text-lg px-8 py-6 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
               onClick={() => navigate("/courses")}
             >
               ابدأ مسار الشهادة

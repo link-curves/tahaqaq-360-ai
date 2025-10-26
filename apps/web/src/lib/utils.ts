@@ -139,7 +139,7 @@ export const formatCompactNumber = (num: number): string => {
 export const getImageUrl = (path?: string): string => {
   if (!path) return "/placeholder-image.jpg";
   if (path.startsWith("http")) return path;
-  return `${import.meta.env.VITE_API_URL?.replace("/api/v1", "") || "http://localhost:5000"}${path}`;
+  return `${import.meta.env.VITE_API_URL?.replace("/api/v1", "") || "http://localhost:10000"}${path}`;
 };
 
 // Content utilities

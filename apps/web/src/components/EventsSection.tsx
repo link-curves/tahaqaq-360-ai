@@ -86,7 +86,7 @@ const EventsSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-['Cairo']">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6 font-['Cairo']">
             الفعاليات والورش
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-['Cairo']">
@@ -176,7 +176,7 @@ const EventsSection = () => {
                   </div>
 
                   {/* Register Button - Always at bottom */}
-                  <Button className="w-full mt-auto bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-semibold py-3 rounded-lg text-white">
+                  <Button className="w-full mt-auto bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-semibold py-3 rounded-lg text-white cursor-pointer">
                     <span className="flex items-center justify-center space-x-2 space-x-reverse text-white">
                       <span>سجل الآن</span>
                       <svg
@@ -216,14 +216,14 @@ const EventsSection = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 onClick={() => setIsTrainingModalOpen(true)}
-                className="bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-bold py-3 px-8 rounded-lg text-amber-50"
+                className="bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-['Cairo'] font-bold py-3 px-8 rounded-lg text-amber-50 cursor-pointer"
               >
                 اطلب تدريباً
               </Button>
               <Button
                 onClick={() => navigate("/events")}
                 variant="outline"
-                className="border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-300 font-['Cairo'] font-semibold py-3 px-8 rounded-lg"
+                className="border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-300 font-['Cairo'] font-semibold py-3 px-8 rounded-lg cursor-pointer"
               >
                 عرض جميع الفعاليات
               </Button>

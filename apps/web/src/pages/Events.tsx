@@ -20,7 +20,7 @@ import {
   MapPin,
   Search,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Events = () => {
@@ -46,6 +46,11 @@ const Events = () => {
   const startIndex = (page - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const events = allEvents.slice(startIndex, endIndex);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   const getEventTypeLabel = (type: EventTypeValue) => {
     switch (type) {
@@ -122,7 +127,7 @@ const Events = () => {
               <SelectTrigger className="w-full md:w-48 font-['Cairo']">
                 <SelectValue placeholder="نوع الفعالية" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="all" className="font-['Cairo']">
                   جميع الأنواع
                 </SelectItem>
@@ -273,7 +278,7 @@ const Events = () => {
                                 <Badge
                                   key={index}
                                   variant="secondary"
-                                  className="text-xs font-['Cairo']"
+                                  className="text-sm font-['Cairo'] bg-red-50 text-red-700 hover:bg-red-10"
                                 >
                                   {tag}
                                 </Badge>
@@ -314,7 +319,9 @@ const Events = () => {
                       size="sm"
                       onClick={() => setPage(index + 1)}
                       className={
-                        page === index + 1 ? "bg-red-600 hover:bg-red-700" : ""
+                        page === index + 1
+                          ? "bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+                          : "cursor-pointer"
                       }
                     >
                       {index + 1}

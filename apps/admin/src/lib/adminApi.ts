@@ -41,6 +41,19 @@ export const EventType = {
   TRAINING: "TRAINING" as const,
 };
 
+export type ContentStatusValue =
+  | "DRAFT"
+  | "PUBLISHED"
+  | "ARCHIVED"
+  | "UNDER_REVIEW";
+
+export const ContentStatus = {
+  DRAFT: "DRAFT" as const,
+  PUBLISHED: "PUBLISHED" as const,
+  ARCHIVED: "ARCHIVED" as const,
+  UNDER_REVIEW: "UNDER_REVIEW" as const,
+};
+
 export interface DashboardStats {
   users: {
     total: number;
@@ -207,6 +220,46 @@ export interface FAQ {
   createdAt: string;
   updatedAt: string;
 }
+
+// Blog Post Types
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  coverImage?: string;
+  author: string;
+  category: string;
+  tags: string[];
+  isFeatured: boolean;
+  status: ContentStatusValue;
+  publishedAt?: string;
+  views: number;
+  readTime?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBlogPostDto {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  coverImage?: string;
+  author: string;
+  category: string;
+  tags?: string[];
+  isFeatured?: boolean;
+  status?: ContentStatusValue;
+  readTime?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+export interface UpdateBlogPostDto extends Partial<CreateBlogPostDto> {}
 
 export interface PaginatedResponse<T> {
   data: T[];
@@ -482,6 +535,95 @@ export const faqApi = {
       headers: getAuthHeaders(),
     });
     return handleResponse<FAQ>(response);
+  },
+};
+
+// ==================== BLOG API ====================
+
+export const blogApi = {
+  getAll: async (params?: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    category?: string;
+    tag?: string;
+    status?: ContentStatusValue;
+    search?: string;
+    isFeatured?: boolean;
+    author?: string;
+  }): Promise<{ data: BlogPost[]; meta: any }> => {
+    const query = new URLSearchParams();
+    if (params?.page) query.append("page", params.page.toString());
+    if (params?.limit) query.append("limit", params.limit.toString());
+    if (params?.sortBy) query.append("sortBy", params.sortBy);
+    if (params?.sortOrder) query.append("sortOrder", params.sortOrder);
+    if (params?.category) query.append("category", params.category);
+    if (params?.tag) query.append("tag", params.tag);
+    if (params?.status) query.append("status", params.status);
+    if (params?.search) query.append("search", params.search);
+    if (params?.isFeatured !== undefined)
+      query.append("isFeatured", params.isFeatured.toString());
+    if (params?.author) query.append("author", params.author);
+
+    const response = await fetch(`${API_BASE_URL}/blog?${query}`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<{ data: BlogPost[]; meta: any }>(response);
+  },
+
+  getBySlug: async (slug: string): Promise<BlogPost> => {
+    const response = await fetch(`${API_BASE_URL}/blog/${slug}`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<BlogPost>(response);
+  },
+
+  create: async (data: CreateBlogPostDto): Promise<BlogPost> => {
+    const response = await fetch(`${API_BASE_URL}/blog`, {
+      method: "POST",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse<BlogPost>(response);
+  },
+
+  update: async (id: string, data: UpdateBlogPostDto): Promise<BlogPost> => {
+    const response = await fetch(`${API_BASE_URL}/blog/${id}`, {
+      method: "PATCH",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse<BlogPost>(response);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/blog/${id}`, {
+      method: "DELETE",
+      credentials: "include" as RequestCredentials,
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<void>(response);
+  },
+
+  getCategories: async (): Promise<string[]> => {
+    const response = await fetch(`${API_BASE_URL}/blog/categories`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<string[]>(response);
+  },
+
+  getTags: async (): Promise<string[]> => {
+    const response = await fetch(`${API_BASE_URL}/blog/tags`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse<string[]>(response);
   },
 };
 

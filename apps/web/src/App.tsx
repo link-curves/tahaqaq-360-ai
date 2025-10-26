@@ -8,6 +8,8 @@ import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import AccessibilityStatement from "./pages/AccessibilityStatement";
 import AuthSuccessPage from "./pages/AuthSuccess";
+import Blog from "./pages/Blog";
+import BlogDetail from "./pages/BlogDetail";
 import ContactUs from "./pages/ContactUs";
 import CourseDetail from "./pages/CourseDetail";
 import Courses from "./pages/Courses";
@@ -77,6 +79,8 @@ const App = () => (
                       path="/research/:slug"
                       element={<ResearchDetail />}
                     />
+                    <Route path="/blog" element={<Blog />} />
+                    <Route path="/blog/:slug" element={<BlogDetail />} />
                     <Route path="/learning" element={<Courses />} />
                     <Route path="/learning/:slug" element={<CourseDetail />} />
                     <Route path="/courses" element={<Courses />} />
