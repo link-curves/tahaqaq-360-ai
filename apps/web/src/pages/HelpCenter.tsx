@@ -198,7 +198,7 @@ const HelpCenter = () => {
                     {blog.excerpt}
                   </p>
                   <p className="text-gray-500 text-sm">
-                    {blog.views?.toLocaleString("ar-EG")} مشاهدة
+                    {blog.views?.toLocaleString("en-EN")} مشاهدة
                   </p>
                 </div>
               ))}

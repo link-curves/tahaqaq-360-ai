@@ -49,7 +49,7 @@ const AdminSidebar = ({
               <Button
                 key={item.id}
                 variant={activeSection === item.id ? "default" : "ghost"}
-                className={`w-full justify-start text-right ${
+                className={`w-full justify-start text-right cursor-pointer ${
                   activeSection === item.id
                     ? "bg-red-600 text-white hover:bg-red-700"
                     : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"

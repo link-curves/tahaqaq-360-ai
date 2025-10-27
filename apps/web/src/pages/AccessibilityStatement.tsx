@@ -81,7 +81,7 @@ const AccessibilityStatement = () => {
                   آخر تحديث:{" "}
                   {new Date(
                     accessibilityStatement.createdAt
-                  ).toLocaleDateString("ar-EG", {
+                  ).toLocaleDateString("en-EN", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",

@@ -64,7 +64,7 @@ const AnimatedCounter: React.FC<{ end: number; duration?: number }> = ({
 - Uses `requestAnimationFrame` for smooth 60fps animation
 - Implements easing function: `easeOutQuart` for natural deceleration
 - Counts from 0 to target value over 2 seconds
-- Formats numbers with Arabic locale (`toLocaleString('ar-EG')`)
+- Formats numbers with Arabic locale (`toLocaleString('en-EN')`)
 - Properly cleans up animation frames on unmount
 
 **Benefits:**

@@ -108,7 +108,7 @@ const CourseManagement = () => {
       header: "المدة (دقيقة)",
       accessor: "duration",
       sortable: true,
-      cell: (value) => (value || 0).toLocaleString("ar-EG"),
+      cell: (value) => (value || 0).toLocaleString("en-EN"),
     },
     {
       header: "الحالة",
@@ -119,12 +119,12 @@ const CourseManagement = () => {
     {
       header: "الدروس",
       accessor: (row) => row._count?.lessons || 0,
-      cell: (value) => (value || 0).toLocaleString("ar-EG"),
+      cell: (value) => (value || 0).toLocaleString("en-EN"),
     },
     {
       header: "المشتركون",
       accessor: (row) => row._count?.enrollments || 0,
-      cell: (value) => (value || 0).toLocaleString("ar-EG"),
+      cell: (value) => (value || 0).toLocaleString("en-EN"),
     },
   ];
 

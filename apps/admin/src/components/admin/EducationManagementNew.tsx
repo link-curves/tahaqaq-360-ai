@@ -426,7 +426,7 @@ const EducationManagementNew = () => {
                     </p>
                     <p className="text-xs text-gray-500">
                       آخر تحديث:{" "}
-                      {new Date(course.updatedAt).toLocaleDateString("ar-EG")}
+                      {new Date(course.updatedAt).toLocaleDateString("en-EN")}
                     </p>
                   </div>
                 </div>

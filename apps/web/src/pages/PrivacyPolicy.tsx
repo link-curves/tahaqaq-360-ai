@@ -64,7 +64,7 @@ const PrivacyPolicy = () => {
                 <span>
                   آخر تحديث:{" "}
                   {new Date(privacyPolicy.createdAt).toLocaleDateString(
-                    "ar-EG",
+                    "en-EN",
                     {
                       year: "numeric",
                       month: "long",

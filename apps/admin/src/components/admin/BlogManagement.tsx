@@ -278,7 +278,7 @@ const BlogManagement = () => {
           <p className="text-gray-600">إنشاء وتحرير مقالات المدونة</p>
         </div>
         <Button
-          className="bg-red-600 hover:bg-red-700"
+          className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"
           onClick={handleCreateClick}
         >
           <Plus className="ml-2 h-4 w-4" />

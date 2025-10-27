@@ -174,7 +174,7 @@ const EventManagementNew = () => {
       cell: (value) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="ml-2 h-4 w-4" />
-          {new Date(value).toLocaleDateString("ar-EG")}
+          {new Date(value).toLocaleDateString("en-EN")}
         </div>
       ),
     },

@@ -78,7 +78,7 @@ const TermsOfService = () => {
                 <span>
                   آخر تحديث:{" "}
                   {new Date(termsOfService.createdAt).toLocaleDateString(
-                    "ar-EG",
+                    "en-EN",
                     {
                       year: "numeric",
                       month: "long",

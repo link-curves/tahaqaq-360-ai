@@ -250,14 +250,14 @@ const FactCheckManagementNew = () => {
       header: "المشاهدات",
       accessor: "viewCount",
       sortable: true,
-      cell: (value) => (value || 0).toLocaleString("ar-EG"),
+      cell: (value) => (value || 0).toLocaleString("en-EN"),
     },
     {
       header: "تاريخ النشر",
       accessor: "publishedAt",
       sortable: true,
       cell: (value) =>
-        value ? new Date(value).toLocaleDateString("ar-EG") : "غير منشور",
+        value ? new Date(value).toLocaleDateString("en-EN") : "غير منشور",
     },
   ];
 

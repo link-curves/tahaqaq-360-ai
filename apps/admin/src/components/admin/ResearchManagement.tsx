@@ -113,13 +113,13 @@ const ResearchManagement = () => {
       header: "المشاهدات",
       accessor: "views",
       sortable: true,
-      cell: (value) => (value || 0).toLocaleString("ar-EG"),
+      cell: (value) => (value || 0).toLocaleString("en-EN"),
     },
     {
       header: "تاريخ الإنشاء",
       accessor: "createdAt",
       sortable: true,
-      cell: (value) => new Date(value).toLocaleDateString("ar-EG"),
+      cell: (value) => new Date(value).toLocaleDateString("en-EN"),
     },
   ];
 

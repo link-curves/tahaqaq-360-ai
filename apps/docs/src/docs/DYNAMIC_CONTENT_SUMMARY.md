@@ -307,7 +307,7 @@ apps/api/src/modules/
    - Floating particles and orbs
 5. **Glassmorphism Design**: Backdrop blur with white/10 opacity
 6. **Hover Effects**: Scale transforms and animated pulses on stat cards
-7. **Arabic Number Formatting**: Using `toLocaleString('ar-EG')`
+7. **Arabic Number Formatting**: Using `toLocaleString('en-EN')`
 
 ### All Tasks Complete! 🎉
 

@@ -273,7 +273,7 @@ const Profile = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 font-['Cairo']">النقاط</span>
                   <span className="font-bold text-red-600 font-['Cairo']">
-                    {stats.totalPoints.toLocaleString("ar-EG")}
+                    {stats.totalPoints.toLocaleString("en-EN")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -281,7 +281,7 @@ const Profile = () => {
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     <span className="font-bold font-['Cairo']">
-                      {stats.reputation.toLocaleString("ar-EG")}
+                      {stats.reputation.toLocaleString("en-EN")}
                     </span>
                   </div>
                 </div>

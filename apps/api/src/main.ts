@@ -43,6 +43,9 @@ async function bootstrap() {
     'https://tahaqaq-360-web.netlify.app',
     'https://tahaqaq-360-admin.netlify.app',
     'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://localhost:5678',
   ];
 
   app.enableCors({
