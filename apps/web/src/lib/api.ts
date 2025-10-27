@@ -280,6 +280,44 @@ export interface Certificate {
   course?: Course;
 }
 
+// FAQ Types
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  order: number;
+  isPublished: boolean;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Legal Pages Types
+export interface PrivacyPolicy {
+  id: string;
+  version: string;
+  content: string;
+  isCurrent: boolean;
+  createdAt: string;
+}
+
+export interface TermsOfService {
+  id: string;
+  version: string;
+  content: string;
+  isCurrent: boolean;
+  createdAt: string;
+}
+
+export interface AccessibilityStatement {
+  id: string;
+  version: string;
+  content: string;
+  isCurrent: boolean;
+  createdAt: string;
+}
+
 // Submission Types
 export interface Submission {
   id: string;
@@ -811,6 +849,44 @@ class ApiClient {
 
   async getBlogTags(): Promise<string[]> {
     return this.request<string[]>("/blog/tags");
+  }
+
+  // ==================== FAQ API ====================
+  async getFaqs(params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+  }): Promise<PaginatedResponse<FAQ>> {
+    const query = this.buildQueryString(params || {});
+    const endpoint = query ? `/faq?${query}` : "/faq";
+
+    return this.request<PaginatedResponse<FAQ>>(endpoint);
+  }
+
+  async getFaqCategories(): Promise<string[]> {
+    return this.request<string[]>("/faq/categories");
+  }
+
+  // Legal Pages Methods
+  async getPrivacyPolicy(): Promise<PrivacyPolicy | null> {
+    const response = await this.request<PrivacyPolicy | null>(
+      "/privacy-policy"
+    );
+    return response ?? null;
+  }
+
+  async getTermsOfService(): Promise<TermsOfService | null> {
+    const response = await this.request<TermsOfService | null>(
+      "/terms-of-service"
+    );
+    return response ?? null;
+  }
+
+  async getAccessibilityStatement(): Promise<AccessibilityStatement | null> {
+    const response = await this.request<AccessibilityStatement | null>(
+      "/accessibility-statement"
+    );
+    return response ?? null;
   }
 
   // Helper method for building query strings

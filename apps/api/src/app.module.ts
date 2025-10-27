@@ -46,6 +46,7 @@ import { AccessibilityStatementModule } from './modules/accessiblitystatement/ac
 import { BlogModule } from './modules/blog/blog.module';
 import { FaqModule } from './modules/faq/faq.module';
 import { PrivacyPolicyModule } from './modules/privacypolicy/privacypolicy.module';
+import { TermsofserviceModule } from './modules/termsofservice/termsofservice.module';
 
 @Module({
   imports: [
@@ -116,6 +117,7 @@ import { PrivacyPolicyModule } from './modules/privacypolicy/privacypolicy.modul
     ModerationModule,
     AccessibilityStatementModule,
     PrivacyPolicyModule,
+    TermsofserviceModule,
     FaqModule,
 
     // ============================================

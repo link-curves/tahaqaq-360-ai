@@ -31,6 +31,28 @@ const Footer = () => {
     }
   };
 
+  // Contact handlers
+  const handleEmailClick = () => {
+    window.location.href = "mailto:info@tahaqaq360.com";
+  };
+
+  const handlePhoneClick = () => {
+    const phoneNumber = "97141234567"; // +971 4 123 4567
+    const message = encodeURIComponent(
+      "مرحباً، أحتاج مساعدة بخصوص منصة تحقق 360"
+    );
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+  };
+
+  const handleLocationClick = () => {
+    // Open Google Maps with Beirut location
+    window.open("https://www.google.com/maps/place/Beirut", "_blank");
+  };
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
+
   return (
     <footer
       className="bg-gradient-to-br from-gray-900 via-slate-900 to-red-950 text-white py-20"
@@ -44,7 +66,10 @@ const Footer = () => {
             {" "}
             {/* Logo and Brand */}
             <div className="flex items-center mb-8">
-              <div className="flex items-center">
+              <div
+                className="flex items-center cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                onClick={handleLogoClick}
+              >
                 <TahqaqLogo className="ml-4" width={40} height={40} />
                 <div>
                   <h2 className="text-3xl font-bold font-['Cairo'] text-white">
@@ -64,17 +89,28 @@ const Footer = () => {
             </p>
             {/* Contact Info */}
             <div className="space-y-4 mb-8">
-              <div className="flex items-center text-gray-300 font-['Cairo']">
-                <Mail className="h-5 w-5 ml-4 text-red-400 flex-shrink-0" />
+              <div
+                className="flex items-center text-gray-300 font-['Cairo'] cursor-pointer hover:text-red-400 transition-colors duration-300 group"
+                onClick={handleEmailClick}
+              >
+                <Mail className="h-5 w-5 ml-4 text-red-400 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
                 <span className="text-base">info@tahaqaq360.com</span>
               </div>
-              <div className="flex items-center text-gray-300 font-['Cairo']">
-                <Phone className="h-5 w-5 ml-4 text-red-400 flex-shrink-0" />
-                <span className="text-base">+971 4 123 4567</span>
+              <div
+                className="flex items-center text-gray-300 font-['Cairo'] cursor-pointer hover:text-red-400 transition-colors duration-300 group"
+                onClick={handlePhoneClick}
+              >
+                <Phone className="h-5 w-5 ml-4 text-red-400 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                <span className="text-base" dir="ltr">
+                  +961 70 946 882
+                </span>
               </div>
-              <div className="flex items-center text-gray-300 font-['Cairo']">
-                <MapPin className="h-5 w-5 ml-4 text-red-400 flex-shrink-0" />
-                <span className="text-base">دبي، الإمارات العربية المتحدة</span>
+              <div
+                className="flex items-center text-gray-300 font-['Cairo'] cursor-pointer hover:text-red-400 transition-colors duration-300 group"
+                onClick={handleLocationClick}
+              >
+                <MapPin className="h-5 w-5 ml-4 text-red-400 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                <span className="text-base">بيروت، لبنان</span>
               </div>
             </div>{" "}
             {/* Social Media */}
@@ -214,25 +250,25 @@ const Footer = () => {
               © 2025 تحقق 360. جميع الحقوق محفوظة. | بناء مستقبل أكثر وعياً
               بالمعلومات
             </p>
-            <div className="flex space-x-8 space-x-reverse">
-              <a
-                href="#"
+            <div className="flex space-x-8">
+              <Link
+                to="/privacy-policy"
                 className="text-gray-400 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-sm"
               >
                 سياسة الخصوصية
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/terms-of-service"
                 className="text-gray-400 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-sm"
               >
                 شروط الاستخدام
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/accessibility"
                 className="text-gray-400 hover:text-red-400 transition-colors duration-300 font-['Cairo'] text-sm"
               >
                 بيان إمكانية الوصول
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,129 +1,73 @@
 import { Input } from "@/components/ui/input";
-import { ChevronDown, ChevronUp, Search } from "lucide-react";
-import { useState } from "react";
+import { apiClient, type FAQ as FAQType } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronDown, ChevronUp, Loader2, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 
 const FAQ = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [openFAQ, setOpenFAQ] = useState<string | null>(null);
 
-  const faqCategories = [
-    {
-      title: "الأسئلة العامة",
-      faqs: [
-        {
-          question: "ما هي منصة تحقق 360؟",
-          answer:
-            "تحقق 360 هي منصة رائدة لفحص الحقائق والتحقق من صحة المعلومات باستخدام تقنيات الذكاء الاصطناعي المتقدمة. نهدف إلى مكافحة المعلومات المضللة وتعزيز الوعي الإعلامي في المجتمع العربي.",
-        },
-        {
-          question: "كيف تعمل تقنية فحص الحقائق؟",
-          answer:
-            "تستخدم منصتنا خوارزميات الذكاء الاصطناعي المتطورة لتحليل المحتوى ومقارنته بمصادر موثوقة متعددة. النظام يفحص النصوص والصور ومقاطع الفيديو ويقدم تقييماً شاملاً لمصداقية المعلومات.",
-        },
-        {
-          question: "هل الخدمة مجانية؟",
-          answer:
-            "نعم، الخدمات الأساسية لفحص الحقائق مجانية تماماً. كما نوفر خطط مدفوعة للمؤسسات والشركات التي تحتاج ميزات متقدمة وإمكانيات أكبر للتحليل.",
-        },
-      ],
-    },
-    {
-      title: "استخدام المنصة",
-      faqs: [
-        {
-          question: "كيف أقوم بفحص معلومة معينة؟",
-          answer:
-            "يمكنك ببساطة نسخ النص أو رفع الصورة أو إدراج رابط المقال في أداة الفحص الخاصة بنا. سيقوم النظام بتحليل المحتوى وتقديم تقرير مفصل عن مصداقيته خلال ثوانٍ معدودة.",
-        },
-        {
-          question: "ما هي أنواع المحتوى التي يمكن فحصها؟",
-          answer:
-            "نحن نفحص النصوص والمقالات الإخبارية والصور ومقاطع الفيديو والتسجيلات الصوتية. كما نتحقق من المعلومات الإحصائية والبيانات والاقتباسات.",
-        },
-        {
-          question: "كم من الوقت يستغرق الحصول على النتائج؟",
-          answer:
-            "معظم عمليات الفحص تكتمل خلال 10-30 ثانية للنصوص البسيطة، وقد تستغرق دقيقة إلى دقيقتين للمحتوى المعقد أو الملفات الكبيرة.",
-        },
-      ],
-    },
-    {
-      title: "الحساب والأمان",
-      faqs: [
-        {
-          question: "هل أحتاج لإنشاء حساب؟",
-          answer:
-            "يمكنك استخدام الخدمات الأساسية بدون حساب، لكن إنشاء حساب يتيح لك حفظ تاريخ عمليات البحث والوصول للميزات المتقدمة والتسجيل في الدورات التعليمية.",
-        },
-        {
-          question: "كيف تحمون بياناتي الشخصية؟",
-          answer:
-            "نلتزم بأعلى معايير الأمان والخصوصية. جميع البيانات مشفرة ولا نشارك معلوماتك الشخصية مع أي طرف ثالث. يمكنك مراجعة سياسة الخصوصية الكاملة للمزيد من التفاصيل.",
-        },
-        {
-          question: "كيف أغير كلمة المرور؟",
-          answer:
-            "يمكنك تغيير كلمة المرور من خلال الذهاب إلى إعدادات الحساب والنقر على 'تغيير كلمة المرور'. ستحتاج إلى إدخال كلمة المرور الحالية ثم كلمة المرور الجديدة مرتين للتأكيد.",
-        },
-      ],
-    },
-    {
-      title: "الدورات والفعاليات",
-      faqs: [
-        {
-          question: "كيف أسجل في الدورات التعليمية؟",
-          answer:
-            "تصفح قسم الدورات في الموقع واختر الدورة المناسبة لك. انقر على 'التسجيل' وأكمل النموذج المطلوب. ستتلقى بريداً إلكترونياً بتفاصيل الدورة ورابط الحضور.",
-        },
-        {
-          question: "هل الدورات مجانية؟",
-          answer:
-            "معظم دوراتنا مجانية كجزء من مهمتنا في نشر الوعي الإعلامي. بعض الدورات المتخصصة والشهادات المهنية قد تتطلب رسوماً رمزية.",
-        },
-        {
-          question: "هل أحصل على شهادة بعد انتهاء الدورة؟",
-          answer:
-            "نعم، نقدم شهادات إتمام معتمدة لجميع الدورات. يمكنك تحميل الشهادة من حسابك بعد اجتياز الاختبار النهائي بنجاح.",
-        },
-      ],
-    },
-    {
-      title: "المشاكل التقنية",
-      faqs: [
-        {
-          question: "الموقع لا يعمل بشكل صحيح، ماذا أفعل؟",
-          answer:
-            "جرب تحديث الصفحة أو مسح ذاكرة التخزين المؤقت للمتصفح. إذا استمرت المشكلة، تأكد من أن متصفحك محدث أو جرب متصفحاً آخر. يمكنك أيضاً التواصل مع الدعم الفني.",
-        },
-        {
-          question: "لا أستطيع رفع الملفات، ما السبب؟",
-          answer:
-            "تأكد من أن حجم الملف لا يتجاوز الحد المسموح (عادة 10MB للصور و 50MB للفيديو). تأكد أيضاً من أن نوع الملف مدعوم (JPG, PNG, MP4, PDF، إلخ).",
-        },
-        {
-          question: "نتائج الفحص غير دقيقة، كيف أبلغ عن خطأ؟",
-          answer:
-            "يمكنك الإبلاغ عن الأخطاء من خلال النقر على 'الإبلاغ عن مشكلة' في صفحة النتائج، أو التواصل معنا مباشرة عبر البريد الإلكتروني مع تفاصيل المشكلة.",
-        },
-      ],
-    },
-  ];
+  // Fetch FAQs from API
+  const {
+    data: faqsResponse,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["faqs"],
+    queryFn: () => apiClient.getFaqs({ limit: 100 }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  const toggleFAQ = (categoryIndex: number, faqIndex: number) => {
-    const id = categoryIndex * 1000 + faqIndex;
-    setOpenFAQ(openFAQ === id ? null : id);
+  // API returns { data: FAQ[] } structure
+  const faqs = Array.isArray(faqsResponse)
+    ? faqsResponse
+    : faqsResponse?.data || [];
+
+  // Group FAQs by category
+  const faqCategories = useMemo(() => {
+    const categoriesMap = new Map<string, FAQType[]>();
+
+    faqs
+      .filter((faq) => faq.isPublished)
+      .sort((a, b) => a.order - b.order)
+      .forEach((faq) => {
+        if (!categoriesMap.has(faq.category)) {
+          categoriesMap.set(faq.category, []);
+        }
+        categoriesMap.get(faq.category)!.push(faq);
+      });
+
+    const result = Array.from(categoriesMap.entries()).map(([title, faqs]) => ({
+      title,
+      faqs,
+    }));
+
+    console.log("faqCategories:", result);
+    return result;
+  }, [faqs]);
+
+  const toggleFAQ = (faqId: string) => {
+    setOpenFAQ(openFAQ === faqId ? null : faqId);
   };
 
-  const filteredFAQs = faqCategories
-    .map((category) => ({
-      ...category,
-      faqs: category.faqs.filter(
-        (faq) =>
-          faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    }))
-    .filter((category) => category.faqs.length > 0);
+  const filteredFAQs = useMemo(() => {
+    if (!searchTerm) return faqCategories;
+
+    return faqCategories
+      .map((category) => ({
+        ...category,
+        faqs: category.faqs.filter(
+          (faq) =>
+            faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+      }))
+      .filter((category) => category.faqs.length > 0);
+  }, [faqCategories, searchTerm]);
+
+  console.log("filteredFAQs:", filteredFAQs);
+  console.log("filteredFAQs length:", filteredFAQs.length);
 
   return (
     <div
@@ -157,24 +101,36 @@ const FAQ = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {filteredFAQs.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="h-12 w-12 animate-spin text-purple-600" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              حدث خطأ في تحميل الأسئلة
+            </h3>
+            <p className="text-gray-600">
+              يرجى المحاولة مرة أخرى أو التواصل مع الدعم الفني
+            </p>
+          </div>
+        ) : filteredFAQs.length > 0 ? (
           filteredFAQs.map((category, categoryIndex) => (
             <div key={categoryIndex} className="mb-12">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 {category.title}
               </h2>
               <div className="space-y-4">
-                {category.faqs.map((faq, faqIndex) => {
-                  const id = categoryIndex * 1000 + faqIndex;
-                  const isOpen = openFAQ === id;
+                {category.faqs.map((faq) => {
+                  const isOpen = openFAQ === faq.id;
 
                   return (
                     <div
-                      key={faqIndex}
+                      key={faq.id}
                       className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl"
                     >
                       <button
-                        onClick={() => toggleFAQ(categoryIndex, faqIndex)}
+                        onClick={() => toggleFAQ(faq.id)}
                         className="w-full px-6 py-6 text-right focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-inset"
                       >
                         <div className="flex justify-between items-center">
@@ -198,7 +154,7 @@ const FAQ = () => {
                       >
                         <div className="px-6 pb-6">
                           <div className="border-t border-gray-200 pt-4">
-                            <p className="text-gray-600 leading-relaxed">
+                            <p className="text-gray-600 leading-relaxed whitespace-pre-line">
                               {faq.answer}
                             </p>
                           </div>
