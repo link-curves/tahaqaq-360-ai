@@ -134,32 +134,45 @@ const StatsSection = () => {
       : defaultStats;
 
   return (
-    <div className="bg-gradient-to-br from-red-50 to-rose-50 py-20" dir="rtl">
+    <div
+      className="bg-gradient-to-br from-red-50 to-rose-50 py-12 sm:py-16 md:py-20"
+      dir="rtl"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+        {/* Header */}
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6 px-4">
             موثوق به من قبل المعلمين في جميع أنحاء العالم
           </h2>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed px-4">
             ساعدت منصتنا الآلاف في مكافحة المعلومات المضللة وبناء مهارات محو
             الأمية الإعلامية
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center group">
               <div
-                className={`bg-gradient-to-br ${stat.bgColor || "from-white to-gray-50"} rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-110 border-2 ${stat.borderColor} hover:shadow-2xl`}
+                className={`bg-gradient-to-br ${stat.bgColor || "from-white to-gray-50"} rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 sm:hover:scale-110 border-2 ${stat.borderColor} hover:shadow-2xl`}
               >
-                <div className="relative mb-6">
+                {/* Icon Container */}
+                <div className="relative mb-3 sm:mb-4 md:mb-6">
                   <div
-                    className={`bg-gradient-to-br ${stat.bgColor} p-4 rounded-xl inline-block`}
+                    className={`bg-gradient-to-br ${stat.bgColor} p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl inline-block`}
                   >
-                    <stat.icon className={`h-12 w-12 ${stat.color}`} />
+                    <stat.icon
+                      className={`h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 ${stat.color}`}
+                    />
                   </div>
                   <div className="absolute -inset-2 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                 </div>
-                <div className={`text-4xl font-black mb-3 ${stat.color}`}>
+
+                {/* Counter Value */}
+                <div
+                  className={`text-2xl sm:text-3xl md:text-4xl font-black mb-2 sm:mb-3 ${stat.color}`}
+                >
                   <AnimatedCounter
                     end={stat.value}
                     suffix={stat.suffix}
@@ -167,7 +180,9 @@ const StatsSection = () => {
                     duration={2500}
                   />
                 </div>
-                <div className="text-gray-700 text-base font-semibold">
+
+                {/* Label */}
+                <div className="text-gray-700 text-xs sm:text-sm md:text-base font-semibold leading-tight px-1">
                   {stat.label}
                 </div>
               </div>

@@ -101,7 +101,7 @@ const Research = () => {
               <SelectTrigger className="w-full md:w-64 font-['Cairo']">
                 <SelectValue placeholder="جميع الفئات" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="all">جميع الفئات</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>

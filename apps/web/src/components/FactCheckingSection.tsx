@@ -15,7 +15,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Loader2,
   Search,
   XCircle,
 } from "lucide-react";
@@ -189,7 +188,7 @@ const FactCheckingSection = () => {
 
         <div className="mb-12">
           {" "}
-          <h3 className="text-3xl font-semibold text-gray-900 mb-8 text-center font-['Cairo']">
+          <h3 className="text-4xl font-bold text-gray-900 mb-20 text-center font-['Cairo']">
             فحوصات الحقائق الأخيرة
           </h3>
           {factChecks.length === 0 ? (
@@ -275,45 +274,11 @@ const FactCheckingSection = () => {
               ))}
             </div>
           )}
-          {/* Pagination Controls */}
-          {factChecks.length > 0 &&
-            (factChecksData?.hasNextPage ||
-              factChecksData?.hasPreviousPage) && (
-              <div className="flex justify-center items-center gap-4 mt-12">
-                <Button
-                  onClick={handleLoadPrevious}
-                  disabled={!factChecksData?.hasPreviousPage || isLoading}
-                  variant="outline"
-                  className="font-['Cairo'] disabled:opacity-50"
-                >
-                  {isLoading && currentPage > 1 ? (
-                    <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                  ) : null}
-                  السابق
-                </Button>
-
-                <span className="text-sm text-gray-600 font-['Cairo']">
-                  صفحة {currentPage} من {totalPages}
-                </span>
-
-                <Button
-                  onClick={handleLoadMore}
-                  disabled={!hasMore || isLoading}
-                  variant="outline"
-                  className="font-['Cairo'] disabled:opacity-50"
-                >
-                  {isLoading && hasMore ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : null}
-                  التالي
-                </Button>
-              </div>
-            )}
           {/* CTA Section */}
           <div className="text-center mt-16">
             <Button
               onClick={() => navigate("/fact-checks")}
-              className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-['Cairo']"
+              className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-['Cairo'] cursor-pointer"
             >
               عرض جميع فحوصات الحقائق
             </Button>

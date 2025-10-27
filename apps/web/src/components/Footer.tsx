@@ -88,16 +88,16 @@ const Footer = () => {
               المضللة في عصرنا الرقمي
             </p>
             {/* Contact Info */}
-            <div className="space-y-4 mb-8">
+            <div className="space-y-4 mb-8 w-fit">
               <div
-                className="flex items-center text-gray-300 font-['Cairo'] cursor-pointer hover:text-red-400 transition-colors duration-300 group"
+                className="flex items-center text-gray-300 font-['Cairo'] cursor-pointer hover:text-red-400 transition-colors duration-300 group w-fit"
                 onClick={handleEmailClick}
               >
                 <Mail className="h-5 w-5 ml-4 text-red-400 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
                 <span className="text-base">info@tahaqaq360.com</span>
               </div>
               <div
-                className="flex items-center text-gray-300 font-['Cairo'] cursor-pointer hover:text-red-400 transition-colors duration-300 group"
+                className="flex items-center text-gray-300 font-['Cairo'] cursor-pointer hover:text-red-400 transition-colors duration-300 group w-fit"
                 onClick={handlePhoneClick}
               >
                 <Phone className="h-5 w-5 ml-4 text-red-400 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />

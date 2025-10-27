@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Award,
   CheckCircle2,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthModal } from "./AuthModal";
 
 interface TahqaqLogoProps {
   className?: string;
@@ -39,6 +41,8 @@ const TahqaqLogo: React.FC<TahqaqLogoProps> = ({
 
 const Hero = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -61,6 +65,14 @@ const Hero = () => {
     const element = document.querySelector(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleStartVerification = () => {
+    if (isAuthenticated) {
+      navigate("/submit");
+    } else {
+      setShowAuthModal(true);
     }
   };
 
@@ -159,9 +171,9 @@ const Hero = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
               <Button
-                onClick={() => navigate("/submit")}
+                onClick={handleStartVerification}
                 size="lg"
-                className="group relative bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold px-8 py-6 rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-red-500/30 transition-all duration-300 transform hover:scale-105 overflow-hidden"
+                className="group relative bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold px-8 py-6 rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-red-500/30 transition-all duration-300 transform hover:scale-105 overflow-hidden cursor-pointer"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                 <div className="relative flex items-center gap-2">
@@ -174,7 +186,7 @@ const Hero = () => {
                 onClick={() => scrollToSection("#features")}
                 size="lg"
                 variant="outline"
-                className="group border-2 border-red-200 hover:border-red-300 bg-white hover:bg-red-50 text-gray-900 font-bold px-8 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="group border-2 border-red-200 hover:border-red-300 bg-white hover:bg-red-50 text-gray-900 font-bold px-8 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-red-600" />
@@ -318,6 +330,16 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => {
+          setShowAuthModal(false);
+          navigate("/submit");
+        }}
+      />
     </div>
   );
 };

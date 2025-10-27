@@ -100,11 +100,11 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {" "}
-        <div className="flex justify-between items-center h-16 lg:h-20">
+        <div className="flex justify-between items-center h-16 xl:h-20">
           {/* Logo and Brand */}
           <Link
             to="/"
-            className="flex items-center space-x-2 lg:space-x-3 space-x-reverse flex-shrink-0 hover:opacity-90 transition-opacity"
+            className="flex items-center space-x-2 xl:space-x-3 space-x-reverse flex-shrink-0 hover:opacity-90 transition-opacity"
           >
             <TahqaqLogo
               className="transition-all duration-300"
@@ -125,7 +125,7 @@ const Navbar = () => {
             </div>
           </Link>
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8 space-x-reverse">
+          <div className="hidden xl:flex items-center space-x-6 2xl:space-x-8 space-x-reverse">
             {navItems.map((item) =>
               item.isRoute ? (
                 <Link
@@ -150,16 +150,16 @@ const Navbar = () => {
             )}
           </div>{" "}
           {/* Login Button and Mobile Menu */}
-          <div className="flex items-center space-x-2 lg:space-x-4 space-x-reverse">
+          <div className="flex items-center space-x-2 xl:space-x-4 space-x-reverse">
             {/* Desktop Authentication */}
-            <div className="hidden lg:flex items-center space-x-2 xl:space-x-3 space-x-reverse">
+            <div className="hidden xl:flex items-center space-x-2 2xl:space-x-3 space-x-reverse">
               {isAuthenticated && user ? (
                 // Authenticated user dropdown
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="relative h-10 w-10 rounded-full hover:bg-gray-100 hover:ring-2 hover:ring-red-200 transition-all duration-200 transform hover:scale-105"
+                      className="relative h-10 w-10 rounded-full hover:bg-gray-100 hover:ring-2 hover:ring-red-200 transition-all duration-200 transform hover:scale-105 cursor-pointer"
                     >
                       <Avatar className="h-9 w-9">
                         <AvatarImage
@@ -254,7 +254,7 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden p-2 rounded-lg transition-all duration-300 text-gray-700 hover:bg-gray-100"
+              className="xl:hidden p-2 rounded-lg transition-all duration-300 text-gray-700 hover:bg-gray-100"
             >
               {isOpen ? (
                 <X className="h-6 w-6" />
@@ -266,7 +266,7 @@ const Navbar = () => {
         </div>
         {/* Mobile Navigation Menu */}
         <div
-          className={`lg:hidden transition-all duration-300 ease-in-out ${
+          className={`xl:hidden transition-all duration-300 ease-in-out ${
             isOpen
               ? "max-h-96 opacity-100 visible"
               : "max-h-0 opacity-0 invisible"
@@ -299,7 +299,7 @@ const Navbar = () => {
               {isAuthenticated && user ? (
                 // Authenticated user - mobile
                 <>
-                  <div className="px-2 py-3 border-b border-gray-100">
+                  <div className="px-2w py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
                         <AvatarImage

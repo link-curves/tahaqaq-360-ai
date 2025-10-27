@@ -214,17 +214,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// Lazy load AuthModal to avoid circular dependency
+const AuthModal = React.lazy(() =>
+  import("../components/AuthModal").then((module) => ({
+    default: module.AuthModal,
+  }))
+);
+
 // Higher-order component for protected routes
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  fallback?: React.ReactNode;
+  showModal?: boolean;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  fallback = <div>يرجى تسجيل الدخول للوصول إلى هذه الصفحة</div>,
+  showModal = true,
 }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      if (showModal) {
+        setShowAuthModal(true);
+      }
+    }
+  }, [isAuthenticated, isLoading, showModal]);
 
   if (isLoading) {
     return (
@@ -234,8 +250,29 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  if (!isAuthenticated && showModal) {
+    return (
+      <React.Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          </div>
+        }
+      >
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={() => {
+            setShowAuthModal(false);
+            // The component will re-render with authenticated state
+          }}
+        />
+      </React.Suspense>
+    );
+  }
+
   if (!isAuthenticated) {
-    return <>{fallback}</>;
+    return null;
   }
 
   return <>{children}</>;

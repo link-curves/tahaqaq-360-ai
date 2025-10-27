@@ -9,6 +9,48 @@ export interface User {
   lastName: string;
   role: string;
   avatar?: string;
+  username?: string;
+  bio?: string;
+  isEmailVerified?: boolean;
+  reputation?: number;
+  totalPoints?: number;
+  level?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastLoginAt?: string;
+}
+
+export interface UserStats {
+  totalSubmissions: number;
+  totalFactChecks: number;
+  totalComments: number;
+  completedCourses: number;
+  totalAchievements: number;
+  reputation: number;
+  totalPoints: number;
+  level: number;
+}
+
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  bio?: string;
+  avatar?: string;
+}
+
+export interface UpdateEmailRequest {
+  email: string;
+  currentPassword: string;
+}
+
+export interface UpdatePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface DeleteAccountRequest {
+  password: string;
 }
 
 export interface AuthResponse {
@@ -548,6 +590,21 @@ class ApiClient {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error(`[API] Error response from ${endpoint}:`, errorData);
+
+        // Handle 401 Unauthorized - token expired or invalid
+        if (response.status === 401) {
+          // Clear authentication cookies
+          document.cookie =
+            "logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          document.cookie =
+            "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+          // Redirect to login page
+          window.location.href = "/login?expired=true";
+
+          throw new Error("Session expired. Please login again.");
+        }
+
         throw new Error(
           errorData.message || `HTTP error! status: ${response.status}`
         );
@@ -887,6 +944,45 @@ class ApiClient {
       "/accessibility-statement"
     );
     return response ?? null;
+  }
+
+  // ==================== USER PROFILE & SETTINGS ====================
+  async getUserProfile(): Promise<User> {
+    return this.request<User>("/users/profile");
+  }
+
+  async getUserStats(): Promise<UserStats> {
+    return this.request<UserStats>("/users/stats");
+  }
+
+  async updateProfile(data: UpdateProfileRequest): Promise<User> {
+    return this.request<User>("/users/profile", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateEmail(data: UpdateEmailRequest): Promise<User> {
+    return this.request<User>("/users/email", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePassword(
+    data: UpdatePasswordRequest
+  ): Promise<{ message: string }> {
+    return this.request<{ message: string }>("/users/password", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAccount(password: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>("/users/account", {
+      method: "DELETE",
+      body: JSON.stringify({ password }),
+    });
   }
 
   // Helper method for building query strings

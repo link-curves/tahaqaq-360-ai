@@ -3,8 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { Eye, EyeOff, Lock, Mail, Shield, TrendingUp } from "lucide-react";
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 interface TahqaqLogoProps {
   className?: string;
@@ -34,6 +35,7 @@ const TahqaqLogo: React.FC<TahqaqLogoProps> = ({
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,12 +44,28 @@ const Login = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Show session expired message if redirected with expired parameter
+  useEffect(() => {
+    if (searchParams.get("expired") === "true") {
+      toast.error("انتهت جلستك", {
+        description: "يرجى تسجيل الدخول مرة أخرى",
+      });
+    }
+  }, [searchParams]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       await login(formData);
-      navigate("/");
+      // Check if there's a redirect path stored
+      const redirectPath = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        navigate(redirectPath);
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login error:", error);
     } finally {

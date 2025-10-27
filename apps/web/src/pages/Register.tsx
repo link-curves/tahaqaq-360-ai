@@ -71,7 +71,14 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
       });
-      navigate("/");
+      // Check if there's a redirect path stored
+      const redirectPath = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        navigate(redirectPath);
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Registration error:", error);
     } finally {

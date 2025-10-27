@@ -108,15 +108,15 @@ const Blog = () => {
               <SelectTrigger className="w-full md:w-48 font-['Cairo']">
                 <SelectValue placeholder="جميع الفئات" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL" className="font-['Cairo']  bg-white">
+              <SelectContent className="bg-white" side="bottom" align="start">
+                <SelectItem value="ALL" className="font-['Cairo']  ">
                   جميع الفئات
                 </SelectItem>
                 {categories?.map((category) => (
                   <SelectItem
                     key={category}
                     value={category}
-                    className="font-['Cairo']  bg-white"
+                    className="font-['Cairo'] cursor-pointer hover:bg-gray-100"
                   >
                     {category}
                   </SelectItem>
@@ -129,15 +129,22 @@ const Blog = () => {
               <SelectTrigger className="w-full md:w-48 font-['Cairo']">
                 <SelectValue placeholder="جميع الوسوم" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL" className="font-['Cairo'] bg-white">
+              <SelectContent
+                className="bg-white max-h-[300px] overflow-y-auto"
+                side="bottom"
+                align="start"
+                position="popper"
+                sideOffset={4}
+                avoidCollisions={false}
+              >
+                <SelectItem value="ALL" className="font-['Cairo'] ">
                   جميع الوسوم
                 </SelectItem>
                 {tags?.map((tag) => (
                   <SelectItem
                     key={tag}
                     value={tag}
-                    className="font-['Cairo'] bg-white"
+                    className="font-['Cairo'] cursor-pointer hover:bg-gray-100"
                   >
                     #{tag}
                   </SelectItem>

@@ -69,7 +69,7 @@ const SubmitContentSection = () => {
           <Button
             onClick={() => navigate(isAuthenticated ? "/submit" : "/login")}
             size="lg"
-            className="group relative bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold px-10 py-7 rounded-xl shadow-2xl hover:shadow-red-500/50 transition-all duration-300 transform hover:scale-105 overflow-hidden"
+            className="group relative bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold px-10 py-7 rounded-xl shadow-2xl hover:shadow-red-500/50 transition-all duration-300 transform hover:scale-105 overflow-hidden cursor-pointer"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             <Send className="h-6 w-6 ml-2" />

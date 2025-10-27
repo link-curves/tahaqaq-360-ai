@@ -116,7 +116,7 @@ const Courses = () => {
               <SelectTrigger className="w-full md:w-64 font-['Cairo']">
                 <SelectValue placeholder="جميع المستويات" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="all">جميع المستويات</SelectItem>
                 <SelectItem value={CourseDifficulty.BEGINNER}>مبتدئ</SelectItem>
                 <SelectItem value={CourseDifficulty.INTERMEDIATE}>

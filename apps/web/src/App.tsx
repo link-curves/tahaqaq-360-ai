@@ -25,9 +25,11 @@ import MyCourses from "./pages/MyCourses";
 import MySubmissions from "./pages/MySubmissions";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import Research from "./pages/Research";
 import ResearchDetail from "./pages/ResearchDetail";
+import Settings from "./pages/Settings";
 import SubmitContent from "./pages/SubmitContent";
 import TermsOfService from "./pages/TermsOfService";
 
@@ -102,9 +104,25 @@ const App = () => (
 
                     {/* Protected Routes */}
                     <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute>
+                          <Settings />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
                       path="/my-courses"
                       element={
-                        <ProtectedRoute fallback={<Login />}>
+                        <ProtectedRoute>
                           <MyCourses />
                         </ProtectedRoute>
                       }
@@ -112,7 +130,7 @@ const App = () => (
                     <Route
                       path="/submit"
                       element={
-                        <ProtectedRoute fallback={<Login />}>
+                        <ProtectedRoute>
                           <SubmitContent />
                         </ProtectedRoute>
                       }
@@ -120,7 +138,7 @@ const App = () => (
                     <Route
                       path="/my-submissions"
                       element={
-                        <ProtectedRoute fallback={<Login />}>
+                        <ProtectedRoute>
                           <MySubmissions />
                         </ProtectedRoute>
                       }
