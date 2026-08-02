@@ -29,6 +29,20 @@ open database access and the severity is critical rather than moderate.
 Do after rotation. `ALLOW_FORCE_PUSH=1 git push --force-with-lease origin develop`. Then either ask
 GitHub Support to GC the repo or delete/recreate it, since old objects survive on the remote.
 
+### 2b. Triage 101 Dependabot vulnerabilities · 1–3d · In scope
+Reported by GitHub on push (2026-08-02): **101 vulnerabilities on `develop` — 2 critical, 54 high,
+42 moderate, 3 low.** Unreviewed.
+
+https://github.com/link-curves/tahaqaq-360-ai/security/dependabot
+
+Do not mass-upgrade. Triage in this order:
+1. The **2 critical** — assess exploitability in this codebase specifically, not in the abstract.
+2. High-severity advisories in **runtime** dependencies of `apps/api` (the internet-facing surface).
+3. Everything reachable only from devDependencies or the build toolchain — usually far less urgent.
+
+Many will be transitive and dev-only. A raw count of 101 says little; the 2 critical ones say a lot.
+Worth a `security-auditor` pass, and worth knowing the real number before the client ever asks.
+
 ---
 
 ## P1 — High value, low risk
