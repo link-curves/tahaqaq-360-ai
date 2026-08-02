@@ -10,6 +10,13 @@ dist-ssr
 server/dist
 public/dist
 
+# ---------------------------------------------------------------
+# Secrets — ignore every env file, allow only *.example templates.
+# Order matters: the negation must come after the broad ignores.
+# ---------------------------------------------------------------
+.env*
+!.env*.example
+
 
 apps/**/node_modules
 apps/**/dist
