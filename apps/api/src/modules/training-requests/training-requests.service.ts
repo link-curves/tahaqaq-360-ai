@@ -73,10 +73,15 @@ export class TrainingRequestsService {
   ) {
     await this.findOne(id); // Ensure it exists
 
+    const { status, ...updateFields } = updateDto;
+
     return this.prisma.trainingRequest.update({
       where: { id },
       data: {
-        ...updateDto,
+        // `status` on the DTO maps to the statusCode FK — it became a lookup
+        // rather than a free-text column.
+        ...updateFields,
+        ...(status !== undefined ? { statusCode: status } : {}),
         reviewedBy: userId,
         reviewedAt: new Date(),
       },

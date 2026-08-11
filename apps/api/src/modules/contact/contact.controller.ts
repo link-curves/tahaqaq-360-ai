@@ -1,9 +1,12 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ContactMessage, Prisma } from '@prisma/client';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ContactMessage } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { ApiResponse } from '../../common/interfaces/api-response.interface';
 import { ContactService } from './contact.service';
+import { CreateContactDto } from './dto/create-contact.dto';
 
+@ApiTags('Contact')
 @Controller('contact')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
@@ -19,8 +22,9 @@ export class ContactController {
 
   @Public()
   @Post('submit')
+  @ApiOperation({ summary: 'Submit a contact message (public)' })
   async submitContactUSMessage(
-    @Body() contactUSInfo: Prisma.ContactMessageCreateInput,
+    @Body() contactUSInfo: CreateContactDto,
   ): Promise<ApiResponse<ContactMessage>> {
     return {
       data: await this.contactService.submitContactUSMessage({ contactUSInfo }),

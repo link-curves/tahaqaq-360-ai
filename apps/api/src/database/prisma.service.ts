@@ -1,10 +1,11 @@
 import {
-    Injectable,
-    Logger,
-    OnModuleDestroy,
-    OnModuleInit,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { createPrismaAdapter } from './prisma-connection';
 
 @Injectable()
 export class PrismaService
@@ -15,6 +16,9 @@ export class PrismaService
 
   constructor() {
     super({
+      // Prisma 7 requires a driver adapter — it no longer reads a connection
+      // URL from the schema.
+      adapter: createPrismaAdapter(),
       log: [
         { emit: 'event', level: 'query' },
         { emit: 'event', level: 'error' },
@@ -68,7 +72,9 @@ export class PrismaService
   }
 
   // Transaction helper
-  async executeTransaction<T>(fn: (tx: PrismaClient) => Promise<T>): Promise<T> {
+  async executeTransaction<T>(
+    fn: (tx: PrismaClient) => Promise<T>,
+  ): Promise<T> {
     return this.$transaction(fn);
   }
 
@@ -79,7 +85,8 @@ export class PrismaService
     }
 
     const models = Reflect.ownKeys(this).filter(
-      (key) => typeof key === 'string' && !key.startsWith('_') && !key.startsWith('$'),
+      (key) =>
+        typeof key === 'string' && !key.startsWith('_') && !key.startsWith('$'),
     );
 
     return Promise.all(

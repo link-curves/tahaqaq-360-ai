@@ -1,4 +1,27 @@
 // API Configuration and Types
+import type { components } from "./api-schema.gen";
+
+/**
+ * Fact-check types are GENERATED from the API's OpenAPI document — regenerate
+ * with `pnpm --filter api gen:api-types` after any backend change. Everything
+ * below this block is still hand-written and can silently drift (ADR-0003);
+ * migrate more of it the same way as each module is touched.
+ */
+export type FactCheckListItem = components["schemas"]["FactCheckListItemDto"];
+export type FactCheckDetail = components["schemas"]["FactCheckDetailDto"];
+export type RelatedFactCheck = components["schemas"]["RelatedFactCheckDto"];
+export type FactCheckStats = components["schemas"]["FactCheckStatsDto"];
+export type Evidence = components["schemas"]["EvidenceDto"];
+export type Claim = components["schemas"]["ClaimDto"];
+export type ClaimAppearance = components["schemas"]["ClaimAppearanceDto"];
+export type Correction = components["schemas"]["CorrectionDto"];
+export type Verdict = components["schemas"]["VerdictDto"];
+export type Topic = components["schemas"]["TopicDto"];
+export type AvailableLocale = components["schemas"]["AvailableLocaleDto"];
+
+/** A fact-check article is per-locale; a slug is unique WITHIN a locale. */
+export type Locale = "AR" | "EN";
+
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
@@ -167,40 +190,11 @@ export const CourseDifficulty = {
 };
 
 // Fact Check Types
-export interface FactCheck {
-  id: string;
-  title: string;
-  slug: string;
-  claim: string;
-  claimant?: string;
-  claimDate?: string;
-  verdict: VeracityRatingValue;
-  summary: string;
-  fullAnalysis: string;
-  methodology?: string;
-  sources: any[];
-  mediaUrls: string[];
-  tags: string[];
-  views: number;
-  shares: number;
-  status: ContentStatusValue;
-  featuredImage?: string;
-  metaTitle?: string;
-  metaDescription?: string;
-  publishedAt?: string;
-  authorId: string;
-  author: User;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface FactCheckStats {
-  totalFactChecks: number;
-  trueFactChecks: number;
-  falseFactChecks: number;
-  misleadingFactChecks: number;
-  recentFactChecks: number;
-}
+/**
+ * @deprecated The flat FactCheck shape is gone. A fact-check is now a Claim,
+ * a review holding the shared verdict and evidence, and one article per locale.
+ * Use FactCheckListItem / FactCheckDetail above. See ADR-0002.
+ */
 
 // Event Types
 export interface Event {
@@ -514,9 +508,15 @@ export interface PaginationParams {
 }
 
 export interface FactCheckParams extends PaginationParams {
+  /** Defaults to AR server-side — this is an Arabic-first desk. */
+  locale?: Locale;
   verdict?: VeracityRatingValue;
   status?: ContentStatusValue;
   search?: string;
+  /** Topic slug from the controlled vocabulary, e.g. "health". */
+  topic?: string;
+  /** ISO 3166-1 alpha-2, e.g. "LB". */
+  country?: string;
   featured?: boolean;
   isFeatured?: boolean;
 }
@@ -678,16 +678,21 @@ class ApiClient {
   }
 
   // Fact Checks endpoints
+  // Routes carry a locale: /fact-checks/{locale}/{slug}. A slug is unique
+  // within a locale, not globally (ADR-0002).
   async getFactChecks(
     params?: FactCheckParams
-  ): Promise<PaginatedResponse<FactCheck>> {
+  ): Promise<PaginatedResponse<FactCheckListItem>> {
     const searchParams = new URLSearchParams();
 
     if (params) {
+      if (params.locale) searchParams.append("locale", params.locale);
       if (params.page) searchParams.append("page", params.page.toString());
       if (params.limit) searchParams.append("limit", params.limit.toString());
       if (params.search) searchParams.append("search", params.search);
       if (params.verdict) searchParams.append("verdict", params.verdict);
+      if (params.topic) searchParams.append("topic", params.topic);
+      if (params.country) searchParams.append("country", params.country);
       if (params.isFeatured !== undefined)
         searchParams.append("isFeatured", params.isFeatured.toString());
     }
@@ -695,19 +700,27 @@ class ApiClient {
     const queryString = searchParams.toString();
     const endpoint = `/fact-checks${queryString ? `?${queryString}` : ""}`;
 
-    return this.request<PaginatedResponse<FactCheck>>(endpoint);
+    return this.request<PaginatedResponse<FactCheckListItem>>(endpoint);
   }
 
-  async getFactCheck(slug: string): Promise<FactCheck> {
-    return this.request<FactCheck>(`/fact-checks/${slug}`);
+  async getFactCheck(
+    slug: string,
+    locale: Locale = "AR"
+  ): Promise<FactCheckDetail> {
+    return this.request<FactCheckDetail>(`/fact-checks/${locale}/${slug}`);
   }
 
-  async getFactCheckStats(): Promise<FactCheckStats> {
-    return this.request<FactCheckStats>("/fact-checks/stats");
+  async getFactCheckStats(locale: Locale = "AR"): Promise<FactCheckStats> {
+    return this.request<FactCheckStats>(`/fact-checks/stats?locale=${locale}`);
   }
 
-  async getRelatedFactChecks(slug: string): Promise<FactCheck[]> {
-    return this.request<FactCheck[]>(`/fact-checks/${slug}/related`);
+  async getRelatedFactChecks(
+    slug: string,
+    locale: Locale = "AR"
+  ): Promise<RelatedFactCheck[]> {
+    return this.request<RelatedFactCheck[]>(
+      `/fact-checks/${locale}/${slug}/related`
+    );
   }
 
   // Events endpoints

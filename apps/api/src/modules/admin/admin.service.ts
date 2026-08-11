@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Role } from '@prisma/client';
+
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
+import { CONTENT_STATUS, RoleCode, SUBMISSION_STATUS } from '../../common/constants/lookups';
 
 @Injectable()
 export class AdminService {
@@ -10,12 +11,12 @@ export class AdminService {
   // ============================================
   // USER MANAGEMENT
   // ============================================
-  async getAllUsers(paginationDto: PaginationDto, role?: Role, search?: string) {
+  async getAllUsers(paginationDto: PaginationDto, role?: RoleCode, search?: string) {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    if (role) where.role = role;
+    if (role) where.roleCode = role;
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -48,7 +49,7 @@ export class AdminService {
           _count: {
             select: {
               submissions: true,
-              factChecks: true,
+              authoredArticles: true,
               eventRegistrations: true,
             },
           },
@@ -70,7 +71,7 @@ export class AdminService {
     };
   }
 
-  async updateUserRole(userId: string, role: Role) {
+  async updateUserRole(userId: string, role: RoleCode) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -81,7 +82,7 @@ export class AdminService {
 
     return this.prisma.user.update({
       where: { id: userId },
-      data: { role },
+      data: { roleCode: role },
     });
   }
 
@@ -114,7 +115,7 @@ export class AdminService {
   async getPendingContent() {
     const [submissions, factChecks] = await Promise.all([
       this.prisma.submission.findMany({
-        where: { status: 'PENDING' },
+        where: { statusCode: SUBMISSION_STATUS.PENDING },
         take: 10,
         orderBy: { priority: 'desc' },
         include: {
@@ -128,13 +129,19 @@ export class AdminService {
         },
       }),
       this.prisma.factCheck.findMany({
-        where: { status: 'UNDER_REVIEW' },
+        where: {
+          articles: { some: { statusCode: CONTENT_STATUS.UNDER_REVIEW } },
+        },
         take: 10,
         include: {
-          author: {
+          claim: { select: { text: true, claimantName: true } },
+          // Title and byline live on the per-locale article now.
+          articles: {
             select: {
-              firstName: true,
-              lastName: true,
+              localeCode: true,
+              title: true,
+              statusCode: true,
+              author: { select: { firstName: true, lastName: true } },
             },
           },
         },
@@ -149,7 +156,7 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    if (status) where.status = status;
+    if (status) where.statusCode = status;
 
     const [messages, total] = await Promise.all([
       this.prisma.contactMessage.findMany({
@@ -195,7 +202,7 @@ export class AdminService {
     return this.prisma.contactMessage.update({
       where: { id: messageId },
       data: {
-        status: 'RESOLVED',
+        statusCode: 'RESOLVED',
         response,
         respondedAt: new Date(),
         respondedBy: adminId,

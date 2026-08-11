@@ -18,6 +18,7 @@ import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { Faq } from './entities/faq.entity';
 import { FaqService } from './faq.service';
+import { ROLE } from '../../common/constants/lookups';
 
 @ApiTags('FAQ')
 @Controller('faq')
@@ -52,7 +53,7 @@ export class FaqController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new FAQ (Admin/Moderator)' })
   async createFAQ(@Body() createFaqDto: CreateFaqDto) {
@@ -61,7 +62,7 @@ export class FaqController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update an FAQ (Admin/Moderator)' })
   async updateFAQ(@Param('id') id: string, @Body() updateFaqDto: UpdateFaqDto) {
@@ -70,7 +71,7 @@ export class FaqController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete an FAQ (Admin only)' })
   async deleteFAQ(@Param('id') id: string) {
@@ -79,7 +80,7 @@ export class FaqController {
 
   @Patch(':id/publish')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Toggle FAQ publish status (Admin/Moderator)' })
   async toggleFAQPublish(@Param('id') id: string) {

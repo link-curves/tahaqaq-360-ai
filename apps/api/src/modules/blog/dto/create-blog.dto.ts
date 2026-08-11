@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ContentStatus } from '@prisma/client';
+
 import {
   IsArray,
   IsBoolean,
-  IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -11,6 +11,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { CONTENT_STATUS, ContentStatusCode } from '../../../common/constants/lookups';
 
 export class CreateBlogDto {
   @ApiProperty({
@@ -83,12 +84,12 @@ export class CreateBlogDto {
 
   @ApiPropertyOptional({
     description: 'Publication status',
-    enum: ContentStatus,
-    default: ContentStatus.DRAFT,
+    enum: Object.values(CONTENT_STATUS),
+    default: CONTENT_STATUS.DRAFT,
   })
   @IsOptional()
-  @IsEnum(ContentStatus)
-  status?: ContentStatus;
+  @IsIn(Object.values(CONTENT_STATUS))
+  status?: ContentStatusCode;
 
   @ApiPropertyOptional({
     description: 'Estimated reading time in minutes',

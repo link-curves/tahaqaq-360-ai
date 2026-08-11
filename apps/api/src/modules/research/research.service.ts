@@ -9,6 +9,7 @@ import { IPaginatedResult } from '../../common/interfaces/pagination.interface';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateResearchDto } from './dto/create-research.dto';
 import { UpdateResearchDto } from './dto/update-research.dto';
+import { CONTENT_STATUS } from '../../common/constants/lookups';
 
 @Injectable()
 export class ResearchService {
@@ -37,7 +38,9 @@ export class ResearchService {
     }
 
     if (isPublished !== undefined) {
-      where.status = isPublished ? 'PUBLISHED' : 'DRAFT';
+      where.statusCode = isPublished
+        ? CONTENT_STATUS.PUBLISHED
+        : CONTENT_STATUS.DRAFT;
     }
 
     const [research, total] = await Promise.all([
@@ -108,7 +111,7 @@ export class ResearchService {
         tags: createDto.tags || [],
         coverImage: createDto.featuredImage,
         isFeatured: createDto.isFeatured || false,
-        status: createDto.isPublished ? 'PUBLISHED' : 'DRAFT',
+        statusCode: createDto.isPublished ? 'PUBLISHED' : 'DRAFT',
         publishedAt: createDto.isPublished ? new Date() : null,
         attachments: [],
       },
@@ -188,12 +191,12 @@ export class ResearchService {
       throw new NotFoundException('Research article not found');
     }
 
-    const isPublished = article.status === 'PUBLISHED';
+    const isPublished = article.statusCode === 'PUBLISHED';
 
     return this.prisma.research.update({
       where: { slug },
       data: {
-        status: isPublished ? 'DRAFT' : 'PUBLISHED',
+        statusCode: isPublished ? 'DRAFT' : 'PUBLISHED',
         publishedAt: !isPublished ? new Date() : article.publishedAt,
       },
     });

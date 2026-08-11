@@ -1,6 +1,7 @@
 import { PrismaClient, Role, User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { categories, firstNames, lastNames } from '../en/data/english.data';
+import { ROLE } from '../../../common/constants/lookups';
 
 export const seedUsers = async (prisma: PrismaClient): Promise<User[]> => {
   console.log('🌱 Starting user seeding...');
@@ -30,7 +31,7 @@ export const seedUsers = async (prisma: PrismaClient): Promise<User[]> => {
       firstName: 'Super',
       lastName: 'Admin',
       username: 'superadmin',
-      role: Role.SUPER_ADMIN,
+      roleCode: ROLE.SUPER_ADMIN,
       isEmailVerified: true,
       reputation: 1000,
       totalPoints: 10000,
@@ -49,7 +50,7 @@ export const seedUsers = async (prisma: PrismaClient): Promise<User[]> => {
         firstName: randomElement(firstNames),
         lastName: randomElement(lastNames),
         username: `admin${i}`,
-        role: Role.ADMIN,
+        roleCode: ROLE.ADMIN,
         isEmailVerified: true,
         reputation: randomInt(500, 900),
         totalPoints: randomInt(5000, 9000),
@@ -69,7 +70,7 @@ export const seedUsers = async (prisma: PrismaClient): Promise<User[]> => {
         firstName: randomElement(firstNames),
         lastName: randomElement(lastNames),
         username: `moderator${i}`,
-        role: Role.MODERATOR,
+        roleCode: ROLE.MODERATOR,
         isEmailVerified: true,
         reputation: randomInt(200, 500),
         totalPoints: randomInt(2000, 5000),
@@ -91,7 +92,7 @@ export const seedUsers = async (prisma: PrismaClient): Promise<User[]> => {
         firstName,
         lastName,
         username: `${firstName.toLowerCase()}${lastName.toLowerCase()}${i}`,
-        role: Role.USER,
+        roleCode: ROLE.USER,
         isEmailVerified: Math.random() > 0.3,
         reputation: randomInt(0, 200),
         totalPoints: randomInt(0, 2000),

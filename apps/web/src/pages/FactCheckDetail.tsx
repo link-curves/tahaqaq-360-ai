@@ -115,11 +115,11 @@ const FactCheckDetail = () => {
           </Button>
 
           <Badge
-            className={`${getVeracityColor(factCheck.verdict)} border-0 shadow-lg backdrop-blur-sm mb-4 self-start text-lg px-4 py-2`}
+            className={`${getVeracityColor(factCheck.factCheck.verdict.code)} border-0 shadow-lg backdrop-blur-sm mb-4 self-start text-lg px-4 py-2`}
           >
             <span className="flex items-center gap-2">
-              {getStatusIcon(factCheck.verdict)}
-              {getVeracityLabel(factCheck.verdict)}
+              {getStatusIcon(factCheck.factCheck.verdict.code)}
+              {factCheck.factCheck.verdict.label}
             </span>
           </Badge>
 
@@ -131,7 +131,7 @@ const FactCheckDetail = () => {
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span className="font-['Cairo']">
-                {formatDate(factCheck.publishedAt || factCheck.createdAt)}
+                {formatDate(factCheck.publishedAt)}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -158,12 +158,12 @@ const FactCheckDetail = () => {
             الادعاء
           </h2>
           <p className="text-xl text-gray-800 leading-relaxed font-['Cairo']">
-            {factCheck.claim}
+            {factCheck.factCheck.claim.text}
           </p>
-          {factCheck.claimant && (
+          {factCheck.factCheck.claim.claimantName && (
             <p className="text-sm text-gray-600 mt-4 font-['Cairo']">
-              <strong>المصدر:</strong> {factCheck.claimant}
-              {factCheck.claimDate && ` - ${formatDate(factCheck.claimDate)}`}
+              <strong>المصدر:</strong> {factCheck.factCheck.claim.claimantName}
+              {factCheck.factCheck.claim.claimedAt && ` - ${formatDate(factCheck.factCheck.claim.claimedAt)}`}
             </p>
           )}
         </Card>
@@ -219,7 +219,7 @@ const FactCheckDetail = () => {
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeSanitize]}
             >
-              {factCheck.fullAnalysis}
+              {factCheck.body}
             </ReactMarkdown>
           </div>
         </div>
@@ -273,15 +273,15 @@ const FactCheckDetail = () => {
         )}
 
         {/* Sources */}
-        {factCheck.sources && factCheck.sources.length > 0 && (
+        {factCheck.factCheck.evidence && factCheck.factCheck.evidence.length > 0 && (
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 font-['Cairo']">
               المصادر
             </h2>
             <div className="space-y-3">
-              {factCheck.sources.map((source: any, index: number) => (
+              {factCheck.factCheck.evidence.map((source) => (
                 <Card
-                  key={index}
+                  key={source.position}
                   className="p-4 hover:shadow-md transition-shadow"
                 >
                   <a
@@ -295,25 +295,95 @@ const FactCheckDetail = () => {
                     </span>
                     <ExternalLink className="h-4 w-4 mr-2" />
                   </a>
-                  {source.description && (
+
+                  {source.publisher && (
                     <p className="text-sm text-gray-600 mt-2 font-['Cairo']">
-                      {source.description}
+                      {source.publisher}
                     </p>
                   )}
+
+                  {source.excerpt && (
+                    <p className="text-sm text-gray-700 mt-2 font-['Cairo'] border-r-2 border-gray-200 pr-3">
+                      {source.excerpt}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-gray-500 font-['Cairo']">
+                    {source.accessedAt && (
+                      <span>تاريخ الاطلاع: {formatDate(source.accessedAt)}</span>
+                    )}
+                    {/* The archived copy is what survives the original being
+                        deleted — surface it, do not hide it behind the link. */}
+                    {source.archiveUrl && (
+                      <a
+                        href={source.archiveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 underline hover:text-gray-800"
+                      >
+                        نسخة مؤرشفة
+                      </a>
+                    )}
+                  </div>
                 </Card>
               ))}
             </div>
           </div>
         )}
 
+        {/* Retraction notice — a retracted fact-check keeps its URL and says
+            so plainly. Deleting a published verdict is indistinguishable from
+            hiding a mistake (ADR-0006). */}
+        {factCheck.isRetracted && (
+          <Card className="mb-8 border-2 border-red-300 bg-red-50 p-5">
+            <h2 className="text-xl font-bold text-red-900 mb-2 font-['Cairo']">
+              تم سحب هذا التحقق
+            </h2>
+            <p className="text-sm text-red-800 font-['Cairo']">
+              {factCheck.corrections?.[0]?.noticeText ??
+                "سُحب هذا التحقق. يبقى الرابط متاحاً للشفافية."}
+            </p>
+          </Card>
+        )}
+
+        {/* Corrections — disclosed revisions only; SILENT edits never appear
+            here. Publishing corrections openly is the point of the model. */}
+        {factCheck.corrections && factCheck.corrections.length > 0 && (
+          <Card className="mb-8 border-2 border-amber-300 bg-amber-50 p-5">
+            <h2 className="text-xl font-bold text-amber-900 mb-3 font-['Cairo']">
+              التصحيحات والتحديثات
+            </h2>
+            <div className="space-y-3">
+              {factCheck.corrections.map((c) => (
+                <div key={c.revisionNumber} className="text-sm font-['Cairo']">
+                  <span className="font-bold text-amber-900">
+                    {c.tierCode === "VERDICT_CHANGE"
+                      ? "تغيير التصنيف"
+                      : c.tierCode === "CORRECTION"
+                        ? "تصحيح"
+                        : "تحديث"}
+                  </span>
+                  <span className="text-amber-800">
+                    {" "}
+                    — {formatDate(c.createdAt)}
+                  </span>
+                  {c.noticeText && (
+                    <p className="text-amber-900 mt-1">{c.noticeText}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Tags */}
-        {factCheck.tags && factCheck.tags.length > 0 && (
+        {factCheck.factCheck.tags && factCheck.factCheck.tags.length > 0 && (
           <div className="mb-8">
             <h3 className="text-xl font-bold text-gray-900 mb-4 font-['Cairo']">
               الوسوم
             </h3>
             <div className="flex flex-wrap gap-2">
-              {factCheck.tags.map((tag: string, index: number) => (
+              {factCheck.factCheck.tags.map((tag: string, index: number) => (
                 <Badge
                   key={index}
                   variant="secondary"
@@ -344,7 +414,7 @@ const FactCheckDetail = () => {
                 {factCheck.author.firstName} {factCheck.author.lastName}
               </p>
               <p className="text-sm text-gray-600 font-['Cairo']">
-                {factCheck.author.email}
+                {[factCheck.author.firstName, factCheck.author.lastName].filter(Boolean).join(" ")}
               </p>
             </div>
           </div>
@@ -359,7 +429,7 @@ const FactCheckDetail = () => {
             <div className="grid md:grid-cols-2 gap-6">
               {related.slice(0, 4).map((item) => (
                 <Card
-                  key={item.id}
+                  key={`${item.localeCode}-${item.slug}`}
                   className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => navigate(`/fact-checks/${item.slug}`)}
                 >
@@ -371,8 +441,8 @@ const FactCheckDetail = () => {
                     />
                   )}
                   <div className="p-6">
-                    <Badge className={`${getVeracityColor(item.verdict)} mb-3`}>
-                      {getVeracityLabel(item.verdict)}
+                    <Badge className={`${getVeracityColor(item.factCheck.verdict.code)} mb-3`}>
+                      {item.factCheck.verdict.label}
                     </Badge>
                     <h3 className="font-bold text-gray-900 mb-2 font-['Cairo'] line-clamp-2">
                       {item.title}

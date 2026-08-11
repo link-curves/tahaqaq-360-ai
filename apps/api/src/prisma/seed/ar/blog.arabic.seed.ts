@@ -1,4 +1,5 @@
 import { ContentStatus, PrismaClient } from '@prisma/client';
+import { CONTENT_STATUS } from '../../../common/constants/lookups';
 
 export async function seedBlogPosts(
   prisma: PrismaClient,
@@ -84,7 +85,7 @@ export async function seedBlogPosts(
       category: 'التحقق من الحقائق',
       tags: ['أخبار كاذبة', 'وسائل التواصل', 'التحقق', 'محو الأمية الإعلامية'],
       isFeatured: true,
-      status: ContentStatus.PUBLISHED,
+      statusCode: CONTENT_STATUS.PUBLISHED,
       readTime: 8,
       metaTitle: 'كيف تتحقق من الأخبار الكاذبة | تحقق 360',
       metaDescription:
@@ -136,7 +137,7 @@ export async function seedBlogPosts(
       category: 'التكنولوجيا',
       tags: ['ذكاء اصطناعي', 'تكنولوجيا', 'مكافحة التضليل'],
       isFeatured: true,
-      status: ContentStatus.PUBLISHED,
+      statusCode: CONTENT_STATUS.PUBLISHED,
       readTime: 6,
       metaTitle: 'الذكاء الاصطناعي ومكافحة التضليل | تحقق 360',
       metaDescription: 'كيف يساعد الذكاء الاصطناعي في مكافحة المعلومات المضللة',
@@ -196,7 +197,7 @@ export async function seedBlogPosts(
       category: 'محو الأمية الإعلامية',
       tags: ['تعليم', 'محو الأمية الإعلامية', 'مهارات رقمية', 'تفكير نقدي'],
       isFeatured: false,
-      status: ContentStatus.PUBLISHED,
+      statusCode: CONTENT_STATUS.PUBLISHED,
       readTime: 7,
       metaTitle: 'أهمية محو الأمية الإعلامية | تحقق 360',
       metaDescription:
@@ -285,7 +286,7 @@ export async function seedBlogPosts(
       category: 'التكنولوجيا',
       tags: ['تزييف عميق', 'ذكاء اصطناعي', 'أمن رقمي', 'تحقق'],
       isFeatured: true,
-      status: ContentStatus.PUBLISHED,
+      statusCode: CONTENT_STATUS.PUBLISHED,
       readTime: 10,
       metaTitle: 'التزييف العميق: التهديد الجديد | تحقق 360',
       metaDescription: 'ما هو التزييف العميق وكيف نكتشفه ونحمي أنفسنا منه',
@@ -392,7 +393,7 @@ export async function seedBlogPosts(
       category: 'الصحافة',
       tags: ['صحافة المواطن', 'إعلام رقمي', 'مسؤولية إعلامية'],
       isFeatured: false,
-      status: ContentStatus.PUBLISHED,
+      statusCode: CONTENT_STATUS.PUBLISHED,
       readTime: 9,
       metaTitle: 'المواطن الصحفي في العصر الرقمي | تحقق 360',
       metaDescription: 'دور ومسؤوليات المواطن الصحفي في عصر الإعلام الرقمي',

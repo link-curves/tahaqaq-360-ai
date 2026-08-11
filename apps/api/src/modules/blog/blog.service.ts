@@ -8,6 +8,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { FilterBlogDto } from './dto/filter-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
+import { CONTENT_STATUS } from '../../common/constants/lookups';
 
 @Injectable()
 export class BlogService {
@@ -24,12 +25,13 @@ export class BlogService {
     }
 
     // If publishing, set publishedAt
-    const blogData: Prisma.BlogCreateInput = {
-      ...createBlogDto,
+    // `status` on the DTO maps to the statusCode FK on the model.
+    const { status, ...blogFields } = createBlogDto;
+    const blogData: Prisma.BlogUncheckedCreateInput = {
+      ...blogFields,
+      statusCode: status ?? CONTENT_STATUS.DRAFT,
       publishedAt:
-        createBlogDto.status === ContentStatus.PUBLISHED
-          ? new Date()
-          : undefined,
+        status === CONTENT_STATUS.PUBLISHED ? new Date() : undefined,
     };
 
     return this.prisma.blog.create({
@@ -67,10 +69,10 @@ export class BlogService {
     }
 
     if (status) {
-      where.status = status;
+      where.statusCode = status;
     } else {
       // Public endpoint should only show published by default
-      where.status = ContentStatus.PUBLISHED;
+      where.statusCode = CONTENT_STATUS.PUBLISHED;
     }
 
     if (isFeatured !== undefined) {
@@ -154,10 +156,12 @@ export class BlogService {
     }
 
     // Update publishedAt if status changes to PUBLISHED
-    const updateData: Prisma.BlogUpdateInput = { ...updateBlogDto };
+    const { status: nextStatus, ...updateFields } = updateBlogDto;
+    const updateData: Prisma.BlogUncheckedUpdateInput = { ...updateFields };
+    if (nextStatus !== undefined) updateData.statusCode = nextStatus;
     if (
-      updateBlogDto.status === ContentStatus.PUBLISHED &&
-      existingBlog.status !== ContentStatus.PUBLISHED
+      nextStatus === CONTENT_STATUS.PUBLISHED &&
+      existingBlog.statusCode !== CONTENT_STATUS.PUBLISHED
     ) {
       updateData.publishedAt = new Date();
     }
@@ -184,7 +188,7 @@ export class BlogService {
 
   async getCategories() {
     const blogs = await this.prisma.blog.findMany({
-      where: { status: ContentStatus.PUBLISHED },
+      where: { statusCode: CONTENT_STATUS.PUBLISHED },
       select: { category: true },
       distinct: ['category'],
     });
@@ -194,7 +198,7 @@ export class BlogService {
 
   async getTags() {
     const blogs = await this.prisma.blog.findMany({
-      where: { status: ContentStatus.PUBLISHED },
+      where: { statusCode: CONTENT_STATUS.PUBLISHED },
       select: { tags: true },
     });
 

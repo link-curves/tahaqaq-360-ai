@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { CONTENT_STATUS } from '../../common/constants/lookups';
 
 @Injectable()
 export class AnalyticsService {
@@ -15,10 +16,15 @@ export class AnalyticsService {
       usersCount,
       submissionsCount,
     ] = await Promise.all([
-      this.prisma.factCheck.count({ where: { status: 'PUBLISHED' } }),
+      this.prisma.factCheck.count({
+        // FactCheck itself has no status — publication is per-article (ADR-0002).
+        where: { articles: { some: { statusCode: CONTENT_STATUS.PUBLISHED } } },
+      }),
       this.prisma.event.count(),
       this.prisma.course.count({ where: { isPublished: true } }),
-      this.prisma.research.count({ where: { status: 'PUBLISHED' } }),
+      this.prisma.research.count({
+        where: { statusCode: CONTENT_STATUS.PUBLISHED },
+      }),
       this.prisma.user.count(),
       this.prisma.submission.count(),
     ]);

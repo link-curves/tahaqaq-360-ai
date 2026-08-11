@@ -1,0 +1,5656 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "AppController_healthCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/auth/signup": {
+      "post": {
+        "operationId": "AuthController_signup",
+        "summary": "Register a new user",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully created"
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "summary": "Login user",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/google": {
+      "get": {
+        "operationId": "AuthController_googleAuth",
+        "summary": "Initiate Google OAuth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/google/callback": {
+      "get": {
+        "operationId": "AuthController_googleAuthCallback",
+        "summary": "Google OAuth callback",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refreshTokens",
+        "summary": "Refresh access token using cookie",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "summary": "Logout user and clear cookies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_getProfile",
+        "summary": "Get current user profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/profile": {
+      "get": {
+        "operationId": "UsersController_getProfile",
+        "summary": "Get current user profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_updateProfile",
+        "summary": "Update user profile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/stats": {
+      "get": {
+        "operationId": "UsersController_getUserStats",
+        "summary": "Get current user statistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/email": {
+      "put": {
+        "operationId": "UsersController_updateEmail",
+        "summary": "Update user email",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/password": {
+      "put": {
+        "operationId": "UsersController_updatePassword",
+        "summary": "Update user password",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/account": {
+      "delete": {
+        "operationId": "UsersController_deleteAccount",
+        "summary": "Delete user account",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks": {
+      "get": {
+        "operationId": "FactChecksController_findAll",
+        "summary": "List fact-check articles in one locale",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Language of the article. Defaults to AR (Arabic-first desk).",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "topic",
+            "required": false,
+            "in": "query",
+            "description": "Topic slug, e.g. \"health\". Controlled vocabulary — see ADR-0007.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "ISO 3166-1 alpha-2 country code, e.g. \"LB\".",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactCheckListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ]
+      },
+      "post": {
+        "operationId": "FactChecksController_create",
+        "summary": "Create a fact-check: claim, review and the first article (DRAFT)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFactCheckDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/stats": {
+      "get": {
+        "operationId": "FactChecksController_getStats",
+        "summary": "Verdict distribution and counts",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactCheckStatsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}": {
+      "get": {
+        "operationId": "FactChecksController_findOne",
+        "summary": "Get one article by locale and slug",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactCheckDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ]
+      },
+      "patch": {
+        "operationId": "FactChecksController_update",
+        "summary": "Edit an article. Once published, a revision is mandatory.",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/related": {
+      "get": {
+        "operationId": "FactChecksController_getRelated",
+        "summary": "Related fact-checks in the same locale",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelatedFactChecksResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/save": {
+      "post": {
+        "operationId": "FactChecksController_toggleSave",
+        "summary": "Save or unsave a fact-check",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleSaveResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{factCheckId}/translations": {
+      "post": {
+        "operationId": "FactChecksController_addTranslation",
+        "summary": "Add a sibling article in another locale — its own DRAFT",
+        "parameters": [
+          {
+            "name": "factCheckId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/submit": {
+      "post": {
+        "operationId": "FactChecksController_submit",
+        "summary": "Submit a draft for editorial review",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/publish": {
+      "post": {
+        "operationId": "FactChecksController_publish",
+        "summary": "Publish. The editor cannot be the author (ADR-0002).",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/send-back": {
+      "post": {
+        "operationId": "FactChecksController_sendBack",
+        "summary": "Send an article under review back to draft",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/retract": {
+      "post": {
+        "operationId": "FactChecksController_retract",
+        "summary": "Withdraw a published fact-check. Never a delete — URL preserved.",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetractArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/archive": {
+      "post": {
+        "operationId": "FactChecksController_archive",
+        "summary": "Remove from listings; the article stays reachable",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{factCheckId}/verdict-change": {
+      "post": {
+        "operationId": "FactChecksController_changeVerdict",
+        "summary": "Change a published rating. The caller approves; changedById is the analyst, and must be someone else. Notifies every published locale.",
+        "parameters": [
+          {
+            "name": "factCheckId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeVerdictDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{factCheckId}/evidence": {
+      "post": {
+        "operationId": "FactChecksController_addEvidence",
+        "summary": "Add a citation; positions stay contiguous",
+        "parameters": [
+          {
+            "name": "factCheckId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEvidenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/evidence/{evidenceId}": {
+      "patch": {
+        "operationId": "FactChecksController_updateEvidence",
+        "summary": "Update a citation",
+        "parameters": [
+          {
+            "name": "evidenceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEvidenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "FactChecksController_removeEvidence",
+        "summary": "Remove a citation",
+        "parameters": [
+          {
+            "name": "evidenceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{factCheckId}/evidence/order": {
+      "put": {
+        "operationId": "FactChecksController_reorderEvidence",
+        "summary": "Reorder citations — analysts sequence them",
+        "parameters": [
+          {
+            "name": "factCheckId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderEvidenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/submissions": {
+      "post": {
+        "operationId": "SubmissionsController_create",
+        "summary": "Submit content for fact-checking",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Submissions"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "SubmissionsController_findAll",
+        "summary": "Get all submissions (Moderators only)",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "PENDING",
+                "IN_REVIEW",
+                "VERIFIED",
+                "REJECTED",
+                "PUBLISHED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Submissions"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/submissions/my-submissions": {
+      "get": {
+        "operationId": "SubmissionsController_getMySubmissions",
+        "summary": "Get my submissions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Submissions"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/submissions/stats": {
+      "get": {
+        "operationId": "SubmissionsController_getStats",
+        "summary": "Get submission statistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Submissions"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/submissions/{id}": {
+      "get": {
+        "operationId": "SubmissionsController_findOne",
+        "summary": "Get a single submission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Submissions"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "SubmissionsController_deleteSubmission",
+        "summary": "Delete a submission (Admin only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Submissions"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/submissions/{id}/status": {
+      "patch": {
+        "operationId": "SubmissionsController_updateStatus",
+        "summary": "Update submission status",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubmissionStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Submissions"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/submissions/{id}/priority": {
+      "patch": {
+        "operationId": "SubmissionsController_assignPriority",
+        "summary": "Assign priority to submission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Submissions"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/courses": {
+      "get": {
+        "operationId": "MediaLiteracyController_getCourses",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "difficulty",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isPublished",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isFeatured",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ]
+      },
+      "post": {
+        "operationId": "MediaLiteracyController_createCourse",
+        "summary": "Create a new course (Admin/Moderator)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCourseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/courses/{slug}": {
+      "get": {
+        "operationId": "MediaLiteracyController_getCourse",
+        "summary": "Get course details",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ]
+      },
+      "patch": {
+        "operationId": "MediaLiteracyController_updateCourse",
+        "summary": "Update a course (Admin/Moderator)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCourseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "MediaLiteracyController_deleteCourse",
+        "summary": "Delete a course (Admin only)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/courses/{courseId}/enroll": {
+      "post": {
+        "operationId": "MediaLiteracyController_enrollInCourse",
+        "summary": "Enroll in a course",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/courses/{courseId}/progress": {
+      "get": {
+        "operationId": "MediaLiteracyController_getCourseProgress",
+        "summary": "Get course progress for current user",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/lessons/{lessonId}/complete": {
+      "post": {
+        "operationId": "MediaLiteracyController_markLessonComplete",
+        "summary": "Mark lesson as complete/incomplete",
+        "parameters": [
+          {
+            "name": "lessonId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkLessonCompleteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/my-courses": {
+      "get": {
+        "operationId": "MediaLiteracyController_getMyCourses",
+        "summary": "Get my enrolled courses",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/courses/{slug}/publish": {
+      "patch": {
+        "operationId": "MediaLiteracyController_toggleCoursePublish",
+        "summary": "Toggle course publish status (Admin/Moderator)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/courses/{courseSlug}/lessons": {
+      "post": {
+        "operationId": "MediaLiteracyController_createLesson",
+        "summary": "Create a new lesson for a course (Admin/Moderator)",
+        "parameters": [
+          {
+            "name": "courseSlug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLessonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media-literacy/lessons/{lessonId}": {
+      "patch": {
+        "operationId": "MediaLiteracyController_updateLesson",
+        "summary": "Update a lesson (Admin/Moderator)",
+        "parameters": [
+          {
+            "name": "lessonId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLessonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "MediaLiteracyController_deleteLesson",
+        "summary": "Delete a lesson (Admin only)",
+        "parameters": [
+          {
+            "name": "lessonId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Media Literacy"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/events": {
+      "post": {
+        "operationId": "EventsController_create",
+        "summary": "Create a new event",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "EventsController_findAll",
+        "summary": "Get all events",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "WORKSHOP",
+                "WEBINAR",
+                "EXHIBITION",
+                "CONFERENCE",
+                "TRAINING"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "UPCOMING",
+                "ONGOING",
+                "COMPLETED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "upcoming",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ]
+      }
+    },
+    "/api/v1/events/{slug}": {
+      "get": {
+        "operationId": "EventsController_findOne",
+        "summary": "Get event details",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ]
+      },
+      "patch": {
+        "operationId": "EventsController_update",
+        "summary": "Update an event",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "EventsController_remove",
+        "summary": "Delete an event",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/events/{slug}/register": {
+      "post": {
+        "operationId": "EventsController_register",
+        "summary": "Register for an event",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterEventDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "EventsController_unregister",
+        "summary": "Unregister from an event",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/events/my/registrations": {
+      "get": {
+        "operationId": "EventsController_getMyRegistrations",
+        "summary": "Get my event registrations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/events/host-request": {
+      "post": {
+        "operationId": "EventsController_submitHostRequest",
+        "summary": "Submit a request to host an event",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HostRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ]
+      }
+    },
+    "/api/v1/research": {
+      "get": {
+        "operationId": "ResearchController_getResearch",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isPublished",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFeatured",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Research"
+        ]
+      },
+      "post": {
+        "operationId": "ResearchController_createResearch",
+        "summary": "Create a new research article (Admin/Moderator)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResearchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Research"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/research/{slug}": {
+      "get": {
+        "operationId": "ResearchController_getResearchArticle",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Research"
+        ]
+      },
+      "patch": {
+        "operationId": "ResearchController_updateResearch",
+        "summary": "Update a research article (Admin/Moderator)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateResearchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Research"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ResearchController_deleteResearch",
+        "summary": "Delete a research article (Admin only)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Research"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/research/{slug}/publish": {
+      "patch": {
+        "operationId": "ResearchController_togglePublish",
+        "summary": "Toggle publish status (Admin/Moderator)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Research"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/research/{slug}/feature": {
+      "patch": {
+        "operationId": "ResearchController_toggleFeatured",
+        "summary": "Toggle featured status (Admin only)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Research"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/contact": {
+      "get": {
+        "operationId": "ContactController_getContactUSInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contact"
+        ]
+      }
+    },
+    "/api/v1/contact/submit": {
+      "post": {
+        "operationId": "ContactController_submitContactUSMessage",
+        "summary": "Submit a contact message (public)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContactDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contact"
+        ]
+      }
+    },
+    "/api/v1/training-requests": {
+      "post": {
+        "operationId": "TrainingRequestsController_create",
+        "summary": "Submit a training request (Public)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrainingRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Training Requests"
+        ]
+      },
+      "get": {
+        "operationId": "TrainingRequestsController_findAll",
+        "summary": "Get all training requests (Admin/Moderator only)",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "CONTACTED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "organization",
+            "required": false,
+            "in": "query",
+            "description": "Filter by organization name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Training Requests"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/training-requests/{id}": {
+      "get": {
+        "operationId": "TrainingRequestsController_findOne",
+        "summary": "Get a training request by ID (Admin/Moderator only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Training Requests"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "TrainingRequestsController_update",
+        "summary": "Update training request status (Admin/Moderator only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrainingRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Training Requests"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "TrainingRequestsController_remove",
+        "summary": "Delete a training request (Admin only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Training Requests"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/blog": {
+      "get": {
+        "operationId": "BlogController_findAll",
+        "summary": "Get all blog posts (public)",
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Filter by category",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "description": "Filter by tag",
+            "schema": {
+              "example": "أخبار كاذبة",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "UNDER_REVIEW",
+                "PUBLISHED",
+                "ARCHIVED",
+                "RETRACTED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search in title, excerpt, content",
+            "schema": {
+              "example": "تحقق",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isFeatured",
+            "required": false,
+            "in": "query",
+            "description": "Filter featured only",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "author",
+            "required": false,
+            "in": "query",
+            "description": "Filter by author name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns paginated blog posts"
+          }
+        },
+        "tags": [
+          "Blog"
+        ]
+      },
+      "post": {
+        "operationId": "BlogController_create",
+        "summary": "Create new blog post (admin/moderator)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBlogDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Blog created successfully"
+          },
+          "409": {
+            "description": "Slug already exists"
+          }
+        },
+        "tags": [
+          "Blog"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/blog/categories": {
+      "get": {
+        "operationId": "BlogController_getCategories",
+        "summary": "Get all blog categories (public)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns unique categories"
+          }
+        },
+        "tags": [
+          "Blog"
+        ]
+      }
+    },
+    "/api/v1/blog/tags": {
+      "get": {
+        "operationId": "BlogController_getTags",
+        "summary": "Get all blog tags (public)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns unique tags"
+          }
+        },
+        "tags": [
+          "Blog"
+        ]
+      }
+    },
+    "/api/v1/blog/{slug}": {
+      "get": {
+        "operationId": "BlogController_findOne",
+        "summary": "Get single blog post by slug (public)",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns blog post"
+          },
+          "404": {
+            "description": "Blog not found"
+          }
+        },
+        "tags": [
+          "Blog"
+        ]
+      }
+    },
+    "/api/v1/blog/{id}": {
+      "patch": {
+        "operationId": "BlogController_update",
+        "summary": "Update blog post (admin/moderator)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBlogDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Blog updated successfully"
+          },
+          "404": {
+            "description": "Blog not found"
+          }
+        },
+        "tags": [
+          "Blog"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "BlogController_remove",
+        "summary": "Delete blog post (admin only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blog deleted successfully"
+          },
+          "404": {
+            "description": "Blog not found"
+          }
+        },
+        "tags": [
+          "Blog"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "NotificationsController_getMyNotifications",
+        "summary": "Get my notifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_markAsRead",
+        "summary": "Mark notification as read",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "patch": {
+        "operationId": "NotificationsController_markAllAsRead",
+        "summary": "Mark all notifications as read",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}": {
+      "delete": {
+        "operationId": "NotificationsController_deleteNotification",
+        "summary": "Delete a notification",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/analytics/platform-stats": {
+      "get": {
+        "operationId": "AnalyticsController_getPlatformStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/accessibility-statement": {
+      "get": {
+        "operationId": "AccessibilityStatementController_getAccessibilityStatement",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/privacy-policy": {
+      "get": {
+        "operationId": "PrivacyPolicyController_getPrivacyPolicy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/terms-of-service": {
+      "get": {
+        "operationId": "TermsofserviceController_getTermsOfService",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/faq": {
+      "get": {
+        "operationId": "FaqController_getAllFAQs",
+        "summary": "Get all published FAQs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FAQ"
+        ]
+      },
+      "post": {
+        "operationId": "FaqController_createFAQ",
+        "summary": "Create a new FAQ (Admin/Moderator)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFaqDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FAQ"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/faq/{id}": {
+      "get": {
+        "operationId": "FaqController_getFAQ",
+        "summary": "Get FAQ by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FAQ"
+        ]
+      },
+      "patch": {
+        "operationId": "FaqController_updateFAQ",
+        "summary": "Update an FAQ (Admin/Moderator)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFaqDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FAQ"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "FaqController_deleteFAQ",
+        "summary": "Delete an FAQ (Admin only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FAQ"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/faq/{id}/publish": {
+      "patch": {
+        "operationId": "FaqController_toggleFAQPublish",
+        "summary": "Toggle FAQ publish status (Admin/Moderator)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FAQ"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "AdminController_getAllUsers",
+        "summary": "Get all users",
+        "parameters": [
+          {
+            "name": "role",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/role": {
+      "patch": {
+        "operationId": "AdminController_updateUserRole",
+        "summary": "Update user role",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/ban": {
+      "post": {
+        "operationId": "AdminController_banUser",
+        "summary": "Ban a user",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}": {
+      "delete": {
+        "operationId": "AdminController_deleteUser",
+        "summary": "Delete a user (Super Admin only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/moderation/pending": {
+      "get": {
+        "operationId": "AdminController_getPendingContent",
+        "summary": "Get pending content for moderation",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/contact-messages": {
+      "get": {
+        "operationId": "AdminController_getContactMessages",
+        "summary": "Get contact messages",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/contact-messages/{id}/respond": {
+      "post": {
+        "operationId": "AdminController_respondToContact",
+        "summary": "Respond to contact message",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/settings": {
+      "get": {
+        "operationId": "AdminController_getSystemSettings",
+        "summary": "Get system settings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "AdminController_updateSystemSettings",
+        "summary": "Update system settings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard/stats": {
+      "get": {
+        "operationId": "DashboardController_getStats",
+        "summary": "Get comprehensive dashboard statistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard/overview": {
+      "get": {
+        "operationId": "DashboardController_getOverview",
+        "summary": "Get dashboard overview statistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard/user-growth": {
+      "get": {
+        "operationId": "DashboardController_getUserGrowth",
+        "summary": "Get user growth data",
+        "parameters": [
+          {
+            "name": "days",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard/submission-trends": {
+      "get": {
+        "operationId": "DashboardController_getSubmissionTrends",
+        "summary": "Get submission trends",
+        "parameters": [
+          {
+            "name": "days",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard/top-contributors": {
+      "get": {
+        "operationId": "DashboardController_getTopContributors",
+        "summary": "Get top contributors",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard/recent-activity": {
+      "get": {
+        "operationId": "DashboardController_getRecentActivity",
+        "summary": "Get recent activity",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard/content-stats": {
+      "get": {
+        "operationId": "DashboardController_getContentStats",
+        "summary": "Get content statistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard/system-health": {
+      "get": {
+        "operationId": "DashboardController_getSystemHealth",
+        "summary": "Get system health metrics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Tahaqaq 360 API",
+    "description": "Fact-checking and Media Literacy Platform API Documentation",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT-auth": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "JWT",
+        "description": "Enter JWT token",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "SignupDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password123!"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password123!"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "username": {
+            "type": "string",
+            "example": "johndoe"
+          },
+          "bio": {
+            "type": "string",
+            "example": "A passionate fact-checker"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "https://example.com/avatar.jpg"
+          }
+        }
+      },
+      "UpdateEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "newemail@example.com"
+          },
+          "currentPassword": {
+            "type": "string",
+            "example": "currentPassword123"
+          }
+        }
+      },
+      "UpdatePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "example": "currentPassword123"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "newPassword123"
+          }
+        }
+      },
+      "BylineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "VerdictDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "FALSE"
+          },
+          "label": {
+            "type": "string",
+            "example": "خاطئ",
+            "description": "Resolved for the requested locale"
+          },
+          "definition": {
+            "type": "string",
+            "description": "The published definition of this rating"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ]
+      },
+      "TopicDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "health"
+          },
+          "label": {
+            "type": "string",
+            "example": "الصحة"
+          }
+        },
+        "required": [
+          "slug",
+          "label"
+        ]
+      },
+      "ClaimSummaryDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The claim as it circulated"
+          },
+          "claimantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "claimedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "ReviewCountsDto": {
+        "type": "object",
+        "properties": {
+          "evidence": {
+            "type": "number"
+          },
+          "comments": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "evidence",
+          "comments"
+        ]
+      },
+      "ReviewSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "verdictCode": {
+            "type": "string",
+            "example": "FALSE"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/VerdictDto"
+          },
+          "countryCodes": {
+            "description": "ISO 3166-1 alpha-2",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicDto"
+            }
+          },
+          "claim": {
+            "$ref": "#/components/schemas/ClaimSummaryDto"
+          },
+          "_count": {
+            "$ref": "#/components/schemas/ReviewCountsDto"
+          }
+        },
+        "required": [
+          "id",
+          "verdictCode",
+          "verdict",
+          "countryCodes",
+          "topics",
+          "claim",
+          "_count"
+        ]
+      },
+      "FactCheckListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "localeCode": {
+            "type": "string",
+            "example": "AR"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "featuredImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "statusCode": {
+            "type": "string",
+            "example": "PUBLISHED"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "views": {
+            "type": "number"
+          },
+          "shares": {
+            "type": "number"
+          },
+          "author": {
+            "$ref": "#/components/schemas/BylineDto"
+          },
+          "factCheck": {
+            "$ref": "#/components/schemas/ReviewSummaryDto"
+          }
+        },
+        "required": [
+          "id",
+          "localeCode",
+          "slug",
+          "title",
+          "summary",
+          "isFeatured",
+          "statusCode",
+          "views",
+          "shares",
+          "author",
+          "factCheck"
+        ]
+      },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "totalPages": {
+            "type": "number"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "page",
+          "limit",
+          "totalPages",
+          "hasNextPage",
+          "hasPreviousPage"
+        ]
+      },
+      "FactCheckListResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactCheckListItemDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "meta"
+        ]
+      },
+      "FactCheckStatsDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "recentCount": {
+            "type": "number",
+            "description": "Published in the last 30 days"
+          },
+          "byVerdict": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "example": {
+              "TRUE": 26,
+              "FALSE": 19
+            },
+            "description": "Keyed by verdict code"
+          }
+        },
+        "required": [
+          "total",
+          "recentCount",
+          "byVerdict"
+        ]
+      },
+      "FactCheckStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/FactCheckStatsDto"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "ClaimAppearanceDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "nullable": true
+          },
+          "publisher": {
+            "type": "string",
+            "nullable": true
+          },
+          "appearedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "archiveUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Snapshot that survives the original being deleted"
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "mediaUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "url",
+          "mediaUrls"
+        ]
+      },
+      "ClaimDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The claim as it circulated"
+          },
+          "languageCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "claimantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "claimedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstSeenAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "appearances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClaimAppearanceDto"
+            }
+          }
+        },
+        "required": [
+          "text",
+          "appearances"
+        ]
+      },
+      "EvidenceDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "description": "Presentation order, contiguous from 0"
+          },
+          "typeCode": {
+            "type": "string",
+            "example": "OFFICIAL_RECORD"
+          },
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "publisher": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "accessedAt": {
+            "type": "string",
+            "description": "When the analyst consulted the source"
+          },
+          "archiveUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "excerpt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "position",
+          "typeCode",
+          "url",
+          "accessedAt"
+        ]
+      },
+      "ReviewDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "verdictCode": {
+            "type": "string",
+            "example": "FALSE"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/VerdictDto"
+          },
+          "countryCodes": {
+            "description": "ISO 3166-1 alpha-2",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicDto"
+            }
+          },
+          "claim": {
+            "$ref": "#/components/schemas/ClaimDto"
+          },
+          "_count": {
+            "$ref": "#/components/schemas/ReviewCountsDto"
+          },
+          "tags": {
+            "description": "Free text, SEO only — never a filter",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "verdictCode",
+          "verdict",
+          "countryCodes",
+          "topics",
+          "claim",
+          "_count",
+          "tags",
+          "evidence"
+        ]
+      },
+      "AvailableLocaleDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "example": "EN"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Slug of the sibling article in that locale"
+          }
+        },
+        "required": [
+          "locale",
+          "slug"
+        ]
+      },
+      "CorrectionDto": {
+        "type": "object",
+        "properties": {
+          "revisionNumber": {
+            "type": "number"
+          },
+          "tierCode": {
+            "type": "string",
+            "example": "CORRECTION",
+            "enum": [
+              "UPDATE",
+              "CORRECTION",
+              "VERDICT_CHANGE"
+            ]
+          },
+          "noticeText": {
+            "type": "string",
+            "nullable": true,
+            "description": "The public notice"
+          },
+          "verdictAtTimeCode": {
+            "type": "string",
+            "description": "The rating at the time of this revision"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "revisionNumber",
+          "tierCode",
+          "verdictAtTimeCode",
+          "createdAt"
+        ]
+      },
+      "FactCheckDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "localeCode": {
+            "type": "string",
+            "example": "AR"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "methodology": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "string",
+            "example": "PUBLISHED"
+          },
+          "isRetracted": {
+            "type": "boolean",
+            "description": "True when statusCode is RETRACTED"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "views": {
+            "type": "number"
+          },
+          "shares": {
+            "type": "number"
+          },
+          "author": {
+            "description": "Who wrote it",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BylineDto"
+              }
+            ]
+          },
+          "editor": {
+            "nullable": true,
+            "description": "Who reviewed it — a distinct step from moderation",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BylineDto"
+              }
+            ]
+          },
+          "factCheck": {
+            "$ref": "#/components/schemas/ReviewDetailDto"
+          },
+          "availableLocales": {
+            "description": "Sibling locales that are PUBLISHED — drafts are excluded",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailableLocaleDto"
+            }
+          },
+          "corrections": {
+            "description": "Disclosed revisions only; SILENT edits stay internal",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CorrectionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "localeCode",
+          "slug",
+          "title",
+          "summary",
+          "body",
+          "statusCode",
+          "isRetracted",
+          "views",
+          "shares",
+          "author",
+          "factCheck",
+          "availableLocales",
+          "corrections"
+        ]
+      },
+      "FactCheckDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/FactCheckDetailDto"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "RelatedFactCheckDto": {
+        "type": "object",
+        "properties": {
+          "localeCode": {
+            "type": "string",
+            "example": "AR"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "featuredImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "factCheck": {
+            "description": "Only verdictCode and verdict are populated here",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewSummaryDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "localeCode",
+          "slug",
+          "title",
+          "summary",
+          "factCheck"
+        ]
+      },
+      "RelatedFactChecksResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedFactCheckDto"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "ToggleSaveDto": {
+        "type": "object",
+        "properties": {
+          "saved": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "saved",
+          "message"
+        ]
+      },
+      "ToggleSaveResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ToggleSaveDto"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "ClaimAppearanceInputDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "example": "twitter"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "appearedAt": {
+            "type": "string"
+          },
+          "archiveUrl": {
+            "type": "string",
+            "description": "Snapshot URL. Claims get deleted; this is what survives."
+          },
+          "archivedAt": {
+            "type": "string"
+          },
+          "mediaUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "CreateClaimDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The claim as it circulated"
+          },
+          "languageCode": {
+            "type": "string",
+            "enum": [
+              "AR",
+              "EN"
+            ]
+          },
+          "claimantName": {
+            "type": "string"
+          },
+          "claimedAt": {
+            "type": "string"
+          },
+          "firstSeenAt": {
+            "type": "string"
+          },
+          "appearances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClaimAppearanceInputDto"
+            }
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "CreateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Markdown"
+          },
+          "methodology": {
+            "type": "string"
+          },
+          "metaTitle": {
+            "type": "string"
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "featuredImage": {
+            "type": "string"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "localeCode": {
+            "type": "string",
+            "enum": [
+              "AR",
+              "EN"
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "description": "Derived from the title when omitted. Unique WITHIN a locale."
+          }
+        },
+        "required": [
+          "title",
+          "summary",
+          "body",
+          "localeCode"
+        ]
+      },
+      "CreateFactCheckDto": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "$ref": "#/components/schemas/CreateClaimDto"
+          },
+          "verdictCode": {
+            "type": "string",
+            "enum": [
+              "TRUE",
+              "MOSTLY_TRUE",
+              "HALF_TRUE",
+              "MOSTLY_FALSE",
+              "FALSE",
+              "UNVERIFIABLE",
+              "SATIRE",
+              "MISLEADING"
+            ]
+          },
+          "countryCodes": {
+            "description": "ISO 3166-1 alpha-2",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "topicSlugs": {
+            "description": "Topic slugs",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "description": "Free text, SEO only — never drives filtering (ADR-0007)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "article": {
+            "description": "The first article",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
+            ]
+          },
+          "submissionId": {
+            "type": "string",
+            "description": "Submission this fact-check answers"
+          }
+        },
+        "required": [
+          "claim",
+          "verdictCode",
+          "article"
+        ]
+      },
+      "RevisionInputDto": {
+        "type": "object",
+        "properties": {
+          "tierCode": {
+            "type": "string",
+            "enum": [
+              "SILENT",
+              "UPDATE",
+              "CORRECTION",
+              "VERDICT_CHANGE"
+            ],
+            "description": "Chosen by the editor, never inferred from a diff: a one-word change can be a typo or a reversal of meaning (ADR-0006)."
+          },
+          "noticeText": {
+            "type": "string",
+            "description": "PUBLIC notice. Required for anything above SILENT."
+          },
+          "reason": {
+            "type": "string",
+            "description": "INTERNAL — never served publicly"
+          }
+        },
+        "required": [
+          "tierCode"
+        ]
+      },
+      "UpdateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Markdown"
+          },
+          "methodology": {
+            "type": "string"
+          },
+          "metaTitle": {
+            "type": "string"
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "featuredImage": {
+            "type": "string"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "revision": {
+            "description": "Required once the article is PUBLISHED. Ignored while it is a draft.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RevisionInputDto"
+              }
+            ]
+          }
+        }
+      },
+      "RetractArticleDto": {
+        "type": "object",
+        "properties": {
+          "noticeText": {
+            "type": "string",
+            "description": "Shown publicly in place of the analysis"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "noticeText"
+        ]
+      },
+      "ChangeVerdictDto": {
+        "type": "object",
+        "properties": {
+          "toVerdictCode": {
+            "type": "string",
+            "enum": [
+              "TRUE",
+              "MOSTLY_TRUE",
+              "HALF_TRUE",
+              "MOSTLY_FALSE",
+              "FALSE",
+              "UNVERIFIABLE",
+              "SATIRE",
+              "MISLEADING"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "PUBLIC — why the rating changed"
+          },
+          "changedById": {
+            "type": "string",
+            "description": "The analyst whose determination this is. The CALLER is the approver, and must be a different person (ADR-0006 invariant 5)."
+          }
+        },
+        "required": [
+          "toVerdictCode",
+          "reason",
+          "changedById"
+        ]
+      },
+      "CreateEvidenceDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string",
+            "enum": [
+              "PRIMARY_SOURCE",
+              "OFFICIAL_RECORD",
+              "EXPERT_STATEMENT",
+              "MEDIA_REPORT",
+              "DATASET",
+              "ARCHIVE",
+              "OTHER"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "accessedAt": {
+            "type": "string",
+            "description": "When the analyst consulted it. Required: a source that said X in January and Y in March makes the fact-check unfalsifiable without it."
+          },
+          "archiveUrl": {
+            "type": "string"
+          },
+          "archivedAt": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "description": "INTERNAL — never served publicly"
+          },
+          "position": {
+            "type": "number",
+            "description": "Appended when omitted"
+          }
+        },
+        "required": [
+          "url",
+          "accessedAt"
+        ]
+      },
+      "UpdateEvidenceDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string",
+            "enum": [
+              "PRIMARY_SOURCE",
+              "OFFICIAL_RECORD",
+              "EXPERT_STATEMENT",
+              "MEDIA_REPORT",
+              "DATASET",
+              "ARCHIVE",
+              "OTHER"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "accessedAt": {
+            "type": "string",
+            "description": "When the analyst consulted it. Required: a source that said X in January and Y in March makes the fact-check unfalsifiable without it."
+          },
+          "archiveUrl": {
+            "type": "string"
+          },
+          "archivedAt": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "description": "INTERNAL — never served publicly"
+          },
+          "position": {
+            "type": "number",
+            "description": "Appended when omitted"
+          }
+        }
+      },
+      "ReorderEvidenceDto": {
+        "type": "object",
+        "properties": {
+          "orderedIds": {
+            "description": "Evidence ids in the order they should appear",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "orderedIds"
+        ]
+      },
+      "CreateSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "TEXT",
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "LINK"
+            ],
+            "example": "TEXT"
+          },
+          "content": {
+            "type": "string",
+            "example": "I found this suspicious claim on social media..."
+          },
+          "sourceUrl": {
+            "type": "string",
+            "example": "https://example.com/article"
+          },
+          "mediaUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "context": {
+            "type": "string"
+          },
+          "isAnonymous": {
+            "type": "boolean",
+            "example": false
+          },
+          "submitterEmail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "content"
+        ]
+      },
+      "UpdateSubmissionStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "IN_REVIEW",
+              "VERIFIED",
+              "REJECTED",
+              "PUBLISHED"
+            ]
+          },
+          "internalNotes": {
+            "type": "string"
+          },
+          "rejectionReason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "MarkLessonCompleteDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCourseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Introduction to Media Literacy"
+          },
+          "slug": {
+            "type": "string",
+            "example": "introduction-to-media-literacy"
+          },
+          "description": {
+            "type": "string",
+            "example": "Learn the fundamentals of media literacy and critical thinking"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "Beginner",
+              "Intermediate",
+              "Advanced"
+            ],
+            "example": "Beginner"
+          },
+          "duration": {
+            "type": "number",
+            "example": 480,
+            "description": "Duration in minutes"
+          },
+          "order": {
+            "type": "number",
+            "example": 1
+          },
+          "learningObjectives": {
+            "example": [
+              "Understand media bias",
+              "Identify misinformation",
+              "Analyze sources critically"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "prerequisites": {
+            "example": [
+              "Basic reading comprehension",
+              "Internet access"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "coverImage": {
+            "type": "string",
+            "example": "https://example.com/course-image.jpg"
+          },
+          "isPublished": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "title",
+          "slug",
+          "description",
+          "difficulty",
+          "duration",
+          "order",
+          "learningObjectives",
+          "prerequisites",
+          "coverImage",
+          "isPublished"
+        ]
+      },
+      "UpdateCourseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Introduction to Media Literacy"
+          },
+          "slug": {
+            "type": "string",
+            "example": "introduction-to-media-literacy"
+          },
+          "description": {
+            "type": "string",
+            "example": "Learn the fundamentals of media literacy and critical thinking"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "Beginner",
+              "Intermediate",
+              "Advanced"
+            ],
+            "example": "Beginner"
+          },
+          "duration": {
+            "type": "number",
+            "example": 480,
+            "description": "Duration in minutes"
+          },
+          "order": {
+            "type": "number",
+            "example": 1
+          },
+          "learningObjectives": {
+            "example": [
+              "Understand media bias",
+              "Identify misinformation",
+              "Analyze sources critically"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "prerequisites": {
+            "example": [
+              "Basic reading comprehension",
+              "Internet access"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "coverImage": {
+            "type": "string",
+            "example": "https://example.com/course-image.jpg"
+          },
+          "isPublished": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "CreateLessonDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Understanding Confirmation Bias"
+          },
+          "content": {
+            "type": "string",
+            "example": "# Confirmation Bias\n\nConfirmation bias is..."
+          },
+          "duration": {
+            "type": "number",
+            "example": 15
+          },
+          "order": {
+            "type": "number",
+            "example": 1
+          },
+          "videoUrl": {
+            "type": "string",
+            "example": "https://youtube.com/watch?v=example"
+          },
+          "resources": {
+            "example": [
+              {
+                "type": "pdf",
+                "title": "Lesson Notes",
+                "url": "https://example.com/notes.pdf"
+              }
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "duration",
+          "order",
+          "videoUrl",
+          "resources"
+        ]
+      },
+      "UpdateLessonDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Understanding Confirmation Bias"
+          },
+          "content": {
+            "type": "string",
+            "example": "# Confirmation Bias\n\nConfirmation bias is..."
+          },
+          "duration": {
+            "type": "number",
+            "example": 15
+          },
+          "order": {
+            "type": "number",
+            "example": 1
+          },
+          "videoUrl": {
+            "type": "string",
+            "example": "https://youtube.com/watch?v=example"
+          },
+          "resources": {
+            "example": [
+              {
+                "type": "pdf",
+                "title": "Lesson Notes",
+                "url": "https://example.com/notes.pdf"
+              }
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreateEventDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Media Literacy Workshop 2025"
+          },
+          "description": {
+            "type": "string",
+            "example": "Join us for an interactive workshop on identifying misinformation"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "WORKSHOP",
+              "WEBINAR",
+              "EXHIBITION",
+              "CONFERENCE",
+              "TRAINING"
+            ],
+            "example": "WORKSHOP"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2025-12-01T10:00:00Z"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2025-12-01T16:00:00Z"
+          },
+          "location": {
+            "type": "string"
+          },
+          "virtualLink": {
+            "type": "string"
+          },
+          "isVirtual": {
+            "type": "boolean",
+            "example": true
+          },
+          "maxAttendees": {
+            "type": "number"
+          },
+          "speakers": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "agenda": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "coverImage": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "UPCOMING",
+              "ONGOING",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "type",
+          "startDate",
+          "endDate"
+        ]
+      },
+      "RegisterEventDto": {
+        "type": "object",
+        "properties": {
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "HostRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "organization": {
+            "type": "string"
+          },
+          "proposedTitle": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "WORKSHOP",
+              "WEBINAR",
+              "EXHIBITION",
+              "CONFERENCE",
+              "TRAINING"
+            ]
+          },
+          "preferredDate": {
+            "type": "string"
+          },
+          "expectedAttendees": {
+            "type": "number"
+          },
+          "location": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "proposedTitle",
+          "description",
+          "eventType",
+          "preferredDate"
+        ]
+      },
+      "CreateResearchDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Understanding Media Bias in Digital Age"
+          },
+          "slug": {
+            "type": "string",
+            "example": "understanding-media-bias-digital-age"
+          },
+          "content": {
+            "type": "string",
+            "example": "# Introduction\n\nThis research explores...\n\n## Methodology\n\nWe analyzed..."
+          },
+          "summary": {
+            "type": "string",
+            "example": "A comprehensive study on media bias patterns in digital journalism"
+          },
+          "category": {
+            "type": "string",
+            "example": "Media Analysis"
+          },
+          "authors": {
+            "example": [
+              "Dr. Ahmed Ali",
+              "Dr. Sara Mohammed"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "example": [
+              "media-bias",
+              "journalism",
+              "fact-checking",
+              "digital-media"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "featuredImage": {
+            "type": "string",
+            "example": "https://example.com/research-image.jpg"
+          },
+          "isPublished": {
+            "type": "boolean",
+            "example": true
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "example": false
+          },
+          "metaTitle": {
+            "type": "string",
+            "example": "Understanding Media Bias - Research Study"
+          },
+          "metaDescription": {
+            "type": "string",
+            "example": "Comprehensive research on media bias patterns and fact-checking in the digital age"
+          }
+        },
+        "required": [
+          "title",
+          "slug",
+          "content",
+          "summary",
+          "category",
+          "authors",
+          "tags",
+          "featuredImage",
+          "isPublished",
+          "isFeatured",
+          "metaTitle",
+          "metaDescription"
+        ]
+      },
+      "UpdateResearchDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Understanding Media Bias in Digital Age"
+          },
+          "slug": {
+            "type": "string",
+            "example": "understanding-media-bias-digital-age"
+          },
+          "content": {
+            "type": "string",
+            "example": "# Introduction\n\nThis research explores...\n\n## Methodology\n\nWe analyzed..."
+          },
+          "summary": {
+            "type": "string",
+            "example": "A comprehensive study on media bias patterns in digital journalism"
+          },
+          "category": {
+            "type": "string",
+            "example": "Media Analysis"
+          },
+          "authors": {
+            "example": [
+              "Dr. Ahmed Ali",
+              "Dr. Sara Mohammed"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "example": [
+              "media-bias",
+              "journalism",
+              "fact-checking",
+              "digital-media"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "featuredImage": {
+            "type": "string",
+            "example": "https://example.com/research-image.jpg"
+          },
+          "isPublished": {
+            "type": "boolean",
+            "example": true
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "example": false
+          },
+          "metaTitle": {
+            "type": "string",
+            "example": "Understanding Media Bias - Research Study"
+          },
+          "metaDescription": {
+            "type": "string",
+            "example": "Comprehensive research on media bias patterns and fact-checking in the digital age"
+          }
+        }
+      },
+      "CreateContactDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "subject",
+          "message"
+        ]
+      },
+      "CreateTrainingRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name of the requester"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "organization": {
+            "type": "string",
+            "description": "Organization or institution name"
+          },
+          "position": {
+            "type": "string",
+            "description": "Position/role in organization"
+          },
+          "trainingTopic": {
+            "type": "string",
+            "description": "Topic or focus of the training"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of training needs"
+          },
+          "preferredDate": {
+            "type": "string",
+            "description": "Preferred training date"
+          },
+          "alternativeDate": {
+            "type": "string",
+            "description": "Alternative training date"
+          },
+          "expectedAttendees": {
+            "type": "number",
+            "description": "Expected number of attendees"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location where training should take place"
+          },
+          "targetAudience": {
+            "type": "string",
+            "description": "Target audience (e.g., Students, Teachers, Journalists)"
+          },
+          "specificNeeds": {
+            "type": "string",
+            "description": "Specific needs or requirements"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "organization",
+          "trainingTopic",
+          "description",
+          "expectedAttendees",
+          "location"
+        ]
+      },
+      "UpdateTrainingRequestDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Request status",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "CONTACTED"
+            ]
+          },
+          "reviewNotes": {
+            "type": "string",
+            "description": "Review notes from admin/moderator"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreateBlogDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Blog title",
+            "example": "كيف تتحقق من الأخبار الكاذبة"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-friendly slug",
+            "example": "how-to-verify-fake-news"
+          },
+          "excerpt": {
+            "type": "string",
+            "description": "Short excerpt/summary",
+            "example": "دليل شامل للتحقق من الأخبار"
+          },
+          "content": {
+            "type": "string",
+            "description": "Full blog content (supports Markdown/HTML)",
+            "example": "# مقدمة\n\nهذا دليل شامل..."
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "Cover image URL",
+            "example": "https://example.com/image.jpg"
+          },
+          "author": {
+            "type": "string",
+            "description": "Author name",
+            "example": "فريق تحقق 360"
+          },
+          "category": {
+            "type": "string",
+            "description": "Blog category",
+            "example": "التحقق من الحقائق"
+          },
+          "tags": {
+            "description": "Tags array",
+            "example": [
+              "أخبار كاذبة",
+              "تحقق",
+              "وسائل التواصل"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "description": "Featured blog flag",
+            "default": false
+          },
+          "status": {
+            "type": "string",
+            "description": "Publication status",
+            "enum": [
+              "DRAFT",
+              "UNDER_REVIEW",
+              "PUBLISHED",
+              "ARCHIVED",
+              "RETRACTED"
+            ],
+            "default": "DRAFT"
+          },
+          "readTime": {
+            "type": "number",
+            "description": "Estimated reading time in minutes",
+            "example": 5
+          },
+          "metaTitle": {
+            "type": "string",
+            "description": "SEO meta title",
+            "example": "دليل التحقق من الأخبار | تحقق 360"
+          },
+          "metaDescription": {
+            "type": "string",
+            "description": "SEO meta description",
+            "example": "تعلم كيف تتحقق من صحة الأخبار"
+          }
+        },
+        "required": [
+          "title",
+          "slug",
+          "excerpt",
+          "content",
+          "author",
+          "category"
+        ]
+      },
+      "UpdateBlogDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Blog title",
+            "example": "كيف تتحقق من الأخبار الكاذبة"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-friendly slug",
+            "example": "how-to-verify-fake-news"
+          },
+          "excerpt": {
+            "type": "string",
+            "description": "Short excerpt/summary",
+            "example": "دليل شامل للتحقق من الأخبار"
+          },
+          "content": {
+            "type": "string",
+            "description": "Full blog content (supports Markdown/HTML)",
+            "example": "# مقدمة\n\nهذا دليل شامل..."
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "Cover image URL",
+            "example": "https://example.com/image.jpg"
+          },
+          "author": {
+            "type": "string",
+            "description": "Author name",
+            "example": "فريق تحقق 360"
+          },
+          "category": {
+            "type": "string",
+            "description": "Blog category",
+            "example": "التحقق من الحقائق"
+          },
+          "tags": {
+            "description": "Tags array",
+            "example": [
+              "أخبار كاذبة",
+              "تحقق",
+              "وسائل التواصل"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "description": "Featured blog flag",
+            "default": false
+          },
+          "status": {
+            "type": "string",
+            "description": "Publication status",
+            "enum": [
+              "DRAFT",
+              "UNDER_REVIEW",
+              "PUBLISHED",
+              "ARCHIVED",
+              "RETRACTED"
+            ],
+            "default": "DRAFT"
+          },
+          "readTime": {
+            "type": "number",
+            "description": "Estimated reading time in minutes",
+            "example": 5
+          },
+          "metaTitle": {
+            "type": "string",
+            "description": "SEO meta title",
+            "example": "دليل التحقق من الأخبار | تحقق 360"
+          },
+          "metaDescription": {
+            "type": "string",
+            "description": "SEO meta description",
+            "example": "تعلم كيف تتحقق من صحة الأخبار"
+          }
+        }
+      },
+      "CreateFaqDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "example": "What is fact-checking?"
+          },
+          "answer": {
+            "type": "string",
+            "example": "Fact-checking is the process of verifying the accuracy of information..."
+          },
+          "category": {
+            "type": "string",
+            "example": "General"
+          },
+          "order": {
+            "type": "number",
+            "example": 1,
+            "description": "Display order (lower = higher priority)"
+          },
+          "isPublished": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "question",
+          "answer",
+          "category",
+          "order",
+          "isPublished"
+        ]
+      },
+      "UpdateFaqDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "example": "What is fact-checking?"
+          },
+          "answer": {
+            "type": "string",
+            "example": "Fact-checking is the process of verifying the accuracy of information..."
+          },
+          "category": {
+            "type": "string",
+            "example": "General"
+          },
+          "order": {
+            "type": "number",
+            "example": 1,
+            "description": "Display order (lower = higher priority)"
+          },
+          "isPublished": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      }
+    }
+  }
+}

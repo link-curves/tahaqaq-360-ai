@@ -1,4 +1,6 @@
 // Admin API Client - Separate from main API client to keep files manageable
+import type { components } from "./api-schema.gen";
+
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
@@ -737,26 +739,25 @@ export const eventsApi = {
 
 // ==================== FACT CHECKS API ====================
 
-export interface FactCheck {
-  id: string;
-  title: string;
-  slug: string;
-  claim: string;
-  verdict: VeracityRatingValue;
-  explanation: string;
-  sources: any[];
-  claimDate?: string;
-  publishedAt?: string;
-  featured: boolean;
-  viewCount: number;
-  createdAt: string;
-  updatedAt: string;
-  author?: {
-    firstName: string;
-    lastName: string;
-  };
-}
+/**
+ * Fact-check types are GENERATED from the API's OpenAPI document — regenerate
+ * with `pnpm --filter api gen:api-types`. Everything else in this file is still
+ * hand-written and can silently drift (ADR-0003).
+ */
+export type FactCheckListItem =
+  components["schemas"]["FactCheckListItemDto"];
+export type FactCheckDetail = components["schemas"]["FactCheckDetailDto"];
+export type Evidence = components["schemas"]["EvidenceDto"];
 
+/** A fact-check article is per-locale; a slug is unique WITHIN a locale. */
+export type Locale = "AR" | "EN";
+
+/**
+ * @deprecated Authoring moved to the Claim / review / per-locale-article model
+ * and is implemented in Phase 3 with the ADR-0006 revision invariants. The
+ * create/update/delete endpoints below currently return 501 by design — a write
+ * path that skipped those invariants would corrupt the editorial record.
+ */
 export interface CreateFactCheckDto {
   title: string;
   slug: string;
@@ -768,6 +769,14 @@ export interface CreateFactCheckDto {
   featured?: boolean;
 }
 
+/**
+ * @deprecated The flat FactCheck shape is gone — a fact-check is a Claim, a
+ * review holding the shared verdict and evidence, and one article per locale
+ * (ADR-0002). Kept as an alias so the existing admin screen compiles; the
+ * authoring UI is rebuilt in Phase 4 against FactCheckDetail.
+ */
+export type FactCheck = FactCheckListItem;
+
 export interface UpdateFactCheckDto extends Partial<CreateFactCheckDto> {}
 
 export const factChecksApi = {
@@ -775,7 +784,7 @@ export const factChecksApi = {
     page?: number;
     limit?: number;
     verdict?: string;
-  }): Promise<{ data: FactCheck[]; meta: any }> => {
+  }): Promise<{ data: FactCheckListItem[]; meta: any }> => {
     const query = new URLSearchParams();
     if (params?.page) query.append("page", params.page.toString());
     if (params?.limit) query.append("limit", params.limit.toString());
@@ -785,18 +794,19 @@ export const factChecksApi = {
       credentials: "include",
       headers: getAuthHeaders(),
     });
-    return handleResponse<{ data: FactCheck[]; meta: any }>(response);
+    return handleResponse<{ data: FactCheckListItem[]; meta: any }>(response);
   },
 
-  getOne: async (slug: string): Promise<FactCheck> => {
-    const response = await fetch(`${API_BASE_URL}/fact-checks/${slug}`, {
+  getOne: async (slug: string, locale: Locale = "AR"): Promise<FactCheckDetail> => {
+    const response = await fetch(`${API_BASE_URL}/fact-checks/${locale}/${slug}`, {
       credentials: "include",
       headers: getAuthHeaders(),
     });
-    return handleResponse<FactCheck>(response);
+    return handleResponse<FactCheckDetail>(response);
   },
 
-  create: async (data: CreateFactCheckDto): Promise<FactCheck> => {
+  /** Returns 501 until Phase 3. */
+  create: async (data: CreateFactCheckDto): Promise<FactCheckDetail> => {
     const response = await fetch(`${API_BASE_URL}/fact-checks`, {
       method: "POST",
       credentials: "include" as RequestCredentials,
@@ -804,13 +814,13 @@ export const factChecksApi = {
 
       body: JSON.stringify(data),
     });
-    return handleResponse<FactCheck>(response);
+    return handleResponse<FactCheckDetail>(response);
   },
 
   update: async (
     slug: string,
     data: UpdateFactCheckDto
-  ): Promise<FactCheck> => {
+  ): Promise<FactCheckDetail> => {
     const response = await fetch(`${API_BASE_URL}/fact-checks/${slug}`, {
       method: "PATCH",
       credentials: "include" as RequestCredentials,
@@ -818,7 +828,7 @@ export const factChecksApi = {
 
       body: JSON.stringify(data),
     });
-    return handleResponse<FactCheck>(response);
+    return handleResponse<FactCheckDetail>(response);
   },
 
   delete: async (slug: string): Promise<void> => {
@@ -830,7 +840,12 @@ export const factChecksApi = {
     return handleResponse<void>(response);
   },
 
-  toggleFeatured: async (slug: string): Promise<FactCheck> => {
+  /**
+   * NOTE: /fact-checks/:slug/toggle-featured does not exist on the API.
+   * `isFeatured` is a per-locale article field now and will be set through the
+   * Phase 3 authoring endpoints.
+   */
+  toggleFeatured: async (slug: string): Promise<FactCheckDetail> => {
     const response = await fetch(
       `${API_BASE_URL}/fact-checks/${slug}/toggle-featured`,
       {
@@ -839,6 +854,6 @@ export const factChecksApi = {
         headers: getAuthHeaders(),
       }
     );
-    return handleResponse<FactCheck>(response);
+    return handleResponse<FactCheckDetail>(response);
   },
 };

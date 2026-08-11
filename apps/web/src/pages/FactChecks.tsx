@@ -187,9 +187,9 @@ const FactChecksPage = () => {
                       {/* Verdict Badge */}
                       <div className="absolute top-4 right-4">
                         <Badge
-                          className={`${getVeracityColor(factCheck.verdict)} border-0 shadow-lg`}
+                          className={`${getVeracityColor(factCheck.factCheck.verdict.code)} border-0 shadow-lg`}
                         >
-                          {getVeracityLabel(factCheck.verdict)}
+                          {getVeracityLabel(factCheck.factCheck.verdict.code)}
                         </Badge>
                       </div>
 
@@ -198,7 +198,7 @@ const FactChecksPage = () => {
                         <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full">
                           <span className="text-xs text-gray-700 font-medium font-['Cairo']">
                             {formatDate(
-                              factCheck.publishedAt || factCheck.createdAt
+                              factCheck.publishedAt
                             )}
                           </span>
                         </div>
@@ -213,7 +213,7 @@ const FactChecksPage = () => {
 
                       <p className="text-sm text-gray-600 mb-3 font-['Cairo']">
                         <strong>الادعاء:</strong>{" "}
-                        {generateExcerpt(factCheck.claim, 15)}
+                        {generateExcerpt(factCheck.factCheck.claim.text, 15)}
                       </p>
 
                       <p className="text-sm text-gray-700 mb-4 line-clamp-2 font-['Cairo']">

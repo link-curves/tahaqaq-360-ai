@@ -21,6 +21,7 @@ import { CreateCourseDto, UpdateCourseDto } from './dto/course.dto';
 import { MarkLessonCompleteDto } from './dto/lesson-progress.dto';
 import { CreateLessonDto, UpdateLessonDto } from './dto/lesson.dto';
 import { MediaLiteracyService } from './media-literacy.service';
+import { ROLE } from '../../common/constants/lookups';
 
 @ApiTags('Media Literacy')
 @Controller('media-literacy')
@@ -106,7 +107,7 @@ export class MediaLiteracyController {
 
   @Post('courses')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new course (Admin/Moderator)' })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
@@ -115,7 +116,7 @@ export class MediaLiteracyController {
 
   @Patch('courses/:slug')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update a course (Admin/Moderator)' })
   async updateCourse(
@@ -127,7 +128,7 @@ export class MediaLiteracyController {
 
   @Delete('courses/:slug')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a course (Admin only)' })
   async deleteCourse(@Param('slug') slug: string) {
@@ -136,7 +137,7 @@ export class MediaLiteracyController {
 
   @Patch('courses/:slug/publish')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Toggle course publish status (Admin/Moderator)' })
   async toggleCoursePublish(@Param('slug') slug: string) {
@@ -149,7 +150,7 @@ export class MediaLiteracyController {
 
   @Post('courses/:courseSlug/lessons')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Create a new lesson for a course (Admin/Moderator)',
@@ -163,7 +164,7 @@ export class MediaLiteracyController {
 
   @Patch('lessons/:lessonId')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update a lesson (Admin/Moderator)' })
   async updateLesson(
@@ -175,7 +176,7 @@ export class MediaLiteracyController {
 
   @Delete('lessons/:lessonId')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a lesson (Admin only)' })
   async deleteLesson(@Param('lessonId') lessonId: string) {

@@ -1,12 +1,7 @@
-import {
-  PrismaClient,
-  Submission,
-  SubmissionStatus,
-  SubmissionType,
-  User,
-} from '@prisma/client';
+import { PrismaClient, Submission, User } from '@prisma/client';
 import { randomElement, randomInt } from '../helpers/seed.helper';
 import { arabicClaimTexts, arabicSubmissionContexts } from './data/arabic.data';
+import { SubmissionStatusCode, SubmissionTypeCode } from '../../../common/constants/lookups';
 
 export const seedArabicSubmissions = async (
   prisma: PrismaClient,
@@ -15,15 +10,15 @@ export const seedArabicSubmissions = async (
   console.log('🌱 البدء في إضافة الطلبات بالعربية...');
 
   const submissions: Submission[] = [];
-  const regularUsers = users.filter((u) => u.role === 'USER');
-  const statuses: SubmissionStatus[] = [
+  const regularUsers = users.filter((u) => u.roleCode === 'USER');
+  const statuses: SubmissionStatusCode[] = [
     'PENDING',
     'IN_REVIEW',
     'VERIFIED',
     'REJECTED',
     'PUBLISHED',
   ];
-  const types: SubmissionType[] = ['TEXT', 'IMAGE', 'VIDEO', 'AUDIO', 'LINK'];
+  const types: SubmissionTypeCode[] = ['TEXT', 'IMAGE', 'VIDEO', 'AUDIO', 'LINK'];
 
   for (let i = 0; i < 250; i++) {
     const user = randomElement(regularUsers);
@@ -39,7 +34,7 @@ export const seedArabicSubmissions = async (
 
     const submission = await prisma.submission.create({
       data: {
-        type,
+        typeCode: type,
         content,
         context: randomElement(arabicSubmissionContexts),
         sourceUrl:
@@ -60,7 +55,7 @@ export const seedArabicSubmissions = async (
         submitterId: user.id,
         submitterEmail: Math.random() > 0.8 ? user.email : undefined,
         isAnonymous: Math.random() > 0.9,
-        status,
+        statusCode: status,
         priority,
         internalNotes:
           status !== 'PENDING'
@@ -76,7 +71,7 @@ export const seedArabicSubmissions = async (
             : undefined,
         reviewedBy:
           status !== 'PENDING'
-            ? users.find((u) => u.role === 'MODERATOR' || u.role === 'ADMIN')
+            ? users.find((u) => u.roleCode === 'MODERATOR' || u.roleCode === 'ADMIN')
                 ?.id
             : undefined,
         reviewedAt:

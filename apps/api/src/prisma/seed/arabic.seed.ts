@@ -6,6 +6,7 @@ import { seedArabicComments } from './ar/comments.arabic.seed';
 import { seedArabicCourses } from './ar/courses.arabic.seed';
 import { seedArabicEvents } from './ar/events.arabic.seed';
 import { seedArabicFactChecks } from './ar/factChecks.arabic.seed';
+import { seedReferenceData } from './reference.seed';
 import { seedArabicFAQs } from './ar/faqs.arabic.seed';
 import { seedArabicNotifications } from './ar/notifications.arabic.seed';
 import { seedArabicResearch } from './ar/research.arabic.seed';
@@ -13,8 +14,10 @@ import { seedArabicSavedContent } from './ar/savedContent.arabic.seed';
 import { seedArabicSessions } from './ar/sessions.arabic.seed';
 import { seedArabicSubmissions } from './ar/submissions.arabic.seed';
 import { seedArabicUsers } from './ar/users.arabic.seed';
+import { CONTENT_STATUS } from '../../common/constants/lookups';
+import { createPrismaAdapter } from '../../database/prisma-connection';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: createPrismaAdapter() });
 
 async function main() {
   console.log('🌱 بدء إضافة البيانات العربية الشاملة...\n');
@@ -40,6 +43,11 @@ async function main() {
     // ============================================
     // 1. إنشاء 100 مستخدم (Users)
     // ============================================
+    // Lookup tables (roles, statuses, locales…) must exist FIRST: every other
+    // model has a foreign key into them, so seeding users before roles fails
+    // with a foreign-key violation.
+    const topics = await seedReferenceData(prisma);
+
     console.log('👥 المرحلة 1/14: فحص المستخدمين...');
     const userCount = await prisma.user.count();
     if (userCount === 0) {
@@ -72,11 +80,19 @@ async function main() {
     const factCheckCount = await prisma.factCheck.count();
     if (factCheckCount === 0) {
       console.log('   ⏳ لا توجد بيانات، جارٍ الإضافة...');
-      factChecks = await seedArabicFactChecks(prisma, users);
+      factChecks = await seedArabicFactChecks(prisma, users, topics);
       console.log(`   ✅ تم إنشاء ${factChecks.length} فحص حقائق\n`);
     } else {
       console.log(`   ⏭️  تم تخطي: يوجد بالفعل ${factCheckCount} فحص حقائق\n`);
-      factChecks = await prisma.factCheck.findMany();
+      // `status` lives on the article now, so recompute the published flag
+      // rather than reading a field that no longer exists on FactCheck.
+      const existing = await prisma.factCheck.findMany({
+        include: { articles: { select: { statusCode: true } } },
+      });
+      factChecks = existing.map(({ articles, ...fc }) => ({
+        ...fc,
+        hasPublishedArticle: articles.some((a) => a.statusCode === CONTENT_STATUS.PUBLISHED),
+      }));
     }
 
     // ============================================

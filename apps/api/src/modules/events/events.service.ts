@@ -4,11 +4,23 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EventStatus, EventType } from '@prisma/client';
+
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { createSlug } from '../../common/utils/slug.util';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateEventDto, HostRequestDto, RegisterEventDto } from './dto/create-event.dto';
+import { EVENT_STATUS, EventStatusCode, EventTypeCode, NOTIFICATION_TYPE } from '../../common/constants/lookups';
+
+
+/** The DTO exposes `type`/`status`; the model stores the FK codes. */
+const toEventUpdateData = (dto: Partial<CreateEventDto>) => {
+  const { type, status, ...rest } = dto;
+  return {
+    ...rest,
+    ...(type !== undefined ? { typeCode: type } : {}),
+    ...(status !== undefined ? { statusCode: status } : {}),
+  };
+};
 
 @Injectable()
 export class EventsService {
@@ -25,9 +37,13 @@ export class EventsService {
       throw new BadRequestException('End date must be after start date');
     }
 
+    // `type`/`status` on the DTO map to the typeCode/statusCode FKs.
+    const { type, status, ...eventFields } = createDto;
     const event = await this.prisma.event.create({
       data: {
-        ...createDto,
+        ...eventFields,
+        typeCode: type,
+        statusCode: status ?? EVENT_STATUS.UPCOMING,
         slug,
         startDate,
         endDate,
@@ -39,8 +55,8 @@ export class EventsService {
 
   async findAll(
     paginationDto: PaginationDto,
-    type?: EventType,
-    status?: EventStatus,
+    type?: EventTypeCode,
+    status?: EventStatusCode,
     upcoming?: boolean,
   ) {
     const { page = 1, limit = 10, sortBy = 'startDate', sortOrder = 'asc' } = paginationDto;
@@ -48,12 +64,12 @@ export class EventsService {
 
     const where: any = {};
     
-    if (type) where.type = type;
-    if (status) where.status = status;
+    if (type) where.typeCode = type;
+    if (status) where.statusCode = status;
     
     if (upcoming) {
       where.startDate = { gte: new Date() };
-      where.status = { in: [EventStatus.UPCOMING, EventStatus.ONGOING] };
+      where.statusCode = { in: [EVENT_STATUS.UPCOMING, EVENT_STATUS.ONGOING] };
     }
 
     const [events, total] = await Promise.all([
@@ -124,7 +140,7 @@ export class EventsService {
 
     return this.prisma.event.update({
       where: { slug },
-      data: updateDto,
+      data: toEventUpdateData(updateDto),
     });
   }
 
@@ -204,7 +220,7 @@ export class EventsService {
     await this.prisma.notification.create({
       data: {
         userId,
-        type: 'EVENT_REMINDER',
+        typeCode: 'EVENT_REMINDER',
         title: 'Event Registration Confirmed',
         message: `You've successfully registered for ${event.title}`,
         actionUrl: `/events/${slug}`,
@@ -274,14 +290,18 @@ export class EventsService {
   }
 
   async submitHostRequest(hostRequestDto: HostRequestDto) {
+    const { eventType: hostEventType, ...hostRequestFields } = hostRequestDto;
     const hostRequest = await this.prisma.hostRequest.create({
-      data: hostRequestDto,
+      data: {
+        ...hostRequestFields,
+        eventTypeCode: hostEventType,
+      },
     });
 
     // Notify admins
     const admins = await this.prisma.user.findMany({
       where: {
-        role: { in: ['ADMIN', 'SUPER_ADMIN'] },
+        roleCode: { in: ['ADMIN', 'SUPER_ADMIN'] },
       },
       select: { id: true },
     });
@@ -289,7 +309,7 @@ export class EventsService {
     await this.prisma.notification.createMany({
       data: admins.map((admin) => ({
         userId: admin.id,
-        type: 'SYSTEM',
+        typeCode: NOTIFICATION_TYPE.SYSTEM,
         title: 'New Host Request',
         message: `${hostRequestDto.name} wants to host: ${hostRequestDto.proposedTitle}`,
         actionUrl: `/admin/host-requests/${hostRequest.id}`,
@@ -304,7 +324,7 @@ export class EventsService {
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    if (status) where.status = status;
+    if (status) where.statusCode = status;
 
     const [requests, total] = await Promise.all([
       this.prisma.hostRequest.findMany({
@@ -329,10 +349,10 @@ export class EventsService {
     };
   }
 
-  async updateEventStatus(slug: string, status: EventStatus) {
+  async updateEventStatus(slug: string, status: EventStatusCode) {
     return this.prisma.event.update({
       where: { slug },
-      data: { status },
+      data: { statusCode: status },
     });
   }
 
@@ -351,7 +371,7 @@ export class EventsService {
       where: { id: registration.id },
       data: {
         attendedAt: new Date(),
-        status: 'ATTENDED',
+        statusCode: 'ATTENDED',
       },
     });
   }

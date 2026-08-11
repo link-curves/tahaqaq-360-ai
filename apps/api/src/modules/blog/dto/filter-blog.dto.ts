@@ -1,7 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ContentStatus } from '@prisma/client';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+
+import {
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { CONTENT_STATUS, ContentStatusCode } from '../../../common/constants/lookups';
 
 export class FilterBlogDto extends PaginationDto {
   @ApiPropertyOptional({ description: 'Filter by category' })
@@ -19,11 +25,11 @@ export class FilterBlogDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by status',
-    enum: ContentStatus,
+    enum: Object.values(CONTENT_STATUS),
   })
   @IsOptional()
-  @IsEnum(ContentStatus)
-  status?: ContentStatus;
+  @IsIn(Object.values(CONTENT_STATUS))
+  status?: ContentStatusCode;
 
   @ApiPropertyOptional({
     description: 'Search in title, excerpt, content',

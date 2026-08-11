@@ -1,6 +1,7 @@
-import { ContentStatus, PrismaClient, Session } from '@prisma/client';
+import { PrismaClient, Session } from '@prisma/client';
 import { randomElement, randomInt } from '../helpers/seed.helper';
 import { arabicTags } from './data/arabic.data';
+import { ContentStatusCode } from '../../../common/constants/lookups';
 
 export const seedArabicSessions = async (
   prisma: PrismaClient,
@@ -8,7 +9,7 @@ export const seedArabicSessions = async (
   console.log('🌱 البدء في إضافة الجلسات المسجلة بالعربية...');
 
   const sessions: Session[] = [];
-  const statuses: ContentStatus[] = ['PUBLISHED', 'DRAFT', 'ARCHIVED'];
+  const statuses: ContentStatusCode[] = ['PUBLISHED', 'DRAFT', 'ARCHIVED'];
 
   const sessionTitles = [
     'مقدمة في التحقق من الحقائق',
@@ -111,7 +112,7 @@ export const seedArabicSessions = async (
               ]
             : []),
         ],
-        status,
+        statusCode: status,
         publishedAt,
         recordedAt,
       },

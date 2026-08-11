@@ -1,14 +1,4 @@
-import {
-  Certificate,
-  ContentStatus,
-  EventStatus,
-  EventType,
-  ModerationAction,
-  NotificationType,
-  PrismaClient,
-  Role,
-  SubmissionStatus,
-} from '@prisma/client';
+import { Certificate, PrismaClient } from '@prisma/client';
 import { randomInt } from 'crypto';
 import { seedAchievements } from './en/achievement.seed';
 import {
@@ -18,12 +8,15 @@ import {
   tags,
 } from './en/data/english.data';
 import { seedFactChecks } from './en/factChecks.seed';
+import { seedReferenceData } from './reference.seed';
 import { seedFAQs } from './en/faq.seed';
 import { seedSubmissions } from './en/submission.seed';
 import { seedUsers } from './en/user.seed';
 import { randomDate, randomElement, shuffle } from './helpers/seed.helper';
+import { CONTENT_STATUS, EVENT_STATUS, EVENT_TYPE, MODERATION_ACTION, NOTIFICATION_TYPE, ROLE, SUBMISSION_STATUS } from '../../common/constants/lookups';
+import { createPrismaAdapter } from '../../database/prisma-connection';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: createPrismaAdapter() });
 
 // Data generators
 
@@ -34,6 +27,10 @@ async function main() {
   // 1. CREATE 100 USERS
   // ============================================
   console.log('👥 Creating 100 users...');
+  // Lookup tables must exist first — every other model has a foreign key
+  // into them.
+  const topics = await seedReferenceData(prisma);
+
   const users = await seedUsers(prisma);
 
   // ============================================
@@ -46,9 +43,11 @@ async function main() {
   // 3. CREATE 200 FACT CHECKS
   // ============================================
   console.log('📰 Creating 200 fact checks...');
-  const factChecks = await seedFactChecks(prisma, users);
+  const factChecks = await seedFactChecks(prisma, users, topics);
   const moderators = users.filter((u) =>
-    [Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN, Role.USER].includes(u.role),
+    ([ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN, ROLE.USER] as string[]).includes(
+      u.roleCode,
+    ),
   );
 
   // ============================================
@@ -58,7 +57,7 @@ async function main() {
 
   const submissions = await seedSubmissions(prisma, users);
 
-  const regularUsers = users.filter((u) => u.role === Role.USER);
+  const regularUsers = users.filter((u) => u.roleCode === ROLE.USER);
 
   console.log(`✅ Created ${submissions.length} submissions\n`);
 
@@ -221,12 +220,12 @@ async function main() {
         title: `${randomElement(eventTitles)} ${new Date(startDate).getFullYear()}`,
         slug: `event-${i}-${Date.now()}`,
         description: `Join us for an engaging ${randomElement(eventTitles).toLowerCase()} where experts will share insights on combating misinformation and improving media literacy.`,
-        type: randomElement(Object.values(EventType)),
-        status: isPast
-          ? EventStatus.COMPLETED
+        typeCode: randomElement(Object.values(EVENT_TYPE)),
+        statusCode: isPast
+          ? EVENT_STATUS.COMPLETED
           : i <= 20
-            ? EventStatus.UPCOMING
-            : EventStatus.UPCOMING,
+            ? EVENT_STATUS.UPCOMING
+            : EVENT_STATUS.UPCOMING,
         coverImage: `https://picsum.photos/seed/event${i}/800/400`,
         startDate,
         endDate,
@@ -291,16 +290,16 @@ async function main() {
         data: {
           userId: user.id,
           eventId: event.id,
-          status:
-            event.status === EventStatus.COMPLETED ? 'ATTENDED' : 'CONFIRMED',
+          statusCode:
+            event.statusCode === EVENT_STATUS.COMPLETED ? 'ATTENDED' : 'CONFIRMED',
           attendedAt:
-            event.status === EventStatus.COMPLETED ? event.startDate : null,
+            event.statusCode === EVENT_STATUS.COMPLETED ? event.startDate : null,
           feedback:
-            event.status === EventStatus.COMPLETED && Math.random() > 0.5
+            event.statusCode === EVENT_STATUS.COMPLETED && Math.random() > 0.5
               ? 'Great event! Learned a lot.'
               : null,
           rating:
-            event.status === EventStatus.COMPLETED && Math.random() > 0.5
+            event.statusCode === EVENT_STATUS.COMPLETED && Math.random() > 0.5
               ? randomInt(4, 5)
               : null,
           registeredAt: randomDate(
@@ -460,7 +459,7 @@ async function main() {
             size: '856 KB',
           },
         ],
-        status: i <= 45 ? ContentStatus.PUBLISHED : ContentStatus.DRAFT,
+        statusCode: i <= 45 ? CONTENT_STATUS.PUBLISHED : CONTENT_STATUS.DRAFT,
         publishedAt:
           i <= 45 ? randomDate(new Date(2023, 0, 1), new Date()) : null,
         views: randomInt(100, 5000),
@@ -524,7 +523,7 @@ async function main() {
             url: 'https://example.com/resources',
           },
         ],
-        status: i <= 28 ? ContentStatus.PUBLISHED : ContentStatus.DRAFT,
+        statusCode: i <= 28 ? CONTENT_STATUS.PUBLISHED : CONTENT_STATUS.DRAFT,
         publishedAt:
           i <= 28 ? randomDate(new Date(2023, 6, 1), new Date()) : null,
         recordedAt: randomDate(new Date(2023, 0, 1), new Date()),
@@ -612,7 +611,7 @@ async function main() {
   for (const user of regularUsers.slice(0, 60)) {
     const numSaved = randomInt(3, 20);
     const savedFactChecks = shuffle([
-      ...factChecks.filter((fc) => fc.status === ContentStatus.PUBLISHED),
+      ...factChecks.filter((fc) => fc.hasPublishedArticle),
     ]).slice(0, numSaved);
 
     for (const factCheck of savedFactChecks) {
@@ -645,7 +644,7 @@ async function main() {
       await prisma.notification.create({
         data: {
           userId: user.id,
-          type: randomElement(Object.values(NotificationType)),
+          typeCode: randomElement(Object.values(NOTIFICATION_TYPE)),
           title: randomElement([
             'Submission Updated',
             'New Achievement Unlocked',
@@ -688,20 +687,20 @@ async function main() {
   let moderationCount = 0;
 
   for (const submission of submissions.filter(
-    (s) => s.status !== SubmissionStatus.PENDING,
+    (s) => s.statusCode !== SUBMISSION_STATUS.PENDING,
   )) {
     const moderator = randomElement(moderators);
     await prisma.moderationLog.create({
       data: {
-        action:
-          submission.status === SubmissionStatus.REJECTED
-            ? ModerationAction.REJECT
-            : ModerationAction.APPROVE,
+        actionCode:
+          submission.statusCode === SUBMISSION_STATUS.REJECTED
+            ? MODERATION_ACTION.REJECT
+            : MODERATION_ACTION.APPROVE,
         reason:
-          submission.status === SubmissionStatus.REJECTED
+          submission.statusCode === SUBMISSION_STATUS.REJECTED
             ? 'Insufficient evidence'
             : 'Meets quality standards',
-        notes: `Reviewed by ${moderator.firstName}. ${submission.status === SubmissionStatus.VERIFIED ? 'High quality submission' : 'Standard review process'}.`,
+        notes: `Reviewed by ${moderator.firstName}. ${submission.statusCode === SUBMISSION_STATUS.VERIFIED ? 'High quality submission' : 'Standard review process'}.`,
         moderatorId: moderator.id,
         submissionId: submission.id,
         createdAt:
@@ -770,7 +769,7 @@ async function main() {
           'Feature request',
         ]),
         message: `Hello, I wanted to reach out regarding ${randomElement(categories).toLowerCase()}. I have some questions and would appreciate your assistance.`,
-        status: randomElement(['NEW', 'IN_PROGRESS', 'RESOLVED']),
+        statusCode: randomElement(['NEW', 'IN_PROGRESS', 'RESOLVED']),
         userId: sender?.id,
         createdAt: randomDate(new Date(2024, 0, 1), new Date()),
       },
@@ -798,7 +797,7 @@ async function main() {
             : null,
         proposedTitle: `${randomElement(['Workshop', 'Seminar', 'Training', 'Conference'])} on ${randomElement(categories)}`,
         description: `I would like to organize an event focused on ${randomElement(categories).toLowerCase()} and media literacy for our community.`,
-        eventType: randomElement(Object.values(EventType)),
+        eventTypeCode: randomElement(Object.values(EVENT_TYPE)),
         preferredDate: randomDate(new Date(), new Date(2025, 11, 31)),
         expectedAttendees: randomInt(20, 200),
         location: randomElement([
@@ -808,7 +807,7 @@ async function main() {
           'Cairo',
           'Amman',
         ]),
-        status: randomElement(['PENDING', 'APPROVED', 'REJECTED']),
+        statusCode: randomElement(['PENDING', 'APPROVED', 'REJECTED']),
         createdAt: randomDate(new Date(2024, 0, 1), new Date()),
       },
     });

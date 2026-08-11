@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ContentStatus, SubmissionStatus } from '@prisma/client';
 import { PrismaService } from '../../../database/prisma.service';
+import { CONTENT_STATUS, SUBMISSION_STATUS } from '../../../common/constants/lookups';
 
 @Injectable()
 export class DashboardService {
@@ -52,13 +53,14 @@ export class DashboardService {
       // Fact Checks
       this.prisma.factCheck.count(),
       this.prisma.factCheck.count({
-        where: { status: ContentStatus.PUBLISHED },
+        // Publication is per-article (ADR-0002).
+        where: { articles: { some: { statusCode: CONTENT_STATUS.PUBLISHED } } },
       }),
 
       // Research
       this.prisma.research.count(),
       this.prisma.research.count({
-        where: { status: ContentStatus.PUBLISHED },
+        where: { statusCode: CONTENT_STATUS.PUBLISHED },
       }),
 
       // Events
@@ -66,7 +68,7 @@ export class DashboardService {
       this.prisma.event.count({
         where: {
           startDate: { gte: now },
-          status: 'UPCOMING',
+          statusCode: 'UPCOMING',
         },
       }),
 
@@ -82,10 +84,10 @@ export class DashboardService {
       // Submissions
       this.prisma.submission.count(),
       this.prisma.submission.count({
-        where: { status: SubmissionStatus.PENDING },
+        where: { statusCode: SUBMISSION_STATUS.PENDING },
       }),
       this.prisma.submission.count({
-        where: { status: SubmissionStatus.VERIFIED },
+        where: { statusCode: SUBMISSION_STATUS.VERIFIED },
       }),
 
       // Comments & Certificates
@@ -181,13 +183,14 @@ export class DashboardService {
       // Fact Checks
       this.prisma.factCheck.count(),
       this.prisma.factCheck.count({
-        where: { status: ContentStatus.PUBLISHED },
+        // Publication is per-article (ADR-0002).
+        where: { articles: { some: { statusCode: CONTENT_STATUS.PUBLISHED } } },
       }),
 
       // Submissions
       this.prisma.submission.count(),
       this.prisma.submission.count({
-        where: { status: SubmissionStatus.PENDING },
+        where: { statusCode: SUBMISSION_STATUS.PENDING },
       }),
 
       // Events
@@ -195,7 +198,7 @@ export class DashboardService {
       this.prisma.event.count({
         where: {
           startDate: { gte: now },
-          status: 'UPCOMING',
+          statusCode: 'UPCOMING',
         },
       }),
 
@@ -275,7 +278,7 @@ export class DashboardService {
           lte: endDate,
         },
       },
-      select: { createdAt: true, status: true },
+      select: { createdAt: true, statusCode: true },
     });
 
     const groupedData = submissions.reduce(
@@ -284,10 +287,11 @@ export class DashboardService {
         if (!acc[date]) {
           acc[date] = { pending: 0, verified: 0, rejected: 0 };
         }
-        if (submission.status === SubmissionStatus.PENDING) acc[date].pending++;
-        if (submission.status === SubmissionStatus.VERIFIED)
+        if (submission.statusCode === SUBMISSION_STATUS.PENDING)
+          acc[date].pending++;
+        if (submission.statusCode === SUBMISSION_STATUS.VERIFIED)
           acc[date].verified++;
-        if (submission.status === SubmissionStatus.REJECTED)
+        if (submission.statusCode === SUBMISSION_STATUS.REJECTED)
           acc[date].rejected++;
         return acc;
       },
@@ -315,7 +319,7 @@ export class DashboardService {
         level: true,
         _count: {
           select: {
-            factChecks: true,
+            authoredArticles: true,
             submissions: true,
             comments: true,
           },
@@ -348,37 +352,37 @@ export class DashboardService {
     const [factChecksByVerdict, submissionsByType, eventsByType] =
       await Promise.all([
         this.prisma.factCheck.groupBy({
-          by: ['verdict'],
-          where: { status: ContentStatus.PUBLISHED },
-          _count: true,
+          by: ['verdictCode'],
+          where: { articles: { some: { statusCode: CONTENT_STATUS.PUBLISHED } } },
+          _count: { _all: true },
         }),
         this.prisma.submission.groupBy({
-          by: ['type'],
-          _count: true,
+          by: ['typeCode'],
+          _count: { _all: true },
         }),
         this.prisma.event.groupBy({
-          by: ['type'],
-          _count: true,
+          by: ['typeCode'],
+          _count: { _all: true },
         }),
       ]);
 
     return {
       factChecksByVerdict: factChecksByVerdict.reduce(
         (acc: Record<string, number>, item) => {
-          acc[item.verdict] = item._count;
+          acc[item.verdictCode] = item._count._all;
           return acc;
         },
         {},
       ),
       submissionsByType: submissionsByType.reduce(
         (acc: Record<string, number>, item) => {
-          acc[item.type] = item._count;
+          acc[item.typeCode] = item._count._all;
           return acc;
         },
         {},
       ),
       eventsByType: eventsByType.reduce((acc: Record<string, number>, item) => {
-        acc[item.type] = item._count;
+        acc[item.typeCode] = item._count._all;
         return acc;
       }, {}),
     };

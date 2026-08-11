@@ -12,6 +12,7 @@ import {
   UpdateUserDto,
 } from './dto/update-user.dto';
 import { UserResponseDto, UserStatsDto } from './dto/user-response.dto';
+import { RoleCode } from '../../common/constants/lookups';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +29,7 @@ export class UsersService {
         username: true,
         avatar: true,
         bio: true,
-        role: true,
+        roleCode: true,
         isEmailVerified: true,
         reputation: true,
         totalPoints: true,
@@ -45,6 +46,8 @@ export class UsersService {
 
     return {
       ...user,
+      // Expose the FK as a plain string: the API contract is `role`.
+      role: user.roleCode as RoleCode,
       firstName: user.firstName ?? undefined,
       lastName: user.lastName ?? undefined,
       username: user.username ?? undefined,
@@ -64,7 +67,7 @@ export class UsersService {
         _count: {
           select: {
             submissions: true,
-            factChecks: true,
+            authoredArticles: true,
             comments: true,
             achievements: true,
           },
@@ -86,7 +89,7 @@ export class UsersService {
 
     return {
       totalSubmissions: user._count.submissions,
-      totalFactChecks: user._count.factChecks,
+      totalFactChecks: user._count.authoredArticles,
       totalComments: user._count.comments,
       completedCourses,
       totalAchievements: user._count.achievements,
@@ -125,7 +128,7 @@ export class UsersService {
         username: true,
         avatar: true,
         bio: true,
-        role: true,
+        roleCode: true,
         isEmailVerified: true,
         reputation: true,
         totalPoints: true,
@@ -138,6 +141,8 @@ export class UsersService {
 
     return {
       ...user,
+      // Expose the FK as a plain string: the API contract is `role`.
+      role: user.roleCode as RoleCode,
       firstName: user.firstName ?? undefined,
       lastName: user.lastName ?? undefined,
       username: user.username ?? undefined,
@@ -196,7 +201,7 @@ export class UsersService {
         username: true,
         avatar: true,
         bio: true,
-        role: true,
+        roleCode: true,
         isEmailVerified: true,
         reputation: true,
         totalPoints: true,
@@ -209,6 +214,8 @@ export class UsersService {
 
     return {
       ...updatedUser,
+      // Expose the FK as a plain string: the API contract is `role`.
+      role: updatedUser.roleCode as RoleCode,
       firstName: updatedUser.firstName ?? undefined,
       lastName: updatedUser.lastName ?? undefined,
       username: updatedUser.username ?? undefined,

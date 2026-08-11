@@ -1,10 +1,6 @@
-import {
-  Notification,
-  NotificationType,
-  PrismaClient,
-  User,
-} from '@prisma/client';
+import { Notification, PrismaClient, User } from '@prisma/client';
 import { randomElement, randomInt } from '../helpers/seed.helper';
+import { NotificationTypeCode } from '../../../common/constants/lookups';
 
 export const seedArabicNotifications = async (
   prisma: PrismaClient,
@@ -13,7 +9,7 @@ export const seedArabicNotifications = async (
   console.log('🌱 البدء في إضافة الإشعارات بالعربية...');
 
   const notifications: Notification[] = [];
-  const types: NotificationType[] = [
+  const types: NotificationTypeCode[] = [
     'SUBMISSION_UPDATE',
     'EVENT_REMINDER',
     'ACHIEVEMENT_UNLOCKED',
@@ -106,7 +102,7 @@ export const seedArabicNotifications = async (
 
     const notification = await prisma.notification.create({
       data: {
-        type,
+        typeCode: type,
         title,
         message,
         actionUrl,
