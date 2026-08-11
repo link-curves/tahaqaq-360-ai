@@ -1,4 +1,3 @@
-import { NotImplementedException } from '@nestjs/common';
 import { LOCALE, REVISION_TIER } from '../../common/constants/lookups';
 import { PrismaService } from '../../database/prisma.service';
 import { FactChecksService } from './fact-checks.service';
@@ -147,26 +146,4 @@ describe('FactChecksService — public payload safety', () => {
     });
   });
 
-  describe('authoring is deferred, not half-built', () => {
-    // A write path that skipped the ADR-0006 revision invariants would corrupt
-    // the editorial record irrecoverably. Failing loudly is the correct
-    // behaviour until Phase 3 implements them.
-    it('rejects create', async () => {
-      await expect(service.create('u1', {} as never)).rejects.toThrow(
-        NotImplementedException,
-      );
-    });
-
-    it('rejects update', async () => {
-      await expect(
-        service.update(LOCALE.AR, 's', 'u1', 'ADMIN', {} as never),
-      ).rejects.toThrow(NotImplementedException);
-    });
-
-    it('rejects delete', async () => {
-      await expect(
-        service.remove(LOCALE.AR, 's', 'u1', 'ADMIN'),
-      ).rejects.toThrow(NotImplementedException);
-    });
-  });
 });

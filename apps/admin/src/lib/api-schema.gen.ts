@@ -251,7 +251,7 @@ export interface paths {
         /** List fact-check articles in one locale */
         get: operations["FactChecksController_findAll"];
         put?: never;
-        /** Create a fact-check (Phase 3 — not implemented) */
+        /** Create a fact-check: claim, review and the first article (DRAFT) */
         post: operations["FactChecksController_create"];
         delete?: never;
         options?: never;
@@ -287,11 +287,10 @@ export interface paths {
         get: operations["FactChecksController_findOne"];
         put?: never;
         post?: never;
-        /** Retract an article (Phase 3 — never a hard delete, see ADR-0006) */
-        delete: operations["FactChecksController_remove"];
+        delete?: never;
         options?: never;
         head?: never;
-        /** Update an article (Phase 3 — not implemented) */
+        /** Edit an article. Once published, a revision is mandatory. */
         patch: operations["FactChecksController_update"];
         trace?: never;
     };
@@ -323,6 +322,177 @@ export interface paths {
         put?: never;
         /** Save or unsave a fact-check */
         post: operations["FactChecksController_toggleSave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{factCheckId}/translations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a sibling article in another locale — its own DRAFT */
+        post: operations["FactChecksController_addTranslation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{locale}/{slug}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a draft for editorial review */
+        post: operations["FactChecksController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{locale}/{slug}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish. The editor cannot be the author (ADR-0002). */
+        post: operations["FactChecksController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{locale}/{slug}/send-back": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send an article under review back to draft */
+        post: operations["FactChecksController_sendBack"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{locale}/{slug}/retract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw a published fact-check. Never a delete — URL preserved. */
+        post: operations["FactChecksController_retract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{locale}/{slug}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Remove from listings; the article stays reachable */
+        post: operations["FactChecksController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{factCheckId}/verdict-change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change a published rating. The caller approves; changedById is the analyst, and must be someone else. Notifies every published locale. */
+        post: operations["FactChecksController_changeVerdict"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{factCheckId}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a citation; positions stay contiguous */
+        post: operations["FactChecksController_addEvidence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fact-checks/evidence/{evidenceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a citation */
+        delete: operations["FactChecksController_removeEvidence"];
+        options?: never;
+        head?: never;
+        /** Update a citation */
+        patch: operations["FactChecksController_updateEvidence"];
+        trace?: never;
+    };
+    "/api/v1/fact-checks/{factCheckId}/evidence/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reorder citations — analysts sequence them */
+        put: operations["FactChecksController_reorderEvidence"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1629,73 +1799,131 @@ export interface components {
             success: boolean;
             data: components["schemas"]["ToggleSaveDto"];
         };
-        CreateFactCheckDto: {
-            /** @example Breaking: Major Scientific Discovery */
-            title: string;
-            /** @example Scientists have discovered a cure for aging */
-            claim: string;
-            /** @example Dr. John Smith */
-            claimant?: string;
-            claimDate?: string;
-            /**
-             * @example FALSE
-             * @enum {string}
-             */
-            verdict: "TRUE" | "MOSTLY_TRUE" | "HALF_TRUE" | "MOSTLY_FALSE" | "FALSE" | "UNVERIFIABLE" | "SATIRE" | "MISLEADING";
-            /** @example This claim is false because... */
-            summary: string;
-            /** @example Detailed analysis of the claim... */
-            fullAnalysis: string;
-            methodology?: string;
-            sources?: Record<string, never>[];
+        ClaimAppearanceInputDto: {
+            url: string;
+            /** @example twitter */
+            platform?: string;
+            publisher?: string;
+            appearedAt?: string;
+            /** @description Snapshot URL. Claims get deleted; this is what survives. */
+            archiveUrl?: string;
+            archivedAt?: string;
             mediaUrls?: string[];
-            /**
-             * @example [
-             *       "health",
-             *       "science"
-             *     ]
-             */
-            tags?: string[];
-            featuredImage?: string;
+        };
+        CreateClaimDto: {
+            /** @description The claim as it circulated */
+            text: string;
             /** @enum {string} */
-            status?: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED" | "RETRACTED";
+            languageCode?: "AR" | "EN";
+            claimantName?: string;
+            claimedAt?: string;
+            firstSeenAt?: string;
+            appearances?: components["schemas"]["ClaimAppearanceInputDto"][];
+        };
+        CreateArticleDto: {
+            title: string;
+            summary: string;
+            /** @description Markdown */
+            body: string;
+            methodology?: string;
             metaTitle?: string;
             metaDescription?: string;
+            featuredImage?: string;
+            isFeatured?: boolean;
+            /** @enum {string} */
+            localeCode: "AR" | "EN";
+            /** @description Derived from the title when omitted. Unique WITHIN a locale. */
+            slug?: string;
+        };
+        CreateFactCheckDto: {
+            claim: components["schemas"]["CreateClaimDto"];
+            /** @enum {string} */
+            verdictCode: "TRUE" | "MOSTLY_TRUE" | "HALF_TRUE" | "MOSTLY_FALSE" | "FALSE" | "UNVERIFIABLE" | "SATIRE" | "MISLEADING";
+            /** @description ISO 3166-1 alpha-2 */
+            countryCodes?: string[];
+            /** @description Topic slugs */
+            topicSlugs?: string[];
+            /** @description Free text, SEO only — never drives filtering (ADR-0007) */
+            tags?: string[];
+            /** @description The first article */
+            article: components["schemas"]["CreateArticleDto"];
+            /** @description Submission this fact-check answers */
             submissionId?: string;
         };
-        UpdateFactCheckDto: {
-            /** @example Breaking: Major Scientific Discovery */
-            title: string;
-            /** @example Scientists have discovered a cure for aging */
-            claim: string;
-            /** @example Dr. John Smith */
-            claimant?: string;
-            claimDate?: string;
+        RevisionInputDto: {
             /**
-             * @example FALSE
+             * @description Chosen by the editor, never inferred from a diff: a one-word change can be a typo or a reversal of meaning (ADR-0006).
              * @enum {string}
              */
-            verdict: "TRUE" | "MOSTLY_TRUE" | "HALF_TRUE" | "MOSTLY_FALSE" | "FALSE" | "UNVERIFIABLE" | "SATIRE" | "MISLEADING";
-            /** @example This claim is false because... */
-            summary: string;
-            /** @example Detailed analysis of the claim... */
-            fullAnalysis: string;
+            tierCode: "SILENT" | "UPDATE" | "CORRECTION" | "VERDICT_CHANGE";
+            /** @description PUBLIC notice. Required for anything above SILENT. */
+            noticeText?: string;
+            /** @description INTERNAL — never served publicly */
+            reason?: string;
+        };
+        UpdateArticleDto: {
+            title?: string;
+            summary?: string;
+            /** @description Markdown */
+            body?: string;
             methodology?: string;
-            sources?: Record<string, never>[];
-            mediaUrls?: string[];
-            /**
-             * @example [
-             *       "health",
-             *       "science"
-             *     ]
-             */
-            tags?: string[];
-            featuredImage?: string;
-            /** @enum {string} */
-            status?: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED" | "RETRACTED";
             metaTitle?: string;
             metaDescription?: string;
-            submissionId?: string;
+            featuredImage?: string;
+            isFeatured?: boolean;
+            /** @description Required once the article is PUBLISHED. Ignored while it is a draft. */
+            revision?: components["schemas"]["RevisionInputDto"];
+        };
+        RetractArticleDto: {
+            /** @description Shown publicly in place of the analysis */
+            noticeText: string;
+            reason?: string;
+        };
+        ChangeVerdictDto: {
+            /** @enum {string} */
+            toVerdictCode: "TRUE" | "MOSTLY_TRUE" | "HALF_TRUE" | "MOSTLY_FALSE" | "FALSE" | "UNVERIFIABLE" | "SATIRE" | "MISLEADING";
+            /** @description PUBLIC — why the rating changed */
+            reason: string;
+            /** @description The analyst whose determination this is. The CALLER is the approver, and must be a different person (ADR-0006 invariant 5). */
+            changedById: string;
+        };
+        CreateEvidenceDto: {
+            url: string;
+            /** @enum {string} */
+            typeCode?: "PRIMARY_SOURCE" | "OFFICIAL_RECORD" | "EXPERT_STATEMENT" | "MEDIA_REPORT" | "DATASET" | "ARCHIVE" | "OTHER";
+            title?: string;
+            publisher?: string;
+            publishedAt?: string;
+            /** @description When the analyst consulted it. Required: a source that said X in January and Y in March makes the fact-check unfalsifiable without it. */
+            accessedAt: string;
+            archiveUrl?: string;
+            archivedAt?: string;
+            excerpt?: string;
+            /** @description INTERNAL — never served publicly */
+            note?: string;
+            /** @description Appended when omitted */
+            position?: number;
+        };
+        UpdateEvidenceDto: {
+            url?: string;
+            /** @enum {string} */
+            typeCode?: "PRIMARY_SOURCE" | "OFFICIAL_RECORD" | "EXPERT_STATEMENT" | "MEDIA_REPORT" | "DATASET" | "ARCHIVE" | "OTHER";
+            title?: string;
+            publisher?: string;
+            publishedAt?: string;
+            /** @description When the analyst consulted it. Required: a source that said X in January and Y in March makes the fact-check unfalsifiable without it. */
+            accessedAt?: string;
+            archiveUrl?: string;
+            archivedAt?: string;
+            excerpt?: string;
+            /** @description INTERNAL — never served publicly */
+            note?: string;
+            /** @description Appended when omitted */
+            position?: number;
+        };
+        ReorderEvidenceDto: {
+            /** @description Evidence ids in the order they should appear */
+            orderedIds: string[];
         };
         CreateSubmissionDto: {
             /**
@@ -2585,39 +2813,19 @@ export interface operations {
             };
         };
     };
-    FactChecksController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                locale: string;
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     FactChecksController_update: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                locale: string;
+                locale: "AR" | "EN";
                 slug: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateFactCheckDto"];
+                "application/json": components["schemas"]["UpdateArticleDto"];
             };
         };
         responses: {
@@ -2672,6 +2880,244 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ToggleSaveResponseDto"];
                 };
+            };
+        };
+    };
+    FactChecksController_addTranslation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                factCheckId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateArticleDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                locale: "AR" | "EN";
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                locale: "AR" | "EN";
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_sendBack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                locale: "AR" | "EN";
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_retract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                locale: "AR" | "EN";
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetractArticleDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                locale: "AR" | "EN";
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_changeVerdict: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                factCheckId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeVerdictDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_addEvidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                factCheckId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEvidenceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_removeEvidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evidenceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_updateEvidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evidenceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEvidenceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FactChecksController_reorderEvidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                factCheckId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderEvidenceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -373,7 +373,7 @@
       },
       "post": {
         "operationId": "FactChecksController_create",
-        "summary": "Create a fact-check (Phase 3 — not implemented)",
+        "summary": "Create a fact-check: claim, review and the first article (DRAFT)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -479,13 +479,17 @@
       },
       "patch": {
         "operationId": "FactChecksController_update",
-        "summary": "Update an article (Phase 3 — not implemented)",
+        "summary": "Edit an article. Once published, a revision is mandatory.",
         "parameters": [
           {
             "name": "locale",
             "required": true,
             "in": "path",
             "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
               "type": "string"
             }
           },
@@ -503,46 +507,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateFactCheckDto"
+                "$ref": "#/components/schemas/UpdateArticleDto"
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Fact Checks"
-        ],
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ]
-      },
-      "delete": {
-        "operationId": "FactChecksController_remove",
-        "summary": "Retract an article (Phase 3 — never a hard delete, see ADR-0006)",
-        "parameters": [
-          {
-            "name": "locale",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": ""
@@ -645,6 +614,443 @@
                 }
               }
             }
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{factCheckId}/translations": {
+      "post": {
+        "operationId": "FactChecksController_addTranslation",
+        "summary": "Add a sibling article in another locale — its own DRAFT",
+        "parameters": [
+          {
+            "name": "factCheckId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/submit": {
+      "post": {
+        "operationId": "FactChecksController_submit",
+        "summary": "Submit a draft for editorial review",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/publish": {
+      "post": {
+        "operationId": "FactChecksController_publish",
+        "summary": "Publish. The editor cannot be the author (ADR-0002).",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/send-back": {
+      "post": {
+        "operationId": "FactChecksController_sendBack",
+        "summary": "Send an article under review back to draft",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/retract": {
+      "post": {
+        "operationId": "FactChecksController_retract",
+        "summary": "Withdraw a published fact-check. Never a delete — URL preserved.",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetractArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{locale}/{slug}/archive": {
+      "post": {
+        "operationId": "FactChecksController_archive",
+        "summary": "Remove from listings; the article stays reachable",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "AR",
+                "EN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{factCheckId}/verdict-change": {
+      "post": {
+        "operationId": "FactChecksController_changeVerdict",
+        "summary": "Change a published rating. The caller approves; changedById is the analyst, and must be someone else. Notifies every published locale.",
+        "parameters": [
+          {
+            "name": "factCheckId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeVerdictDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{factCheckId}/evidence": {
+      "post": {
+        "operationId": "FactChecksController_addEvidence",
+        "summary": "Add a citation; positions stay contiguous",
+        "parameters": [
+          {
+            "name": "factCheckId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEvidenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/evidence/{evidenceId}": {
+      "patch": {
+        "operationId": "FactChecksController_updateEvidence",
+        "summary": "Update a citation",
+        "parameters": [
+          {
+            "name": "evidenceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEvidenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "FactChecksController_removeEvidence",
+        "summary": "Remove a citation",
+        "parameters": [
+          {
+            "name": "evidenceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fact Checks"
+        ],
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/fact-checks/{factCheckId}/evidence/order": {
+      "put": {
+        "operationId": "FactChecksController_reorderEvidence",
+        "summary": "Reorder citations — analysts sequence them",
+        "parameters": [
+          {
+            "name": "factCheckId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderEvidenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
           }
         },
         "tags": [
@@ -3898,25 +4304,128 @@
           "data"
         ]
       },
+      "ClaimAppearanceInputDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "example": "twitter"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "appearedAt": {
+            "type": "string"
+          },
+          "archiveUrl": {
+            "type": "string",
+            "description": "Snapshot URL. Claims get deleted; this is what survives."
+          },
+          "archivedAt": {
+            "type": "string"
+          },
+          "mediaUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "CreateClaimDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The claim as it circulated"
+          },
+          "languageCode": {
+            "type": "string",
+            "enum": [
+              "AR",
+              "EN"
+            ]
+          },
+          "claimantName": {
+            "type": "string"
+          },
+          "claimedAt": {
+            "type": "string"
+          },
+          "firstSeenAt": {
+            "type": "string"
+          },
+          "appearances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClaimAppearanceInputDto"
+            }
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "CreateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Markdown"
+          },
+          "methodology": {
+            "type": "string"
+          },
+          "metaTitle": {
+            "type": "string"
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "featuredImage": {
+            "type": "string"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "localeCode": {
+            "type": "string",
+            "enum": [
+              "AR",
+              "EN"
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "description": "Derived from the title when omitted. Unique WITHIN a locale."
+          }
+        },
+        "required": [
+          "title",
+          "summary",
+          "body",
+          "localeCode"
+        ]
+      },
       "CreateFactCheckDto": {
         "type": "object",
         "properties": {
-          "title": {
-            "type": "string",
-            "example": "Breaking: Major Scientific Discovery"
-          },
           "claim": {
-            "type": "string",
-            "example": "Scientists have discovered a cure for aging"
+            "$ref": "#/components/schemas/CreateClaimDto"
           },
-          "claimant": {
-            "type": "string",
-            "example": "Dr. John Smith"
-          },
-          "claimDate": {
-            "type": "string"
-          },
-          "verdict": {
+          "verdictCode": {
             "type": "string",
             "enum": [
               "TRUE",
@@ -3927,92 +4436,131 @@
               "UNVERIFIABLE",
               "SATIRE",
               "MISLEADING"
-            ],
-            "example": "FALSE"
+            ]
           },
-          "summary": {
-            "type": "string",
-            "example": "This claim is false because..."
-          },
-          "fullAnalysis": {
-            "type": "string",
-            "example": "Detailed analysis of the claim..."
-          },
-          "methodology": {
-            "type": "string"
-          },
-          "sources": {
+          "countryCodes": {
+            "description": "ISO 3166-1 alpha-2",
             "type": "array",
             "items": {
-              "type": "object"
+              "type": "string"
             }
           },
-          "mediaUrls": {
+          "topicSlugs": {
+            "description": "Topic slugs",
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "tags": {
-            "example": [
-              "health",
-              "science"
-            ],
+            "description": "Free text, SEO only — never drives filtering (ADR-0007)",
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "featuredImage": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "DRAFT",
-              "UNDER_REVIEW",
-              "PUBLISHED",
-              "ARCHIVED",
-              "RETRACTED"
+          "article": {
+            "description": "The first article",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
             ]
           },
-          "metaTitle": {
-            "type": "string"
-          },
-          "metaDescription": {
-            "type": "string"
-          },
           "submissionId": {
-            "type": "string"
+            "type": "string",
+            "description": "Submission this fact-check answers"
           }
         },
         "required": [
-          "title",
           "claim",
-          "verdict",
-          "summary",
-          "fullAnalysis"
+          "verdictCode",
+          "article"
         ]
       },
-      "UpdateFactCheckDto": {
+      "RevisionInputDto": {
+        "type": "object",
+        "properties": {
+          "tierCode": {
+            "type": "string",
+            "enum": [
+              "SILENT",
+              "UPDATE",
+              "CORRECTION",
+              "VERDICT_CHANGE"
+            ],
+            "description": "Chosen by the editor, never inferred from a diff: a one-word change can be a typo or a reversal of meaning (ADR-0006)."
+          },
+          "noticeText": {
+            "type": "string",
+            "description": "PUBLIC notice. Required for anything above SILENT."
+          },
+          "reason": {
+            "type": "string",
+            "description": "INTERNAL — never served publicly"
+          }
+        },
+        "required": [
+          "tierCode"
+        ]
+      },
+      "UpdateArticleDto": {
         "type": "object",
         "properties": {
           "title": {
-            "type": "string",
-            "example": "Breaking: Major Scientific Discovery"
-          },
-          "claim": {
-            "type": "string",
-            "example": "Scientists have discovered a cure for aging"
-          },
-          "claimant": {
-            "type": "string",
-            "example": "Dr. John Smith"
-          },
-          "claimDate": {
             "type": "string"
           },
-          "verdict": {
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Markdown"
+          },
+          "methodology": {
+            "type": "string"
+          },
+          "metaTitle": {
+            "type": "string"
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "featuredImage": {
+            "type": "string"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "revision": {
+            "description": "Required once the article is PUBLISHED. Ignored while it is a draft.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RevisionInputDto"
+              }
+            ]
+          }
+        }
+      },
+      "RetractArticleDto": {
+        "type": "object",
+        "properties": {
+          "noticeText": {
+            "type": "string",
+            "description": "Shown publicly in place of the analysis"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "noticeText"
+        ]
+      },
+      "ChangeVerdictDto": {
+        "type": "object",
+        "properties": {
+          "toVerdictCode": {
             "type": "string",
             "enum": [
               "TRUE",
@@ -4023,71 +4571,140 @@
               "UNVERIFIABLE",
               "SATIRE",
               "MISLEADING"
-            ],
-            "example": "FALSE"
-          },
-          "summary": {
-            "type": "string",
-            "example": "This claim is false because..."
-          },
-          "fullAnalysis": {
-            "type": "string",
-            "example": "Detailed analysis of the claim..."
-          },
-          "methodology": {
-            "type": "string"
-          },
-          "sources": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "mediaUrls": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "tags": {
-            "example": [
-              "health",
-              "science"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "featuredImage": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "DRAFT",
-              "UNDER_REVIEW",
-              "PUBLISHED",
-              "ARCHIVED",
-              "RETRACTED"
             ]
           },
-          "metaTitle": {
-            "type": "string"
+          "reason": {
+            "type": "string",
+            "description": "PUBLIC — why the rating changed"
           },
-          "metaDescription": {
-            "type": "string"
-          },
-          "submissionId": {
-            "type": "string"
+          "changedById": {
+            "type": "string",
+            "description": "The analyst whose determination this is. The CALLER is the approver, and must be a different person (ADR-0006 invariant 5)."
           }
         },
         "required": [
-          "title",
-          "claim",
-          "verdict",
-          "summary",
-          "fullAnalysis"
+          "toVerdictCode",
+          "reason",
+          "changedById"
+        ]
+      },
+      "CreateEvidenceDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string",
+            "enum": [
+              "PRIMARY_SOURCE",
+              "OFFICIAL_RECORD",
+              "EXPERT_STATEMENT",
+              "MEDIA_REPORT",
+              "DATASET",
+              "ARCHIVE",
+              "OTHER"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "accessedAt": {
+            "type": "string",
+            "description": "When the analyst consulted it. Required: a source that said X in January and Y in March makes the fact-check unfalsifiable without it."
+          },
+          "archiveUrl": {
+            "type": "string"
+          },
+          "archivedAt": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "description": "INTERNAL — never served publicly"
+          },
+          "position": {
+            "type": "number",
+            "description": "Appended when omitted"
+          }
+        },
+        "required": [
+          "url",
+          "accessedAt"
+        ]
+      },
+      "UpdateEvidenceDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string",
+            "enum": [
+              "PRIMARY_SOURCE",
+              "OFFICIAL_RECORD",
+              "EXPERT_STATEMENT",
+              "MEDIA_REPORT",
+              "DATASET",
+              "ARCHIVE",
+              "OTHER"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "accessedAt": {
+            "type": "string",
+            "description": "When the analyst consulted it. Required: a source that said X in January and Y in March makes the fact-check unfalsifiable without it."
+          },
+          "archiveUrl": {
+            "type": "string"
+          },
+          "archivedAt": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "description": "INTERNAL — never served publicly"
+          },
+          "position": {
+            "type": "number",
+            "description": "Appended when omitted"
+          }
+        }
+      },
+      "ReorderEvidenceDto": {
+        "type": "object",
+        "properties": {
+          "orderedIds": {
+            "description": "Evidence ids in the order they should appear",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "orderedIds"
         ]
       },
       "CreateSubmissionDto": {

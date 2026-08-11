@@ -82,7 +82,7 @@ export class SubmissionsController {
   findOne(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: RoleCode,
+    @CurrentUser('roleCode') userRole: RoleCode,
   ) {
     return this.submissionsService.findOne(id, userId, userRole);
   }

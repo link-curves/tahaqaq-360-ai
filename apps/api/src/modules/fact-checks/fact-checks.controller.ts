@@ -7,6 +7,7 @@ import {
   ParseEnumPipe,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -29,10 +30,17 @@ import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import {
+  ChangeVerdictDto,
+  CreateArticleDto,
+  CreateEvidenceDto,
   CreateFactCheckDto,
-  FactCheckFilterDto,
-  UpdateFactCheckDto,
-} from './dto/create-fact-check.dto';
+  ReorderEvidenceDto,
+  RetractArticleDto,
+  UpdateArticleDto,
+  UpdateEvidenceDto,
+} from './dto/authoring.dto';
+import { FactCheckFilterDto } from './dto/create-fact-check.dto';
+import { FactChecksAuthoringService } from './fact-checks-authoring.service';
 import {
   FactCheckDetailResponseDto,
   FactCheckListResponseDto,
@@ -53,7 +61,10 @@ import { FactChecksService } from './fact-checks.service';
 @ApiTags('Fact Checks')
 @Controller('fact-checks')
 export class FactChecksController {
-  constructor(private readonly factChecksService: FactChecksService) {}
+  constructor(
+    private readonly factChecksService: FactChecksService,
+    private readonly authoring: FactChecksAuthoringService,
+  ) {}
 
   @Public()
   @Get()
@@ -116,55 +127,194 @@ export class FactChecksController {
   }
 
   // -------------------------------------------------------------------
-  // Authoring — Phase 3. These currently return 501; see the service.
+  // AUTHORING
+  //
+  // Every write goes through FactChecksAuthoringService — the single write
+  // path. Publishing, retraction and verdict changes carry hard ADR-0006
+  // invariants that only hold if there is exactly one way in.
   // -------------------------------------------------------------------
 
   @Post()
   @UseGuards(RolesGuard)
   @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Create a fact-check (Phase 3 — not implemented)' })
+  @ApiOperation({
+    summary: 'Create a fact-check: claim, review and the first article (DRAFT)',
+  })
   create(
     @CurrentUser('id') userId: string,
-    @Body() createDto: CreateFactCheckDto,
+    @Body() dto: CreateFactCheckDto,
   ) {
-    return this.factChecksService.create(userId, createDto);
+    return this.authoring.createFactCheck(userId, dto);
+  }
+
+  @Post(':factCheckId/translations')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Add a sibling article in another locale — its own DRAFT',
+  })
+  addTranslation(
+    @Param('factCheckId') factCheckId: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: CreateArticleDto,
+  ) {
+    return this.authoring.addTranslation(factCheckId, userId, dto);
   }
 
   @Patch(':locale/:slug')
   @UseGuards(RolesGuard)
   @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Update an article (Phase 3 — not implemented)' })
+  @ApiOperation({
+    summary: 'Edit an article. Once published, a revision is mandatory.',
+  })
+  @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
   update(
     @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,
     @Param('slug') slug: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: RoleCode,
-    @Body() updateDto: UpdateFactCheckDto,
+    @Body() dto: UpdateArticleDto,
   ) {
-    return this.factChecksService.update(
-      locale,
-      slug,
-      userId,
-      userRole,
-      updateDto,
-    );
+    return this.authoring.updateArticle(locale, slug, userId, dto);
   }
 
-  @Delete(':locale/:slug')
+  @Post(':locale/:slug/submit')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Submit a draft for editorial review' })
+  @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
+  submit(
+    @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,
+    @Param('slug') slug: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.authoring.submitForReview(locale, slug, userId);
+  }
+
+  @Post(':locale/:slug/publish')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Publish. The editor cannot be the author (ADR-0002).',
+  })
+  @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
+  publish(
+    @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,
+    @Param('slug') slug: string,
+    @CurrentUser('id') editorId: string,
+  ) {
+    return this.authoring.publish(locale, slug, editorId);
+  }
+
+  @Post(':locale/:slug/send-back')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Send an article under review back to draft' })
+  @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
+  sendBack(
+    @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,
+    @Param('slug') slug: string,
+    @CurrentUser('id') editorId: string,
+  ) {
+    return this.authoring.sendBackToDraft(locale, slug, editorId);
+  }
+
+  @Post(':locale/:slug/retract')
   @UseGuards(RolesGuard)
   @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
-    summary: 'Retract an article (Phase 3 — never a hard delete, see ADR-0006)',
+    summary: 'Withdraw a published fact-check. Never a delete — URL preserved.',
   })
-  remove(
+  @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
+  retract(
     @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,
     @Param('slug') slug: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: RoleCode,
+    @Body() dto: RetractArticleDto,
   ) {
-    return this.factChecksService.remove(locale, slug, userId, userRole);
+    return this.authoring.retract(locale, slug, userId, dto);
+  }
+
+  @Post(':locale/:slug/archive')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Remove from listings; the article stays reachable' })
+  @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
+  archive(
+    @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,
+    @Param('slug') slug: string,
+  ) {
+    return this.authoring.archive(locale, slug);
+  }
+
+  @Post(':factCheckId/verdict-change')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary:
+      'Change a published rating. The caller approves; changedById is the ' +
+      'analyst, and must be someone else. Notifies every published locale.',
+  })
+  changeVerdict(
+    @Param('factCheckId') factCheckId: string,
+    @CurrentUser('id') approverId: string,
+    @Body() dto: ChangeVerdictDto,
+  ) {
+    return this.authoring.changeVerdict(factCheckId, approverId, dto);
+  }
+
+  // --- Evidence ------------------------------------------------------
+
+  @Post(':factCheckId/evidence')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Add a citation; positions stay contiguous' })
+  addEvidence(
+    @Param('factCheckId') factCheckId: string,
+    @Body() dto: CreateEvidenceDto,
+  ) {
+    return this.authoring.addEvidence(factCheckId, dto);
+  }
+
+  @Patch('evidence/:evidenceId')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update a citation' })
+  updateEvidence(
+    @Param('evidenceId') evidenceId: string,
+    @Body() dto: UpdateEvidenceDto,
+  ) {
+    return this.authoring.updateEvidence(evidenceId, dto);
+  }
+
+  @Delete('evidence/:evidenceId')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Remove a citation' })
+  removeEvidence(@Param('evidenceId') evidenceId: string) {
+    return this.authoring.removeEvidence(evidenceId);
+  }
+
+  @Put(':factCheckId/evidence/order')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Reorder citations — analysts sequence them' })
+  reorderEvidence(
+    @Param('factCheckId') factCheckId: string,
+    @Body() dto: ReorderEvidenceDto,
+  ) {
+    return this.authoring.reorderEvidence(factCheckId, dto);
   }
 }

@@ -40,7 +40,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         firstName: true,
         lastName: true,
         username: true,
-        role: true,
+        // The scalar code, not the Role relation: guards compare strings,
+        // and `role: true` would attach an object that never equals one.
+        roleCode: true,
         avatar: true,
         reputation: true,
         level: true,

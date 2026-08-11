@@ -13,7 +13,7 @@ describe('RolesGuard', () => {
   let reflector: { getAllAndOverride: jest.Mock };
   let guard: RolesGuard;
 
-  const contextFor = (user?: { role: RoleCode }): ExecutionContext => {
+  const contextFor = (user?: { roleCode: string }): ExecutionContext => {
     // Stable references — getHandler()/getClass() must return the same objects
     // on every call, as the real ExecutionContext does.
     const handler = () => undefined;
@@ -34,7 +34,7 @@ describe('RolesGuard', () => {
     it('allows the request through', () => {
       reflector.getAllAndOverride.mockReturnValue(undefined);
 
-      expect(guard.canActivate(contextFor({ role: ROLE.USER }))).toBe(true);
+      expect(guard.canActivate(contextFor({ roleCode: ROLE.USER }))).toBe(true);
     });
 
     it('allows it even with no authenticated user at all', () => {
@@ -50,7 +50,7 @@ describe('RolesGuard', () => {
     it('allows a user whose role is listed', () => {
       reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN, ROLE.MODERATOR]);
 
-      expect(guard.canActivate(contextFor({ role: ROLE.MODERATOR }))).toBe(
+      expect(guard.canActivate(contextFor({ roleCode: ROLE.MODERATOR }))).toBe(
         true,
       );
     });
@@ -58,7 +58,7 @@ describe('RolesGuard', () => {
     it('rejects a user whose role is not listed', () => {
       reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN]);
 
-      expect(() => guard.canActivate(contextFor({ role: ROLE.USER }))).toThrow(
+      expect(() => guard.canActivate(contextFor({ roleCode: ROLE.USER }))).toThrow(
         ForbiddenException,
       );
     });
@@ -78,16 +78,16 @@ describe('RolesGuard', () => {
       reflector.getAllAndOverride.mockReturnValue([ROLE.MODERATOR]);
 
       expect(() =>
-        guard.canActivate(contextFor({ role: ROLE.SUPER_ADMIN })),
+        guard.canActivate(contextFor({ roleCode: ROLE.SUPER_ADMIN })),
       ).toThrow(ForbiddenException);
-      expect(() => guard.canActivate(contextFor({ role: ROLE.ADMIN }))).toThrow(
+      expect(() => guard.canActivate(contextFor({ roleCode: ROLE.ADMIN }))).toThrow(
         ForbiddenException,
       );
     });
 
     it('reads metadata from both the handler and the controller class', () => {
       reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN]);
-      const ctx = contextFor({ role: ROLE.ADMIN });
+      const ctx = contextFor({ roleCode: ROLE.ADMIN });
 
       guard.canActivate(ctx);
 

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  NotImplementedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
   CONTENT_STATUS,
@@ -10,14 +6,9 @@ import {
   LocaleCode,
   REVISION_TIER,
   resolveLocalized,
-  RoleCode,
 } from '../../common/constants/lookups';
 import { PrismaService } from '../../database/prisma.service';
-import {
-  CreateFactCheckDto,
-  FactCheckFilterDto,
-  UpdateFactCheckDto,
-} from './dto/create-fact-check.dto';
+import { FactCheckFilterDto } from './dto/create-fact-check.dto';
 
 /**
  * Reads over the editorial record: Claim -> FactCheck -> FactCheckArticle.
@@ -431,54 +422,6 @@ export class FactChecksService {
       data: { userId, factCheckId: article.factCheckId },
     });
     return { saved: true, message: 'Fact check saved successfully' };
-  }
-
-  // ---------------------------------------------------------------------
-  // WRITES — Phase 3
-  //
-  // Deliberately not implemented rather than half-implemented. Authoring now
-  // spans Claim, FactCheck, per-locale articles, ordered evidence and the
-  // append-only revision log, and ADR-0006 puts hard invariants on it:
-  // publishing writes revision 1, every later edit writes a revision, an
-  // editor distinct from the author must sign off, and a verdict change
-  // propagates a correction to every published locale.
-  //
-  // A write path that silently skipped those would corrupt the editorial
-  // record in ways that are not recoverable after the fact — which is the one
-  // failure this whole model exists to prevent.
-  // ---------------------------------------------------------------------
-
-  private notYet(): never {
-    throw new NotImplementedException(
-      'Authoring moved to the Claim/FactCheck/Article model and is implemented ' +
-        'in Phase 3, together with the ADR-0006 revision invariants. ' +
-        'See docs/plans/content-model-implementation.md.',
-    );
-  }
-
-  async create(_userId: string, _createDto: CreateFactCheckDto) {
-    this.notYet();
-  }
-
-  async update(
-    _locale: LocaleCode,
-    _slug: string,
-    _userId: string,
-    _userRole: RoleCode,
-    _updateDto: UpdateFactCheckDto,
-  ) {
-    this.notYet();
-  }
-
-  async remove(
-    _locale: LocaleCode,
-    _slug: string,
-    _userId: string,
-    _userRole: RoleCode,
-  ) {
-    // Note: even in Phase 3 this must not hard-delete a published article.
-    // Retraction is a status change (ADR-0006).
-    this.notYet();
   }
 
   // ---------------------------------------------------------------------
