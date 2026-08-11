@@ -95,7 +95,7 @@ const StatsSection = () => {
       ? [
           {
             icon: Shield,
-            value: statsData.totalFactChecks || 12000,
+            value: statsData.total || 12000,
             suffix: "+",
             label: "حقيقة تم التحقق منها",
             color: "text-red-500",

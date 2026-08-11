@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -32,6 +33,13 @@ import {
   FactCheckFilterDto,
   UpdateFactCheckDto,
 } from './dto/create-fact-check.dto';
+import {
+  FactCheckDetailResponseDto,
+  FactCheckListResponseDto,
+  FactCheckStatsResponseDto,
+  RelatedFactChecksResponseDto,
+  ToggleSaveResponseDto,
+} from './dto/fact-check-response.dto';
 import { FactChecksService } from './fact-checks.service';
 
 /**
@@ -50,6 +58,7 @@ export class FactChecksController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'List fact-check articles in one locale' })
+  @ApiOkResponse({ type: FactCheckListResponseDto })
   @ApiQuery({ name: 'locale', required: false, enum: Object.values(LOCALE) })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -62,6 +71,7 @@ export class FactChecksController {
   @Public()
   @Get('stats')
   @ApiOperation({ summary: 'Verdict distribution and counts' })
+  @ApiOkResponse({ type: FactCheckStatsResponseDto })
   @ApiQuery({ name: 'locale', required: false, enum: Object.values(LOCALE) })
   getStats(@Query('locale') locale?: LocaleCode) {
     return this.factChecksService.getStats(locale ?? LOCALE.AR);
@@ -70,6 +80,7 @@ export class FactChecksController {
   @Public()
   @Get(':locale/:slug')
   @ApiOperation({ summary: 'Get one article by locale and slug' })
+  @ApiOkResponse({ type: FactCheckDetailResponseDto })
   @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
   findOne(
     @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,
@@ -81,6 +92,7 @@ export class FactChecksController {
   @Public()
   @Get(':locale/:slug/related')
   @ApiOperation({ summary: 'Related fact-checks in the same locale' })
+  @ApiOkResponse({ type: RelatedFactChecksResponseDto })
   @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
   getRelated(
     @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,
@@ -93,6 +105,7 @@ export class FactChecksController {
   @Post(':locale/:slug/save')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Save or unsave a fact-check' })
+  @ApiOkResponse({ type: ToggleSaveResponseDto })
   @ApiParam({ name: 'locale', enum: Object.values(LOCALE) })
   toggleSave(
     @Param('locale', new ParseEnumPipe(LOCALE)) locale: LocaleCode,

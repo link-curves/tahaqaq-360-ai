@@ -49,7 +49,7 @@ const FactCheckingSection = () => {
     setCurrentPage((prev) => Math.max(1, prev - 1));
   };
 
-  const getStatusIcon = (rating: VeracityRatingValue) => {
+  const getStatusIcon = (rating: string) => {
     switch (rating) {
       case VeracityRating.TRUE:
       case VeracityRating.MOSTLY_TRUE:
@@ -222,11 +222,11 @@ const FactCheckingSection = () => {
                     {/* Floating Status Badge */}
                     <div className="absolute top-4 right-4">
                       <Badge
-                        className={`${getVeracityColor(factCheck.verdict)} border-0 shadow-lg backdrop-blur-sm`}
+                        className={`${getVeracityColor(factCheck.factCheck.verdict.code)} border-0 shadow-lg backdrop-blur-sm`}
                       >
                         <span className="flex items-center gap-1">
-                          {getStatusIcon(factCheck.verdict)}
-                          {getVeracityLabel(factCheck.verdict)}
+                          {getStatusIcon(factCheck.factCheck.verdict.code)}
+                          {getVeracityLabel(factCheck.factCheck.verdict.code)}
                         </span>
                       </Badge>
                     </div>
@@ -238,7 +238,7 @@ const FactCheckingSection = () => {
                           <Clock className="h-3 w-3" />
                           {factCheck.publishedAt
                             ? formatDate(factCheck.publishedAt)
-                            : formatDate(factCheck.createdAt)}
+                            : formatDate(factCheck.publishedAt)}
                         </span>
                       </div>
                     </div>
@@ -252,7 +252,7 @@ const FactCheckingSection = () => {
 
                     <p className="text-sm text-gray-600 mb-3 leading-relaxed font-['Cairo']">
                       <strong>الادعاء:</strong>{" "}
-                      {generateExcerpt(factCheck.claim, 15)}
+                      {generateExcerpt(factCheck.factCheck.claim.text, 15)}
                     </p>
 
                     <p className="text-sm text-gray-700 flex-1 leading-relaxed font-['Cairo'] line-clamp-3">

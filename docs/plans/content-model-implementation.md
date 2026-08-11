@@ -5,7 +5,7 @@
 - **Decisions:** [ADR-0002](../adr/0002-bilingual-content-model.md) ·
   [ADR-0005](../adr/0005-evidence-model.md) · [ADR-0006](../adr/0006-revisions-and-corrections.md) ·
   [ADR-0007](../adr/0007-topic-and-region-taxonomy.md)
-- **Status:** ✅ Phase 0 complete (2026-08-11) · Phase 1 next
+- **Status:** ✅ Phases 0–2 complete (2026-08-11) · Phase 3 next
 
 ## What this is
 
@@ -102,7 +102,16 @@ exists in the database.
 
 ---
 
-## Phase 2 — API, public reads · 4–5d
+## Phase 2 — API, public reads · 4–5d · ✅ DONE 2026-08-11
+
+> **Delivered**, plus an unplanned Prisma 5→7 upgrade and the enum→lookup-table
+> migration that came with it. Reads are locale-aware over
+> Claim/FactCheck/FactCheckArticle; internal fields are unreachable by
+> construction and asserted by test; both frontend clients now derive their
+> fact-check types from the OpenAPI document rather than hand-maintained
+> interfaces (ADR-0003 option B, pulled forward as predicted).
+>
+> Authoring returns 501 by design — see Phase 3.
 
 1. Rework `modules/fact-checks` for the new shape. Read endpoints first — they are what the public
    site needs and they carry no write-invariant risk.

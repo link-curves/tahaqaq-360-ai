@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type {
   CreateFactCheckDto,
   FactCheck,
+  VeracityRatingValue,
   UpdateFactCheckDto,
 } from "@/lib/adminApi";
 import { factChecksApi, VeracityRating } from "@/lib/adminApi";
@@ -137,11 +138,13 @@ const FactCheckManagementNew = () => {
     setFormData({
       title: factCheck.title,
       slug: factCheck.slug,
-      claim: factCheck.claim,
-      verdict: factCheck.verdict,
-      explanation: factCheck.explanation,
-      sources: factCheck.sources || [],
-      featured: factCheck.featured,
+      claim: factCheck.factCheck.claim.text,
+      verdict: factCheck.factCheck.verdict.code as VeracityRatingValue,
+      // Body and evidence are not in the list projection — the Phase 4 editor
+      // will load the full article before editing.
+      explanation: "",
+      sources: [],
+      featured: factCheck.isFeatured,
     });
     setIsDialogOpen(true);
   };
@@ -174,10 +177,10 @@ const FactCheckManagementNew = () => {
           <div>
             <div className="font-medium text-gray-900">{value}</div>
             <div className="text-xs text-gray-500 line-clamp-1">
-              {row.claim}
+              {row.factCheck.claim.text}
             </div>
           </div>
-          {row.featured && (
+          {row.isFeatured && (
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
           )}
         </div>
@@ -185,7 +188,7 @@ const FactCheckManagementNew = () => {
     },
     {
       header: "الحكم",
-      accessor: "verdict",
+      accessor: "factCheck",
       sortable: true,
       cell: (value) => {
         const verdictConfig: Record<
@@ -248,7 +251,7 @@ const FactCheckManagementNew = () => {
     },
     {
       header: "المشاهدات",
-      accessor: "viewCount",
+      accessor: "views",
       sortable: true,
       cell: (value) => (value || 0).toLocaleString("en-EN"),
     },

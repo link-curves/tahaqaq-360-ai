@@ -14,14 +14,30 @@ import { LOOKUP_REGISTRY, LocalizedText } from '../../common/constants/lookups';
  */
 
 // ---------------------------------------------------------------------------
-// TOPICS
+// TOPICS — PROVISIONAL
 //
-// Derived from `arabicCategories` in ./ar/data/arabic.data.ts — the vocabulary
-// the project already used — rather than invented from scratch.
+// There is no client requirement for this vocabulary yet, so this is a working
+// set: the 15 categories the project already used (`arabicCategories` in
+// ./ar/data/arabic.data.ts), plus four additions covering misinformation
+// categories a MENA fact-checking desk sees constantly and the original list
+// did not name.
 //
-// ⚠️ NEEDS CLIENT SIGN-OFF before fact-checks are classified against it.
-// Re-classifying later is an editorial exercise, not a config change.
-// The last three are PROPOSED ADDITIONS, not part of the original list.
+// HOW TO CHANGE IT LATER
+//   Rename / retranslate  — edit `labels` here and re-run the seed. It upserts
+//                           by `slug`, so labels update in place and existing
+//                           classifications are untouched.
+//   Add a topic           — append here and re-run the seed. Order follows
+//                           array position.
+//   Retire a topic        — set `isActive = false` on the row. Do NOT delete:
+//                           deleting orphans every fact-check already filed
+//                           under it. Inactive topics stop being offered for
+//                           new classification but existing ones still render.
+//   Re-classify content   — an editorial exercise, not a config change. That is
+//                           the cost that makes this worth agreeing before a
+//                           real corpus exists.
+//
+// `slug` is the stable machine key and is what fact-checks reference — keep it
+// even if the label changes. See ADR-0007.
 // ---------------------------------------------------------------------------
 export const TOPIC_SEED: Array<{ slug: string; labels: LocalizedText }> = [
   // --- the 15 categories already in use ---
@@ -50,11 +66,13 @@ export const TOPIC_SEED: Array<{ slug: string; labels: LocalizedText }> = [
     labels: { ar: 'العلاقات الدولية', en: 'International Relations' },
   },
 
-  // --- PROPOSED ADDITIONS — client decides ---
-  // Heavily-targeted misinformation categories for a MENA desk that the
-  // original list does not cover. `religion` already appears in the project's
-  // free-text tag list, so it is not a new subject for the platform — but it
-  // is editorially sensitive and is explicitly the client's call.
+  // --- ADDITIONS beyond the original 15 ---
+  // Heavily-targeted misinformation categories the original list does not name.
+  // `religion` already appears in the project's free-text tag list, so it is not
+  // a new subject for the platform — but it is editorially sensitive and is the
+  // first one to revisit with the client. `elections` is separated from
+  // `politics` deliberately: election misinformation is reported on in its own
+  // right by funders and fact-checking networks.
   {
     slug: 'conflict-and-war',
     labels: { ar: 'النزاعات والحروب', en: 'Conflict & War' },
@@ -64,6 +82,10 @@ export const TOPIC_SEED: Array<{ slug: string; labels: LocalizedText }> = [
     labels: { ar: 'الهجرة واللاجئون', en: 'Migration & Refugees' },
   },
   { slug: 'religion', labels: { ar: 'الدين', en: 'Religion' } },
+  {
+    slug: 'elections',
+    labels: { ar: 'الانتخابات', en: 'Elections' },
+  },
 ];
 
 // ---------------------------------------------------------------------------

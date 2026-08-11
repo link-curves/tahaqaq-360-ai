@@ -10,9 +10,12 @@ import {
   CreateSubmissionRequest,
   Event,
   EventParams,
-  FactCheck,
+  FactCheckDetail,
+  FactCheckListItem,
   FactCheckParams,
   FactCheckStats,
+  Locale,
+  RelatedFactCheck,
   PaginatedResponse,
   PaginationParams,
   PlatformStats,
@@ -24,7 +27,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Fact Checks Hooks
 export const useFactChecks = (params?: FactCheckParams) => {
-  return useQuery<PaginatedResponse<FactCheck>>({
+  return useQuery<PaginatedResponse<FactCheckListItem>>({
     queryKey: ["factChecks", params],
     queryFn: () => apiClient.getFactChecks(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -34,27 +37,27 @@ export const useFactChecks = (params?: FactCheckParams) => {
   });
 };
 
-export const useFactCheck = (slug: string) => {
-  return useQuery<FactCheck>({
-    queryKey: ["factCheck", slug],
-    queryFn: () => apiClient.getFactCheck(slug),
+export const useFactCheck = (slug: string, locale: Locale = "AR") => {
+  return useQuery<FactCheckDetail>({
+    queryKey: ["factCheck", locale, slug],
+    queryFn: () => apiClient.getFactCheck(slug, locale),
     enabled: !!slug,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 };
 
-export const useFactCheckStats = () => {
+export const useFactCheckStats = (locale: Locale = "AR") => {
   return useQuery<FactCheckStats>({
-    queryKey: ["factCheckStats"],
-    queryFn: () => apiClient.getFactCheckStats(),
+    queryKey: ["factCheckStats", locale],
+    queryFn: () => apiClient.getFactCheckStats(locale),
     staleTime: 1000 * 60 * 15, // 15 minutes
   });
 };
 
-export const useRelatedFactChecks = (slug: string) => {
-  return useQuery<FactCheck[]>({
-    queryKey: ["relatedFactChecks", slug],
-    queryFn: () => apiClient.getRelatedFactChecks(slug),
+export const useRelatedFactChecks = (slug: string, locale: Locale = "AR") => {
+  return useQuery<RelatedFactCheck[]>({
+    queryKey: ["relatedFactChecks", locale, slug],
+    queryFn: () => apiClient.getRelatedFactChecks(slug, locale),
     enabled: !!slug,
     staleTime: 1000 * 60 * 10, // 10 minutes
     retry: (failureCount, error: any) => {
