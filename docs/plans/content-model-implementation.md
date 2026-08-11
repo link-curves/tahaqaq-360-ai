@@ -5,7 +5,7 @@
 - **Decisions:** [ADR-0002](../adr/0002-bilingual-content-model.md) ·
   [ADR-0005](../adr/0005-evidence-model.md) · [ADR-0006](../adr/0006-revisions-and-corrections.md) ·
   [ADR-0007](../adr/0007-topic-and-region-taxonomy.md)
-- **Status:** Not started
+- **Status:** ✅ Phase 0 complete (2026-08-11) · Phase 1 next
 
 ## What this is
 
@@ -40,7 +40,13 @@ Estimates are ±50% and exclude client review cycles.
 
 ---
 
-## Phase 0 — Safety net · 3–4d
+## Phase 0 — Safety net · 3–4d · ✅ DONE 2026-08-11
+
+> **Delivered.** `pnpm typecheck` / `pnpm test` / `pnpm build` all green from the root.
+> 40 tests, mutation-checked. The contact vulnerability is closed and verified against a running
+> API. Two extra defects were found and fixed along the way: admin's `tsc -b` build was broken
+> (unused `refetch` in `BlogManagement.tsx`, undetected because admin is absent from CI), and the
+> seed scripts never loaded `.env`.
 
 **Refactoring the most-referenced model in the system, with no reviewer and no tests, is the single
 biggest risk in this plan.** This phase exists to make the rest survivable.

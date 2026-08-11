@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -7,16 +7,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -24,29 +24,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 import type {
   BlogPost,
   ContentStatusValue,
   CreateBlogPostDto,
   UpdateBlogPostDto,
-} from "@/lib/adminApi";
-import { blogApi } from "@/lib/adminApi";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit, Eye, Loader2, Plus, Search, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+} from '@/lib/adminApi';
+import { blogApi } from '@/lib/adminApi';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Edit, Eye, Loader2, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const BlogManagement = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<ContentStatusValue | "ALL">(
-    "ALL"
+  const [statusFilter, setStatusFilter] = useState<ContentStatusValue | 'ALL'>(
+    'ALL',
   );
 
   const { toast } = useToast();
@@ -56,30 +56,30 @@ const BlogManagement = () => {
   const [formData, setFormData] = useState<
     Partial<CreateBlogPostDto | UpdateBlogPostDto>
   >({
-    title: "",
-    slug: "",
-    excerpt: "",
-    content: "",
-    coverImage: "",
-    author: "",
-    category: "",
+    title: '',
+    slug: '',
+    excerpt: '',
+    content: '',
+    coverImage: '',
+    author: '',
+    category: '',
     tags: [],
     isFeatured: false,
-    status: "DRAFT",
+    status: 'DRAFT',
     readTime: undefined,
-    metaTitle: "",
-    metaDescription: "",
+    metaTitle: '',
+    metaDescription: '',
   });
 
   // Fetch blog posts
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-blog-posts", page, searchTerm, statusFilter],
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-blog-posts', page, searchTerm, statusFilter],
     queryFn: () =>
       blogApi.getAll({
         page,
         limit: 10,
         search: searchTerm || undefined,
-        status: statusFilter !== "ALL" ? statusFilter : undefined,
+        status: statusFilter !== 'ALL' ? statusFilter : undefined,
       }),
   });
 
@@ -87,19 +87,19 @@ const BlogManagement = () => {
   const createMutation = useMutation({
     mutationFn: (data: CreateBlogPostDto) => blogApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ['admin-blog-posts'] });
       setIsCreateDialogOpen(false);
       resetForm();
       toast({
-        title: "تم إنشاء المقال",
-        description: "تم إنشاء المقال بنجاح",
+        title: 'تم إنشاء المقال',
+        description: 'تم إنشاء المقال بنجاح',
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء إنشاء المقال",
-        variant: "destructive",
+        title: 'خطأ',
+        description: error.message || 'حدث خطأ أثناء إنشاء المقال',
+        variant: 'destructive',
       });
     },
   });
@@ -109,20 +109,20 @@ const BlogManagement = () => {
     mutationFn: ({ id, data }: { id: string; data: UpdateBlogPostDto }) =>
       blogApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ['admin-blog-posts'] });
       setIsEditDialogOpen(false);
       setSelectedPost(null);
       resetForm();
       toast({
-        title: "تم تحديث المقال",
-        description: "تم تحديث المقال بنجاح",
+        title: 'تم تحديث المقال',
+        description: 'تم تحديث المقال بنجاح',
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء تحديث المقال",
-        variant: "destructive",
+        title: 'خطأ',
+        description: error.message || 'حدث خطأ أثناء تحديث المقال',
+        variant: 'destructive',
       });
     },
   });
@@ -131,38 +131,38 @@ const BlogManagement = () => {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => blogApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ['admin-blog-posts'] });
       setIsDeleteDialogOpen(false);
       setSelectedPost(null);
       toast({
-        title: "تم حذف المقال",
-        description: "تم حذف المقال بنجاح",
+        title: 'تم حذف المقال',
+        description: 'تم حذف المقال بنجاح',
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء حذف المقال",
-        variant: "destructive",
+        title: 'خطأ',
+        description: error.message || 'حدث خطأ أثناء حذف المقال',
+        variant: 'destructive',
       });
     },
   });
 
   const resetForm = () => {
     setFormData({
-      title: "",
-      slug: "",
-      excerpt: "",
-      content: "",
-      coverImage: "",
-      author: "",
-      category: "",
+      title: '',
+      slug: '',
+      excerpt: '',
+      content: '',
+      coverImage: '',
+      author: '',
+      category: '',
       tags: [],
       isFeatured: false,
-      status: "DRAFT",
+      status: 'DRAFT',
       readTime: undefined,
-      metaTitle: "",
-      metaDescription: "",
+      metaTitle: '',
+      metaDescription: '',
     });
   };
 
@@ -178,15 +178,15 @@ const BlogManagement = () => {
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
-      coverImage: post.coverImage || "",
+      coverImage: post.coverImage || '',
       author: post.author,
       category: post.category,
       tags: post.tags || [],
       isFeatured: post.isFeatured,
       status: post.status,
       readTime: post.readTime,
-      metaTitle: post.metaTitle || "",
-      metaDescription: post.metaDescription || "",
+      metaTitle: post.metaTitle || '',
+      metaDescription: post.metaDescription || '',
     });
     setIsEditDialogOpen(true);
   };
@@ -206,9 +206,9 @@ const BlogManagement = () => {
       !formData.category
     ) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول المطلوبة",
-        variant: "destructive",
+        title: 'خطأ',
+        description: 'الرجاء ملء جميع الحقول المطلوبة',
+        variant: 'destructive',
       });
       return;
     }
@@ -235,9 +235,9 @@ const BlogManagement = () => {
     if (formData.title && !selectedPost) {
       const slug = formData.title
         .toLowerCase()
-        .replace(/[^\w\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
         .trim();
       setFormData((prev) => ({ ...prev, slug }));
     }
@@ -248,17 +248,17 @@ const BlogManagement = () => {
 
   const getStatusBadge = (status: ContentStatusValue) => {
     const styles = {
-      PUBLISHED: "bg-green-100 text-green-800",
-      DRAFT: "bg-gray-100 text-gray-800",
-      ARCHIVED: "bg-red-100 text-red-800",
-      UNDER_REVIEW: "bg-yellow-100 text-yellow-800",
+      PUBLISHED: 'bg-green-100 text-green-800',
+      DRAFT: 'bg-gray-100 text-gray-800',
+      ARCHIVED: 'bg-red-100 text-red-800',
+      UNDER_REVIEW: 'bg-yellow-100 text-yellow-800',
     };
 
     const labels = {
-      PUBLISHED: "منشور",
-      DRAFT: "مسودة",
-      ARCHIVED: "مؤرشف",
-      UNDER_REVIEW: "قيد المراجعة",
+      PUBLISHED: 'منشور',
+      DRAFT: 'مسودة',
+      ARCHIVED: 'مؤرشف',
+      UNDER_REVIEW: 'قيد المراجعة',
     };
 
     return (
@@ -302,7 +302,7 @@ const BlogManagement = () => {
             <Select
               value={statusFilter}
               onValueChange={(value) =>
-                setStatusFilter(value as ContentStatusValue | "ALL")
+                setStatusFilter(value as ContentStatusValue | 'ALL')
               }
             >
               <SelectTrigger className="w-40">
@@ -352,7 +352,7 @@ const BlogManagement = () => {
                       <TableCell>{getStatusBadge(post.status)}</TableCell>
                       <TableCell>{post.views.toLocaleString()}</TableCell>
                       <TableCell>
-                        {new Date(post.createdAt).toLocaleDateString("ar")}
+                        {new Date(post.createdAt).toLocaleDateString('ar')}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -360,7 +360,7 @@ const BlogManagement = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() =>
-                              window.open(`/blog/${post.slug}`, "_blank")
+                              window.open(`/blog/${post.slug}`, '_blank')
                             }
                           >
                             <Eye className="h-4 w-4" />
@@ -431,12 +431,12 @@ const BlogManagement = () => {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {isEditDialogOpen ? "تحرير المقال" : "إنشاء مقال جديد"}
+              {isEditDialogOpen ? 'تحرير المقال' : 'إنشاء مقال جديد'}
             </DialogTitle>
             <DialogDescription>
               {isEditDialogOpen
-                ? "قم بتعديل تفاصيل المقال"
-                : "املأ جميع الحقول المطلوبة"}
+                ? 'قم بتعديل تفاصيل المقال'
+                : 'املأ جميع الحقول المطلوبة'}
             </DialogDescription>
           </DialogHeader>
 
@@ -541,11 +541,11 @@ const BlogManagement = () => {
               <Label htmlFor="tags">الوسوم (مفصولة بفاصلة)</Label>
               <Input
                 id="tags"
-                value={formData.tags?.join(", ")}
+                value={formData.tags?.join(', ')}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    tags: e.target.value.split(",").map((t) => t.trim()),
+                    tags: e.target.value.split(',').map((t) => t.trim()),
                   })
                 }
                 placeholder="وسم1, وسم2, وسم3"
@@ -580,7 +580,7 @@ const BlogManagement = () => {
                 <Input
                   id="readTime"
                   type="number"
-                  value={formData.readTime || ""}
+                  value={formData.readTime || ''}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -597,9 +597,9 @@ const BlogManagement = () => {
               <div className="grid gap-2">
                 <Label htmlFor="isFeatured">مميز</Label>
                 <Select
-                  value={formData.isFeatured ? "true" : "false"}
+                  value={formData.isFeatured ? 'true' : 'false'}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, isFeatured: value === "true" })
+                    setFormData({ ...formData, isFeatured: value === 'true' })
                   }
                 >
                   <SelectTrigger>
@@ -662,7 +662,7 @@ const BlogManagement = () => {
               {(createMutation.isPending || updateMutation.isPending) && (
                 <Loader2 className="ml-2 h-4 w-4 animate-spin" />
               )}
-              {isEditDialogOpen ? "تحديث" : "إنشاء"}
+              {isEditDialogOpen ? 'تحديث' : 'إنشاء'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -22,16 +22,17 @@
     "db:migrate": "npx prisma migrate dev --schema=src/prisma/schema.prisma",
     "db:deploy": "npx prisma migrate deploy --schema=src/prisma/schema.prisma",
     "db:studio": "npx prisma studio --schema=src/prisma/schema.prisma",
-    "db:seed": "ts-node src/prisma/seed/seed.ts",
-    "db:seed:ar": "ts-node src/prisma/seed/arabic.seed.ts",
-    "db:migrate:html-md": "ts-node src/prisma/migrate-html-to-markdown.ts",
+    "db:seed": "node --env-file-if-exists=.env -r ts-node/register src/prisma/seed/seed.ts",
+    "db:seed:ar": "node --env-file-if-exists=.env -r ts-node/register src/prisma/seed/arabic.seed.ts",
+    "db:migrate:html-md": "node --env-file-if-exists=.env -r ts-node/register src/prisma/migrate-html-to-markdown.ts",
     "db:pull": "npx prisma db pull --schema=src/prisma/schema.prisma",
     "db:push": "npx prisma db push --schema=src/prisma/schema.prisma",
     "db:reset": "npx prisma migrate reset --schema=src/prisma/schema.prisma",
     "db:reset-seed": "prisma migrate reset --schema=src/prisma/schema.prisma --force && ts-node src/prisma/seed/seed.ts",
     "db:reset-seed:ar": "prisma migrate reset --schema=src/prisma/schema.prisma --force && ts-node src/prisma/seed/arabic.seed.ts",
     "db:fresh": "pnpm db:reset-seed",
-    "db:fresh:ar": "pnpm db:reset-seed:ar"
+    "db:fresh:ar": "pnpm db:reset-seed:ar",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
