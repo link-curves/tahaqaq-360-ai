@@ -1,136 +1,265 @@
-# ADR-0002: Bilingual content model
+# ADR-0002: Content model — claim, review, and per-language articles
 
-- **Status:** Proposed — **blocked on client input**
-- **Date:** 2026-08-02
-- **Deciders:** Ali Traboulsi (with client decision required)
+- **Status:** Proposed
+- **Date:** 2026-08-05
+- **Deciders:** Ali Traboulsi
+- **Supersedes:** the 2026-08-02 draft of this ADR, which proposed sibling columns or translation
+  tables. That draft was never accepted and is now rejected — see "Why the earlier draft was wrong".
+
+> The filename still says `bilingual-content-model` for numbering stability. The scope is broader:
+> this ADR decides the shape of the whole editorial record.
 
 ## Context
 
-The client requires **true Arabic/English bilingual support**. The codebase does not have it, and the
-gap is larger than it looks from the outside.
+The current `FactCheck` model is a blog post with a verdict field: `title`, `slug`, `claim`,
+`claimant`, `verdict`, `summary`, `fullAnalysis`, `methodology`, `sources Json[]`, `tags String[]`,
+`views`, `shares`, SEO fields, one `authorId`. It has no notion of where a claim appeared, who
+reviewed the article, what changed after publication, or what language anything is in.
 
-Verified state:
+The editorial requirements are now settled:
 
-- **The Prisma schema has zero translation fields.** All 36 models store content in exactly one
-  language per row. There is no `titleAr`/`titleEn`, no locale column, no translation table.
-- **UI strings are hardcoded Arabic literals in TSX**, across 27 pages in `apps/web` plus the admin
-  components. No i18n library appears in any `package.json`.
-- **Seeds are split into two parallel datasets** — `seed.ts` (English) and `arabic.seed.ts` (Arabic).
-  This is the same gap showing up in the data layer: two monolingual worlds, not one bilingual one.
-- **RTL is handled ad-hoc**, with directional CSS rather than logical properties.
-- Commit `ac65b96` deliberately forced **English locale** for number and date formatting.
+- **Claim** — text as circulated, where it appeared, when, who spread it, original media + archive link
+- **Verdict** — the existing 8-value enum, tied to published definitions
+- **Evidence** — ordered sources with URL, publisher, date accessed, archived copy
+- **Article body** — the reasoning
+- **Byline + editor** — who wrote, who reviewed (IFCN cares about this)
+- **Revision history + corrections** — append-only, public "corrected on X"
+- **Language pair** — Arabic-first with a linked English version, _not_ a translation string blob
+- **Topic + region tags**
 
-Roughly **15 of the 36 models carry user-facing content** that would need translating: `FactCheck`,
-`Blog`, `Research`, `Course`, `Lesson`, `Quiz`, `Event`, `FAQ`, `Achievement`, `Certificate`,
-`PrivacyPolicy`, `TermsOfService`, `AccessibilityStatement`, plus notification and moderation text.
+Two facts changed the calculus since the earlier draft:
 
-This is not a configuration change. It touches the schema, every query that reads content, every
-admin editing screen, the search module, and every string in two frontends.
+1. **There is no production data.** The hosted Supabase project no longer exists
+   (`mkowxfbbazrjkhihmpea` does not resolve). Nothing needs backfilling.
+2. **English is a full editorial artifact**, not a rendering of the Arabic — confirmed by Ali.
+   It gets its own byline, publish date, and corrections.
 
-## The decision that actually matters is not technical
+## Why the earlier draft was wrong
 
-Two client answers determine the cost, and they change it by roughly **2×**:
+The 2026-08-02 draft offered sibling columns (`title`/`titleEn`), translation tables
+(`FactCheckTranslation` keyed by locale), or JSON columns, and recommended translation tables.
 
-1. **Is English at full parity with Arabic, or a lighter secondary surface?**
-   Parity means every content type, every admin screen doubles its editing UI, and the editorial team
-   must produce two versions of everything — an ongoing operational cost the client will carry
-   forever, not a one-off build cost.
-2. **What does the public site show for content that exists in only one language?**
-   Hide it? Show Arabic with a notice? Machine-translate with a disclaimer? This determines whether
-   publish status is **per-locale** (significantly more schema and workflow) or global.
+All three model translation as _an attribute of one document_. That cannot express the thing this
+desk actually needs: **the English version being corrected while the Arabic is not.** A translation
+row has no byline, no publish date, no revision history, and no independent status — because in
+those models it isn't a document, it's a field value.
 
-Question 2 is an **editorial policy decision**, and it drives the schema more than any technical
-consideration does. It must be answered before the schema is designed, not after.
-
-## Options
-
-### A. Sibling columns — `title` + `titleEn` on each model
-**Cost: 10–15d.** Simplest migration, no joins, minimal query changes.
-**Forecloses:** a third language (each addition re-migrates every content model); makes "which
-languages exist for this row" awkward to express; leaves null-heavy tables.
-**Reversal:** moderate — data is easy to move out, but every query referencing the columns changes.
-
-### B. Translation tables — `FactCheckTranslation(locale, ...)` per content model
-**Cost: 20–25d.** Normalized, scales to N languages, the conventional answer. Per-locale publish
-status falls out naturally.
-**Forecloses:** little. Costs a join on every content read and rewrites essentially every query in
-the API, plus the admin editing UX becomes locale-aware throughout.
-**Reversal:** hard once queries are rewritten.
-
-### C. JSON columns — `title Json` holding `{ ar, en }`
-**Cost: 8–12d.** One migration per model, very flexible.
-**Forecloses:** type safety at the database boundary, straightforward indexing, and — critically —
-**full-text search**. This project has a `search` module; Postgres full-text over JSON content is
-materially worse than over columns.
-**Reversal:** moderate, but by then search will have been built around it.
-
-### D. Do nothing for now — Arabic-only, prepare the ground
-**Cost: 1–2d.** Convert directional CSS to logical properties, group strings for later extraction,
-stop adding to the problem.
-**Forecloses:** nothing. Makes every later option slightly cheaper.
-**Reversal:** trivially — it *is* the reversal.
+Once English is a full artifact, the question stops being "how do we store two strings" and becomes
+"what is the document, and what is shared between documents." That is a different decision.
 
 ## Decision
 
-**Recommended: D now, then B — conditional on the client's answers.**
+Decompose `FactCheck` into three entities.
 
-Reasoning:
+```
+Claim ──< ClaimAppearance          "what was claimed, and where it showed up"
+  │
+  └──< FactCheck                   the review: verdict, evidence, topics, regions
+         ├──< Evidence             (ADR-0005)
+         ├──< VerdictChange        (ADR-0006)
+         └──< FactCheckArticle     one per locale: prose, byline, editor, publish state
+                └──< ArticleRevision  (ADR-0006)
+```
 
-- **D is unambiguously worth doing immediately.** It is cheap, it forecloses nothing, and every day
-  the codebase grows without it, options A–C get more expensive. Do it regardless of what the client
-  decides.
-- **If English is at parity → B (translation tables).** The per-locale publish status that question 2
-  will almost certainly require is native to B and painful to bolt onto A or C.
-- **If English is a lighter secondary surface → A (sibling columns).** At two languages with one
-  clearly primary, B's normalization is overhead that buys little.
-- **C is not recommended** for this product specifically. Losing good full-text search on a platform
-  whose value is people *finding* whether a claim was checked is a bad trade for 4 saved days.
+### 1. `Claim` — what was asserted, independent of who checked it
 
-**This ADR cannot be accepted until the client answers the two questions above.**
+Holds the claim as circulated, the claimant, when it was made, and the language it circulated in.
+Separating it means a claim can be re-reviewed later, and the same claim can be recognised across
+submissions — which is also the hook the deduplication work in the AI pipeline needs.
+
+`ClaimAppearance` is a child table because a claim appears in **many** places (a tweet, a WhatsApp
+forward, a TV segment). Each appearance carries its own URL, platform, date, and — critically —
+**archive URL and archive timestamp**. Claims get deleted; the archive link is the only thing that
+survives, and it is the difference between a defensible fact-check and an unfalsifiable one.
+
+### 2. `FactCheck` — the review, language-neutral
+
+Holds the **verdict**, evidence, topics, and region codes. Keeps the existing name and the
+`/fact-checks` route family to limit churn.
+
+**The verdict lives here, shared across both language versions.** This is the load-bearing decision:
+if the verdict lived on each article, nothing would stop the Arabic reading `MOSTLY_TRUE` while the
+English reads `HALF_TRUE`. Publishing two different ratings for one claim under one masthead is not
+a defect you can ship. Evidence is likewise shared — a URL is a URL, regardless of the language of
+the prose citing it.
+
+### 3. `FactCheckArticle` — the per-locale editorial artifact
+
+One row per locale, carrying everything that is genuinely per-language: `title`, `slug`, `summary`,
+`body`, `methodology`, SEO fields, **`authorId` (byline)**, **`editorId` (reviewer)**, `reviewedAt`,
+`status`, and `publishedAt`.
+
+Consequences that fall out of this and are all desirable:
+
+- English can be published while Arabic is still in review, or vice versa.
+- Each version has its own revision history and corrections.
+- Editorial review is per-article, because review is of _the prose_, not of the rating.
+- Slugs are unique **per locale**, not globally.
+
+### Schema sketch
+
+```prisma
+enum Locale { AR EN }
+
+model Claim {
+  id           String    @id @default(cuid())
+  text         String    @db.Text          // as circulated, original language
+  language     Locale?
+  claimantName String?
+  claimedAt    DateTime?                    // when the claim was made
+  firstSeenAt  DateTime?                    // when the desk first saw it circulating
+
+  appearances  ClaimAppearance[]
+  reviews      FactCheck[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([claimedAt])
+  @@map("claims")
+}
+
+model ClaimAppearance {
+  id         String    @id @default(cuid())
+  claimId    String
+  claim      Claim     @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  url        String
+  platform   String?                        // twitter | facebook | whatsapp | tv | news | other
+  publisher  String?
+  appearedAt DateTime?
+  archiveUrl String?                        // snapshot — survives deletion of the original
+  archivedAt DateTime?
+  mediaUrls  String[]
+
+  createdAt DateTime @default(now())
+  @@index([claimId])
+  @@map("claim_appearances")
+}
+
+model FactCheck {
+  id           String         @id @default(cuid())
+  claimId      String
+  claim        Claim          @relation(fields: [claimId], references: [id])
+  verdict      VeracityRating                 // SHARED across locales — see above
+  countryCodes String[]                       // ISO 3166-1 alpha-2 (ADR-0007)
+
+  submissionId String?        @unique
+  submission   Submission?    @relation(fields: [submissionId], references: [id])
+
+  articles       FactCheckArticle[]
+  evidence       Evidence[]                   // ADR-0005
+  topics         FactCheckTopic[]             // ADR-0007
+  verdictChanges VerdictChange[]              // ADR-0006
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([verdict])
+  @@index([claimId])
+  @@map("fact_checks")
+}
+
+model FactCheckArticle {
+  id          String        @id @default(cuid())
+  factCheckId String
+  factCheck   FactCheck     @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
+  locale      Locale
+
+  slug        String
+  title       String
+  summary     String        @db.Text
+  body        String        @db.Text
+  methodology String?       @db.Text
+
+  status      ContentStatus @default(DRAFT)   // + RETRACTED, see ADR-0006
+  publishedAt DateTime?
+
+  authorId    String                          // byline
+  author      User          @relation("ArticleAuthor", fields: [authorId], references: [id])
+  editorId    String?                         // reviewer — distinct step, see below
+  editor      User?         @relation("ArticleEditor", fields: [editorId], references: [id])
+  reviewedAt  DateTime?
+
+  metaTitle       String?
+  metaDescription String?
+  featuredImage   String?
+
+  revisions   ArticleRevision[]               // ADR-0006
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([factCheckId, locale])             // one article per locale per review
+  @@unique([locale, slug])                    // slugs unique within a locale
+  @@index([status])
+  @@index([publishedAt])
+  @@map("fact_check_articles")
+}
+```
+
+### Editorial review is a distinct step
+
+Confirmed with Ali: the **editor is a separate gate from the submission moderator**. Moderation
+triages an incoming `Submission`; editorial review approves a written `FactCheckArticle`. Different
+question, different moment, recorded in a different place.
+
+Recommended control: **`editorId` must be set and must differ from `authorId` before an article can
+reach `PUBLISHED`.** Self-review defeats the purpose of recording a reviewer, and IFCN-style
+transparency is only meaningful if the byline and the sign-off are different people. Enforce it in
+the service layer, not only in the UI.
+
+This is a policy choice with a staffing implication — a one-person desk cannot satisfy it. Flagged
+as an open question below.
 
 ## Consequences
 
-**If B:** highest build cost and near-total query rewrite, but the model stops being a constraint —
-a third language becomes configuration.
+**Positive**
 
-**If A:** ships sooner; expect to revisit if a third language is ever requested.
+- The published record can answer "who claimed it, where, on what evidence, reviewed by whom" —
+  which is the entire point of the exercise.
+- Maps closely onto schema.org `ClaimReview`, which is what Google's Fact Check Tools consume.
+  That turns this from an invisible refactor into a distribution and credibility argument. _(Verify
+  the current ClaimReview spec field-by-field before building the serializer — do not assume the
+  mapping from memory.)_
+- Claim/appearance separation is the hook the AI deduplication stage needs later.
+- Adding a third language becomes adding rows, not a migration.
 
-**Either way:** translated content is an **ongoing editorial cost** for the client's team, not a
-one-time engineering cost. Worth stating plainly to them — a bilingual platform that nobody staffs to
-translate is worse than a good monolingual one, because half of it silently rots.
+**Negative**
 
-**Machine translation of published fact-check content is out of scope** without an explicit, visible
-disclaimer and client approval. A mistranslated verdict is a credibility incident, and credibility is
-the entire product.
+- **Reads get more expensive.** Rendering one public fact-check now touches `Claim`,
+  `ClaimAppearance`, `FactCheck`, `FactCheckArticle`, `Evidence`, `Topic`. Expect to need
+  deliberate `include` shaping and probably a denormalised list projection for index pages.
+- **The admin UI gets materially harder.** Editing a fact-check becomes editing a claim, a review,
+  N evidence rows, and two articles. This is the largest hidden cost in the whole plan and it is
+  interface work, not schema work.
+- Every public route gains a locale dimension. Slug uniqueness moves from global to per-locale.
+- Both hand-written API clients (1001 + 844 lines) must be rewritten by hand — no generated types
+  (ADR-0003). This is the moment ADR-0003 stops being optional.
+
+**Risk**
+
+Refactoring the most-referenced model in the system against near-zero test coverage with no
+reviewer. Mitigation is non-negotiable and is Phase 0 of the implementation plan: lifecycle and
+authorization tests land _before_ the model changes, not after.
 
 ## Migration path
 
-**Phase 0 — now, no decision needed (1–2d)**
-1. Convert directional CSS to logical properties (`ms-*`/`me-*`, `start`/`end`) across both apps.
-2. Group user-facing strings so extraction is mechanical later.
-3. **Stop adding ad-hoc `*Ar`/`*En` columns.** Any such column added now is debt this ADR must undo.
+There is **no data to migrate**. That is the single most valuable fact in this document, and it
+should be spent deliberately rather than saved:
 
-**Phase 1 — after the client decides (2–3d)**
-4. Choose the i18n library and land it as one coordinated change for UI strings only.
-5. Extract existing strings. Mechanical, and the largest single chunk of tedium.
+1. **Squash the six existing migrations into one fresh `init`.** With zero rows they are
+   archaeology, and a clean baseline beats six historical steps plus a monstrous seventh.
+2. Land the full schema in one migration rather than a careful reversible sequence.
+3. Rewrite both seed scripts — they cannot survive this change, so their cost is already sunk.
+   Fix the missing-dotenv bug while rewriting them.
+4. Keep `Comment` and `SavedContent` pointed at `FactCheck` (the review), not at an article —
+   saving or discussing a fact-check is language-independent.
 
-**Phase 2 — content model (8–20d depending on A vs B)**
-6. Migrate the schema for one model first — `Blog` is the right pilot: real content, low blast radius,
-   not on the critical fact-checking path.
-7. Validate the full loop end to end (admin editing → API → public rendering → search) before touching
-   the remaining models.
-8. Roll out across the remaining ~14 content models.
-9. Merge `seed.ts` and `arabic.seed.ts` into one bilingual dataset.
+## Open questions
 
-**Phase 3 — search (2–3d)**
-10. Arabic normalization: hamza forms (أإآ→ا), taa marbuta (ة→ه), diacritic stripping. Without this,
-    search fails to find content that exists — users read that as a broken site.
-
-## Open questions for the client
-
-1. **Is English at full parity with Arabic, or a secondary surface?** (Determines A vs B; ~2× cost.)
-2. **What does the public site show for content translated in only one language** — hide, show with a
-   notice, or machine-translate with a disclaimer? (Determines whether publish status is per-locale.)
-3. **Who produces the English content?** If there is no budgeted translator, the honest recommendation
-   may be to stay Arabic-only and do it excellently.
-4. **Is a third language plausible within 2 years?** If yes, B regardless of the answer to Q1.
+1. **Must the editor differ from the author?** Recommended yes. A one-person desk cannot satisfy it,
+   so this is a client/staffing question, not a technical one. It is a two-line service-layer change
+   either way — but decide it before the admin UI is built around one assumption.
+2. **Is `Comment` staying at all?** It exists on `FactCheck` today but has no visible surface. If
+   public comments on fact-checks are not a product commitment, dropping the model now is free and
+   removes a moderation liability nobody has budgeted for.
+3. **URL structure** — `/ar/fact-checks/<slug>` vs `<slug>` with content negotiation. Affects SEO
+   and the `hreflang` pairing. Small, but decide before public routes are built.

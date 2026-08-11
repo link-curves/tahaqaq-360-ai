@@ -10,12 +10,12 @@
 
 Tahaqaq 360 is not a CMS. It runs four interlocking systems:
 
-| System | Flow | Key models |
-|---|---|---|
-| **Claim verification** | Public submits a claim → moderation queue → analyst writes fact-check with verdict, methodology, sources → published | `Submission`, `FactCheck`, `ModerationLog` |
-| **Media literacy LMS** | Course → lessons → quizzes → progress tracking → PDF certificate with QR verification | `Course`, `Lesson`, `Quiz`, `QuizAttempt`, `CourseProgress`, `LessonProgress`, `Certificate` |
-| **Community & events** | Workshops/events with registration, host requests, training requests | `Event`, `EventRegistration`, `HostRequest`, `TrainingRequest`, `Session` |
-| **Engagement** | Points, levels, reputation, achievements, saved content, notifications | `Achievement`, `UserAchievement`, `Notification`, `SavedContent`, `ActivityLog` |
+| System                 | Flow                                                                                                                 | Key models                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Claim verification** | Public submits a claim → moderation queue → analyst writes fact-check with verdict, methodology, sources → published | `Submission`, `FactCheck`, `ModerationLog`                                                   |
+| **Media literacy LMS** | Course → lessons → quizzes → progress tracking → PDF certificate with QR verification                                | `Course`, `Lesson`, `Quiz`, `QuizAttempt`, `CourseProgress`, `LessonProgress`, `Certificate` |
+| **Community & events** | Workshops/events with registration, host requests, training requests                                                 | `Event`, `EventRegistration`, `HostRequest`, `TrainingRequest`, `Session`                    |
+| **Engagement**         | Points, levels, reputation, achievements, saved content, notifications                                               | `Achievement`, `UserAchievement`, `Notification`, `SavedContent`, `ActivityLog`              |
 
 Plus editorial surfaces: `Blog`, `Research`, `FAQ`, `ContactMessage`, and legal pages
 (`PrivacyPolicy`, `TermsOfService`, `AccessibilityStatement`) served from the DB, not hardcoded.
@@ -84,14 +84,39 @@ a stale default path.
 
 ### Ports
 
-| Service | Port |
-|---|---|
-| api | 5000 (`/api/v1`, Swagger at `/api/docs` in dev only) |
-| web | 5173 (Vite default) or 3000 in Docker |
-| admin | 3001 |
+| Service | Port                                                                              |
+| ------- | --------------------------------------------------------------------------------- |
+| api     | 5000 (`/api/v1`, Swagger at `/api/docs` in dev only)                              |
+| web     | **3000** — set explicitly in `apps/web/vite.config.ts`, not the Vite default 5173 |
+| admin   | 3001 — set in `apps/admin/vite.config.ts`                                         |
 
-Host port **5432 is occupied** by an unrelated `workgrid-postgres` container. Any local Postgres
-must bind a different port (5433).
+Host ports **5432 and 5433 are both occupied** by unrelated containers (`workgrid-postgres`,
+`shop-db`). A local Postgres must bind **5434**.
+
+### Running it locally (verified 2026-08-02)
+
+```bash
+docker run -d --name tahaqaq-db-dev \
+  -e POSTGRES_USER=tahaqaq -e POSTGRES_PASSWORD=tahaqaq_dev -e POSTGRES_DB=tahaqaq_dev \
+  -p 5434:5432 postgres:16-alpine
+
+# apps/api/.env  (git-ignored) — see .env.dev.example
+cd apps/api
+npx prisma migrate deploy --schema=src/prisma/schema.prisma
+set -a; . ./.env; set +a && npx ts-node src/prisma/seed/arabic.seed.ts   # see caveat below
+pnpm dev
+```
+
+Three things that will bite you, all verified by running it:
+
+1. **The seed scripts do not load `.env`.** `pnpm db:seed` / `db:seed:ar` invoke bare `ts-node`,
+   which — unlike the Prisma CLI — does not auto-load `.env`. They fail with
+   `Environment variable not found: DATABASE_URL` unless you export the env yourself.
+2. **A missing `GOOGLE_CLIENT_ID` prevents the entire API from booting.** `GoogleStrategy` is
+   registered unconditionally, so passport throws during DI and every module goes down with it —
+   not just Google login. Placeholder values are enough to boot.
+3. **The hosted Supabase project no longer exists** (`mkowxfbbazrjkhihmpea` does not resolve).
+   The old `DATABASE_URL` is dead; a local database is now the only way to run this.
 
 ---
 
@@ -255,11 +280,11 @@ a spec or state plainly that it is untested. Building out coverage is tracked in
 
 ## 10. Where to look
 
-| Need | Path |
-|---|---|
-| Prioritized work + costs | `docs/BACKLOG.md` |
-| Architecture decisions | `docs/adr/` |
-| Credential rotation steps | `docs/SECURITY-REMEDIATION.md` |
+| Need                            | Path                                            |
+| ------------------------------- | ----------------------------------------------- |
+| Prioritized work + costs        | `docs/BACKLOG.md`                               |
+| Architecture decisions          | `docs/adr/`                                     |
+| Credential rotation steps       | `docs/SECURITY-REMEDIATION.md`                  |
 | AI verification pipeline design | `docs/architecture/ai-verification-pipeline.md` |
-| Specialized agents | `.claude/agents/` |
-| Repeatable procedures | `.claude/skills/` |
+| Specialized agents              | `.claude/agents/`                               |
+| Repeatable procedures           | `.claude/skills/`                               |
