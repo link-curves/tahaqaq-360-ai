@@ -1,18 +1,17 @@
-import { Comment, FactCheck, PrismaClient, User } from '@prisma/client';
+import { Comment, PrismaClient, User } from '@prisma/client';
+import { SeededFactCheck } from './factChecks.arabic.seed';
 import { randomElement, randomInt } from '../helpers/seed.helper';
 import { arabicCommentTexts } from './data/arabic.data';
 
 export const seedArabicComments = async (
   prisma: PrismaClient,
   users: User[],
-  factChecks: FactCheck[],
+  factChecks: SeededFactCheck[],
 ): Promise<Comment[]> => {
   console.log('🌱 البدء في إضافة التعليقات بالعربية...');
 
   const comments: Comment[] = [];
-  const publishedFactChecks = factChecks.filter(
-    (fc) => fc.status === 'PUBLISHED',
-  );
+  const publishedFactChecks = factChecks.filter((fc) => fc.hasPublishedArticle);
 
   // Create comments on fact-checks
   for (let i = 0; i < 300; i++) {

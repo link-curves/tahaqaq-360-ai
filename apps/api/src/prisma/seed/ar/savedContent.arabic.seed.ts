@@ -1,17 +1,16 @@
-import { FactCheck, PrismaClient, SavedContent, User } from '@prisma/client';
+import { PrismaClient, SavedContent, User } from '@prisma/client';
+import { SeededFactCheck } from './factChecks.arabic.seed';
 import { randomElement, randomInt } from '../helpers/seed.helper';
 
 export const seedArabicSavedContent = async (
   prisma: PrismaClient,
   users: User[],
-  factChecks: FactCheck[],
+  factChecks: SeededFactCheck[],
 ): Promise<SavedContent[]> => {
   console.log('🌱 البدء في إضافة المحتوى المحفوظ بالعربية...');
 
   const savedContent: SavedContent[] = [];
-  const publishedFactChecks = factChecks.filter(
-    (fc) => fc.status === 'PUBLISHED',
-  );
+  const publishedFactChecks = factChecks.filter((fc) => fc.hasPublishedArticle);
   const activeUsers = users.filter((u) => u.role === 'USER');
 
   // Each user saves 0-10 fact-checks

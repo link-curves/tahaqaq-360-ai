@@ -6,6 +6,7 @@ import { seedArabicComments } from './ar/comments.arabic.seed';
 import { seedArabicCourses } from './ar/courses.arabic.seed';
 import { seedArabicEvents } from './ar/events.arabic.seed';
 import { seedArabicFactChecks } from './ar/factChecks.arabic.seed';
+import { seedReferenceData } from './reference.seed';
 import { seedArabicFAQs } from './ar/faqs.arabic.seed';
 import { seedArabicNotifications } from './ar/notifications.arabic.seed';
 import { seedArabicResearch } from './ar/research.arabic.seed';
@@ -68,15 +69,27 @@ async function main() {
     // ============================================
     // 3. إنشاء 200 فحص حقائق (Fact Checks)
     // ============================================
+    // Reference data (topics, countries, rating definitions) must exist before
+    // fact-checks, which classify against it.
+    const topics = await seedReferenceData(prisma);
+
     console.log('📰 المرحلة 3/14: فحص فحوصات الحقائق...');
     const factCheckCount = await prisma.factCheck.count();
     if (factCheckCount === 0) {
       console.log('   ⏳ لا توجد بيانات، جارٍ الإضافة...');
-      factChecks = await seedArabicFactChecks(prisma, users);
+      factChecks = await seedArabicFactChecks(prisma, users, topics);
       console.log(`   ✅ تم إنشاء ${factChecks.length} فحص حقائق\n`);
     } else {
       console.log(`   ⏭️  تم تخطي: يوجد بالفعل ${factCheckCount} فحص حقائق\n`);
-      factChecks = await prisma.factCheck.findMany();
+      // `status` lives on the article now, so recompute the published flag
+      // rather than reading a field that no longer exists on FactCheck.
+      const existing = await prisma.factCheck.findMany({
+        include: { articles: { select: { status: true } } },
+      });
+      factChecks = existing.map(({ articles, ...fc }) => ({
+        ...fc,
+        hasPublishedArticle: articles.some((a) => a.status === 'PUBLISHED'),
+      }));
     }
 
     // ============================================

@@ -18,6 +18,7 @@ import {
   tags,
 } from './en/data/english.data';
 import { seedFactChecks } from './en/factChecks.seed';
+import { seedReferenceData } from './reference.seed';
 import { seedFAQs } from './en/faq.seed';
 import { seedSubmissions } from './en/submission.seed';
 import { seedUsers } from './en/user.seed';
@@ -46,7 +47,9 @@ async function main() {
   // 3. CREATE 200 FACT CHECKS
   // ============================================
   console.log('📰 Creating 200 fact checks...');
-  const factChecks = await seedFactChecks(prisma, users);
+  // Reference data must exist before fact-checks classify against it.
+  const topics = await seedReferenceData(prisma);
+  const factChecks = await seedFactChecks(prisma, users, topics);
   const moderators = users.filter((u) =>
     [Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN, Role.USER].includes(u.role),
   );
@@ -612,7 +615,7 @@ async function main() {
   for (const user of regularUsers.slice(0, 60)) {
     const numSaved = randomInt(3, 20);
     const savedFactChecks = shuffle([
-      ...factChecks.filter((fc) => fc.status === ContentStatus.PUBLISHED),
+      ...factChecks.filter((fc) => fc.hasPublishedArticle),
     ]).slice(0, numSaved);
 
     for (const factCheck of savedFactChecks) {
