@@ -1,7 +1,8 @@
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '@prisma/client';
+
 import { RolesGuard } from './roles.guard';
+import { ROLE, RoleCode } from '../constants/lookups';
 
 /**
  * RolesGuard is the only thing standing between an authenticated USER and
@@ -12,7 +13,7 @@ describe('RolesGuard', () => {
   let reflector: { getAllAndOverride: jest.Mock };
   let guard: RolesGuard;
 
-  const contextFor = (user?: { role: Role }): ExecutionContext => {
+  const contextFor = (user?: { role: RoleCode }): ExecutionContext => {
     // Stable references — getHandler()/getClass() must return the same objects
     // on every call, as the real ExecutionContext does.
     const handler = () => undefined;
@@ -33,7 +34,7 @@ describe('RolesGuard', () => {
     it('allows the request through', () => {
       reflector.getAllAndOverride.mockReturnValue(undefined);
 
-      expect(guard.canActivate(contextFor({ role: Role.USER }))).toBe(true);
+      expect(guard.canActivate(contextFor({ role: ROLE.USER }))).toBe(true);
     });
 
     it('allows it even with no authenticated user at all', () => {
@@ -47,23 +48,23 @@ describe('RolesGuard', () => {
 
   describe('when the route declares @Roles()', () => {
     it('allows a user whose role is listed', () => {
-      reflector.getAllAndOverride.mockReturnValue([Role.ADMIN, Role.MODERATOR]);
+      reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN, ROLE.MODERATOR]);
 
-      expect(guard.canActivate(contextFor({ role: Role.MODERATOR }))).toBe(
+      expect(guard.canActivate(contextFor({ role: ROLE.MODERATOR }))).toBe(
         true,
       );
     });
 
     it('rejects a user whose role is not listed', () => {
-      reflector.getAllAndOverride.mockReturnValue([Role.ADMIN]);
+      reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN]);
 
-      expect(() => guard.canActivate(contextFor({ role: Role.USER }))).toThrow(
+      expect(() => guard.canActivate(contextFor({ role: ROLE.USER }))).toThrow(
         ForbiddenException,
       );
     });
 
     it('rejects when there is no authenticated user', () => {
-      reflector.getAllAndOverride.mockReturnValue([Role.ADMIN]);
+      reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN]);
 
       expect(() => guard.canActivate(contextFor(undefined))).toThrow(
         ForbiddenException,
@@ -74,19 +75,19 @@ describe('RolesGuard', () => {
       // Documented behaviour, and a real trap: SUPER_ADMIN does NOT satisfy
       // @Roles(MODERATOR). Every controller must list every role that should
       // have access. Omitting SUPER_ADMIN silently locks out the highest role.
-      reflector.getAllAndOverride.mockReturnValue([Role.MODERATOR]);
+      reflector.getAllAndOverride.mockReturnValue([ROLE.MODERATOR]);
 
       expect(() =>
-        guard.canActivate(contextFor({ role: Role.SUPER_ADMIN })),
+        guard.canActivate(contextFor({ role: ROLE.SUPER_ADMIN })),
       ).toThrow(ForbiddenException);
-      expect(() => guard.canActivate(contextFor({ role: Role.ADMIN }))).toThrow(
+      expect(() => guard.canActivate(contextFor({ role: ROLE.ADMIN }))).toThrow(
         ForbiddenException,
       );
     });
 
     it('reads metadata from both the handler and the controller class', () => {
-      reflector.getAllAndOverride.mockReturnValue([Role.ADMIN]);
-      const ctx = contextFor({ role: Role.ADMIN });
+      reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN]);
+      const ctx = contextFor({ role: ROLE.ADMIN });
 
       guard.canActivate(ctx);
 

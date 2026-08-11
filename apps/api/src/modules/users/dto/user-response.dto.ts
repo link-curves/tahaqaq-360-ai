@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+import { ROLE, RoleCode } from '../../../common/constants/lookups';
 
 export class UserResponseDto {
   @ApiProperty()
@@ -23,8 +23,8 @@ export class UserResponseDto {
   @ApiPropertyOptional()
   bio?: string;
 
-  @ApiProperty({ enum: Role })
-  role: Role;
+  @ApiProperty({ enum: Object.values(ROLE) })
+  role: RoleCode;
 
   @ApiProperty()
   isEmailVerified: boolean;

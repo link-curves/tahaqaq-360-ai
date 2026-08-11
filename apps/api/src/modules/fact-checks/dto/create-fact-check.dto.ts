@@ -1,17 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ContentStatus, Locale, VeracityRating } from '@prisma/client';
+
 import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
   IsDateString,
-  IsEnum,
+  IsIn,
   IsOptional,
   IsString,
   IsUrl,
   MinLength,
 } from 'class-validator';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { CONTENT_STATUS, ContentStatusCode, LOCALE, LocaleCode, VERDICT, VerdictCode } from '../../../common/constants/lookups';
 
 export class CreateFactCheckDto {
   @ApiProperty({ example: 'Breaking: Major Scientific Discovery' })
@@ -34,9 +35,9 @@ export class CreateFactCheckDto {
   @IsDateString()
   claimDate?: string;
 
-  @ApiProperty({ enum: VeracityRating, example: VeracityRating.FALSE })
-  @IsEnum(VeracityRating)
-  verdict: VeracityRating;
+  @ApiProperty({ enum: Object.values(VERDICT), example: VERDICT.FALSE })
+  @IsIn(Object.values(VERDICT))
+  verdict: VerdictCode;
 
   @ApiProperty({ example: 'This claim is false because...' })
   @IsString()
@@ -77,10 +78,10 @@ export class CreateFactCheckDto {
   @IsUrl()
   featuredImage?: string;
 
-  @ApiProperty({ enum: ContentStatus, required: false })
+  @ApiProperty({ enum: Object.values(CONTENT_STATUS), required: false })
   @IsOptional()
-  @IsEnum(ContentStatus)
-  status?: ContentStatus;
+  @IsIn(Object.values(CONTENT_STATUS))
+  status?: ContentStatusCode;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -102,13 +103,13 @@ export class UpdateFactCheckDto extends CreateFactCheckDto {}
 
 export class FactCheckFilterDto extends PaginationDto {
   @ApiProperty({
-    enum: Locale,
+    enum: Object.values(LOCALE),
     required: false,
     description: 'Language of the article. Defaults to AR (Arabic-first desk).',
   })
   @IsOptional()
-  @IsEnum(Locale)
-  locale?: Locale;
+  @IsIn(Object.values(LOCALE))
+  locale?: LocaleCode;
 
   @ApiProperty({
     required: false,
@@ -128,12 +129,12 @@ export class FactCheckFilterDto extends PaginationDto {
   country?: string;
 
   @IsOptional()
-  @IsEnum(VeracityRating)
-  verdict?: VeracityRating;
+  @IsIn(Object.values(VERDICT))
+  verdict?: VerdictCode;
 
   @IsOptional()
-  @IsEnum(ContentStatus)
-  status?: ContentStatus;
+  @IsIn(Object.values(CONTENT_STATUS))
+  status?: ContentStatusCode;
 
   @IsOptional()
   @IsString()

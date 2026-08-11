@@ -1,6 +1,7 @@
-import { Event, EventStatus, EventType, PrismaClient } from '@prisma/client';
+import { Event, PrismaClient } from '@prisma/client';
 import { randomElement, randomInt } from '../helpers/seed.helper';
 import { arabicEventTitles, arabicTags } from './data/arabic.data';
+import { EventStatusCode, EventTypeCode } from '../../../common/constants/lookups';
 
 export const seedArabicEvents = async (
   prisma: PrismaClient,
@@ -10,14 +11,14 @@ export const seedArabicEvents = async (
   const events: Event[] = [];
   const now = new Date();
 
-  const eventTypes: EventType[] = [
+  const eventTypes: EventTypeCode[] = [
     'WORKSHOP',
     'WEBINAR',
     'CONFERENCE',
     'TRAINING',
     'EXHIBITION',
   ];
-  const eventStatuses: EventStatus[] = [
+  const eventStatuses: EventStatusCode[] = [
     'UPCOMING',
     'ONGOING',
     'COMPLETED',
@@ -38,7 +39,7 @@ export const seedArabicEvents = async (
     const endDate = new Date(startDate);
     endDate.setHours(startDate.getHours() + randomInt(2, 8));
 
-    let status: EventStatus;
+    let status: EventStatusCode;
     if (daysOffset < -7) {
       status = Math.random() > 0.1 ? 'COMPLETED' : 'CANCELLED';
     } else if (daysOffset < 0) {
@@ -52,8 +53,8 @@ export const seedArabicEvents = async (
         title,
         slug: `event-ar-${i + 1}-${title.split(' ').slice(0, 3).join('-').toLowerCase()}`,
         description: `انضم إلينا في ${title}. هذه ${type === 'WORKSHOP' ? 'ورشة عمل' : type === 'WEBINAR' ? 'ندوة عبر الإنترنت' : type === 'CONFERENCE' ? 'مؤتمر' : type === 'TRAINING' ? 'تدريب' : 'معرض'} شاملة تستكشف موضوعات مهمة في التحقق من الحقائق والتعليم الإعلامي. سيكتسب المشاركون رؤى قيمة ومهارات عملية.`,
-        type,
-        status,
+        typeCode: type,
+        statusCode: status,
         startDate,
         endDate,
         isVirtual,

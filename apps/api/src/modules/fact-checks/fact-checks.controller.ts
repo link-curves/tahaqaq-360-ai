@@ -15,7 +15,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -26,6 +26,7 @@ import {
   UpdateFactCheckDto,
 } from './dto/create-fact-check.dto';
 import { FactChecksService } from './fact-checks.service';
+import { ROLE, RoleCode } from '../../common/constants/lookups';
 
 @ApiTags('Fact Checks')
 @Controller('fact-checks')
@@ -34,7 +35,7 @@ export class FactChecksController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new fact check' })
   create(
@@ -76,13 +77,13 @@ export class FactChecksController {
 
   @Patch(':slug')
   @UseGuards(RolesGuard)
-  @Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update a fact check' })
   update(
     @Param('slug') slug: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: Role,
+    @CurrentUser('role') userRole: RoleCode,
     @Body() updateDto: UpdateFactCheckDto,
   ) {
     return this.factChecksService.update(slug, userId, userRole, updateDto);
@@ -90,13 +91,13 @@ export class FactChecksController {
 
   @Delete(':slug')
   @UseGuards(RolesGuard)
-  @Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a fact check' })
   remove(
     @Param('slug') slug: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: Role,
+    @CurrentUser('role') userRole: RoleCode,
   ) {
     return this.factChecksService.remove(slug, userId, userRole);
   }

@@ -3,13 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Role, SubmissionStatus } from '@prisma/client';
+
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
 import {
   CreateSubmissionDto,
   UpdateSubmissionStatusDto,
 } from './dto/create-submission.dto';
+import { ROLE, RoleCode, SubmissionStatusCode } from '../../common/constants/lookups';
 
 @Injectable()
 export class SubmissionsService {
@@ -45,7 +46,7 @@ export class SubmissionsService {
     // Create notification for moderators
     const moderators = await this.prisma.user.findMany({
       where: {
-        role: { in: [Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN] },
+        role: { in: [ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN] },
       },
       select: { id: true },
     });
@@ -65,7 +66,7 @@ export class SubmissionsService {
 
   async findAll(
     paginationDto: PaginationDto,
-    status?: SubmissionStatus,
+    status?: SubmissionStatusCode,
     type?: string,
     userId?: string,
   ) {
@@ -135,7 +136,7 @@ export class SubmissionsService {
     };
   }
 
-  async findOne(id: string, userId?: string, userRole?: Role) {
+  async findOne(id: string, userId?: string, userRole?: RoleCode) {
     const submission = await this.prisma.submission.findUnique({
       where: { id },
       include: {
@@ -215,7 +216,7 @@ export class SubmissionsService {
     // Create moderation log
     await this.prisma.moderationLog.create({
       data: {
-        action: updateDto.status === 'REJECTED' ? 'REJECT' : 'APPROVE',
+        actionCode: updateDto.status === 'REJECTED' ? 'REJECT' : 'APPROVE',
         reason: updateDto.rejectionReason,
         notes: updateDto.internalNotes,
         moderatorId,
@@ -227,7 +228,7 @@ export class SubmissionsService {
     await this.prisma.notification.create({
       data: {
         userId: submission.submitterId,
-        type: 'SUBMISSION_UPDATE',
+        typeCode: 'SUBMISSION_UPDATE',
         title: 'Submission Status Updated',
         message: `Your submission has been ${updateDto.status.toLowerCase()}`,
         actionUrl: `/submissions/${id}`,
@@ -274,11 +275,11 @@ export class SubmissionsService {
       total,
       recentCount,
       byStatus: byStatus.reduce((acc: Record<string, number>, item) => {
-        acc[item.status] = item._count;
+        acc[item.statusCode] = item._count;
         return acc;
       }, {}),
       byType: byType.reduce((acc: Record<string, number>, item) => {
-        acc[item.type] = item._count;
+        acc[item.typeCode] = item._count;
         return acc;
       }, {}),
     };

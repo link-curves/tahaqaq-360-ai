@@ -1,15 +1,4 @@
-import {
-  ContentStatus,
-  EvidenceType,
-  FactCheck,
-  Locale,
-  PrismaClient,
-  RevisionTier,
-  Role,
-  Topic,
-  User,
-  VeracityRating,
-} from '@prisma/client';
+import { FactCheck, PrismaClient, Topic, User } from '@prisma/client';
 import {
   randomDate,
   randomElement,
@@ -23,6 +12,7 @@ import {
   arabicLastNames,
   arabicTags,
 } from './data/arabic.data';
+import { CONTENT_STATUS, EVIDENCE_TYPE, LOCALE, REVISION_TIER, ROLE, RoleCode, VERDICT, VerdictCode } from '../../../common/constants/lookups';
 
 /**
  * Seeds the editorial record: Claim -> FactCheck -> FactCheckArticle, with
@@ -38,15 +28,15 @@ import {
  *  longer exists on FactCheck. */
 export type SeededFactCheck = FactCheck & { hasPublishedArticle: boolean };
 
-const VERDICT_AR: Record<VeracityRating, string> = {
-  [VeracityRating.TRUE]: 'صحيح',
-  [VeracityRating.MOSTLY_TRUE]: 'صحيح في معظمه',
-  [VeracityRating.HALF_TRUE]: 'صحيح جزئياً',
-  [VeracityRating.MOSTLY_FALSE]: 'خاطئ في معظمه',
-  [VeracityRating.FALSE]: 'خاطئ',
-  [VeracityRating.UNVERIFIABLE]: 'غير قابل للتحقق',
-  [VeracityRating.SATIRE]: 'سخرية',
-  [VeracityRating.MISLEADING]: 'مضلل',
+const VERDICT_AR: Record<VerdictCode, string> = {
+  [VERDICT.TRUE]: 'صحيح',
+  [VERDICT.MOSTLY_TRUE]: 'صحيح في معظمه',
+  [VERDICT.HALF_TRUE]: 'صحيح جزئياً',
+  [VERDICT.MOSTLY_FALSE]: 'خاطئ في معظمه',
+  [VERDICT.FALSE]: 'خاطئ',
+  [VERDICT.UNVERIFIABLE]: 'غير قابل للتحقق',
+  [VERDICT.SATIRE]: 'سخرية',
+  [VERDICT.MISLEADING]: 'مضلل',
 };
 
 const PLATFORMS = ['twitter', 'facebook', 'whatsapp', 'tv', 'news', 'other'];
@@ -63,7 +53,7 @@ const COUNTRY_POOL = [
   'MA',
 ];
 
-const arabicBody = (verdict: VeracityRating) => `# تحليل مفصل
+const arabicBody = (verdict: VerdictCode) => `# تحليل مفصل
 
 يفحص هذا التحقق الشامل من الحقائق الادعاء من خلال مصادر متعددة وآراء الخبراء.
 
@@ -84,7 +74,7 @@ const arabicBody = (verdict: VeracityRating) => `# تحليل مفصل
 
 بناءً على الأدلة المتاحة، نصنف هذا الادعاء على أنه ${VERDICT_AR[verdict]}.`;
 
-const englishBody = (verdict: VeracityRating) => `# Detailed analysis
+const englishBody = (verdict: VerdictCode) => `# Detailed analysis
 
 This fact-check examines the claim against multiple sources and expert opinion.
 
@@ -112,8 +102,8 @@ export const seedArabicFactChecks = async (
 ): Promise<SeededFactCheck[]> => {
   console.log('🌱 البدء في إضافة فحوصات الحقائق بالعربية...');
 
-  const staffRoles: Role[] = [Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN];
-  const staff = users.filter((u) => staffRoles.includes(u.role));
+  const staffRoles: string[] = [ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN];
+  const staff = users.filter((u) => staffRoles.includes(u.roleCode));
   // Fall back to any user if the seeded population has no staff, so the seed
   // cannot fail on an empty pick.
   const authorPool = staff.length > 0 ? staff : users;
@@ -131,15 +121,15 @@ export const seedArabicFactChecks = async (
   for (let i = 1; i <= TOTAL; i++) {
     const author = randomElement(authorPool);
     const editor = pickEditor(author.id);
-    const verdict = randomElement(Object.values(VeracityRating));
+    const verdict = randomElement(Object.values(VERDICT));
 
     // ~90% published, remainder still moving through the desk.
     const arStatus =
       i <= 180
-        ? ContentStatus.PUBLISHED
-        : randomElement([ContentStatus.DRAFT, ContentStatus.UNDER_REVIEW]);
+        ? CONTENT_STATUS.PUBLISHED
+        : randomElement([CONTENT_STATUS.DRAFT, CONTENT_STATUS.UNDER_REVIEW]);
     const publishedAt =
-      arStatus === ContentStatus.PUBLISHED
+      arStatus === CONTENT_STATUS.PUBLISHED
         ? randomDate(new Date(2023, 0, 1), new Date())
         : null;
 
@@ -147,7 +137,7 @@ export const seedArabicFactChecks = async (
     const claim = await prisma.claim.create({
       data: {
         text: randomElement(arabicClaimTexts),
-        language: Locale.AR,
+        languageCode: LOCALE.AR,
         claimantName:
           Math.random() > 0.5
             ? `${randomElement(arabicFirstNames)} ${randomElement(arabicLastNames)}`
@@ -181,7 +171,7 @@ export const seedArabicFactChecks = async (
     const factCheck = await prisma.factCheck.create({
       data: {
         claimId: claim.id,
-        verdict,
+        verdictCode: verdict,
         countryCodes: shuffle([...COUNTRY_POOL]).slice(0, randomInt(1, 2)),
         tags: shuffle([...arabicTags]).slice(0, randomInt(3, 6)),
         topics: {
@@ -201,7 +191,7 @@ export const seedArabicFactChecks = async (
         return {
           factCheckId: factCheck.id,
           position: e,
-          type: randomElement(Object.values(EvidenceType)),
+          typeCode: randomElement(Object.values(EVIDENCE_TYPE)),
           url: isDead
             ? `https://dead-source.example.com/removed-${i}`
             : `https://example.com/source-${i}-${e + 1}`,
@@ -230,17 +220,17 @@ export const seedArabicFactChecks = async (
     const arArticle = await prisma.factCheckArticle.create({
       data: {
         factCheckId: factCheck.id,
-        locale: Locale.AR,
+        localeCode: LOCALE.AR,
         slug: `fact-check-ar-${i}`,
         title: `${randomElement(arabicFactCheckTitles)} - ادعاء رقم ${i}`,
         summary: `بعد التحقيق الدقيق، تم تصنيف هذا الادعاء على أنه ${VERDICT_AR[verdict]}.`,
         body: arabicBody(verdict),
         methodology: 'منهجية التحقق القياسية من الحقائق وفقاً للمعايير الدولية',
-        status: arStatus,
+        statusCode: arStatus,
         publishedAt,
         authorId: author.id,
-        editorId: arStatus === ContentStatus.PUBLISHED ? editor?.id : null,
-        reviewedAt: arStatus === ContentStatus.PUBLISHED ? publishedAt : null,
+        editorId: arStatus === CONTENT_STATUS.PUBLISHED ? editor?.id : null,
+        reviewedAt: arStatus === CONTENT_STATUS.PUBLISHED ? publishedAt : null,
         metaTitle: `تحقق من الحقائق: ادعاء رقم ${i}`,
         metaDescription: `تحقق شامل من الادعاء رقم ${i}`,
         featuredImage: `https://picsum.photos/seed/ar${i}/800/400`,
@@ -251,17 +241,17 @@ export const seedArabicFactChecks = async (
     });
 
     // Publishing writes revision 1 (ADR-0006 invariant 2).
-    if (arStatus === ContentStatus.PUBLISHED && publishedAt) {
+    if (arStatus === CONTENT_STATUS.PUBLISHED && publishedAt) {
       await prisma.articleRevision.create({
         data: {
           articleId: arArticle.id,
           revisionNumber: 1,
-          tier: RevisionTier.SILENT,
+          tierCode: REVISION_TIER.SILENT,
           title: arArticle.title,
           summary: arArticle.summary,
           body: arArticle.body,
           methodology: arArticle.methodology,
-          verdictAtTime: verdict,
+          verdictAtTimeCode: verdict,
           editedById: author.id,
           createdAt: publishedAt,
         },
@@ -278,26 +268,26 @@ export const seedArabicFactChecks = async (
       // Every 4th English sibling stays in draft while Arabic is live — the
       // "published in one locale only" case the public site must handle.
       const enStatus =
-        i % 12 === 0 ? ContentStatus.DRAFT : ContentStatus.PUBLISHED;
+        i % 12 === 0 ? CONTENT_STATUS.DRAFT : CONTENT_STATUS.PUBLISHED;
       const enPublishedAt =
-        enStatus === ContentStatus.PUBLISHED
+        enStatus === CONTENT_STATUS.PUBLISHED
           ? randomDate(publishedAt ?? new Date(2023, 0, 1), new Date())
           : null;
 
       const enArticle = await prisma.factCheckArticle.create({
         data: {
           factCheckId: factCheck.id,
-          locale: Locale.EN,
+          localeCode: LOCALE.EN,
           slug: `fact-check-en-${i}`,
           title: `Fact-check: claim no. ${i}`,
           summary: `After investigation, this claim is rated ${verdict.replace(/_/g, ' ').toLowerCase()}.`,
           body: englishBody(verdict),
           methodology:
             'Standard fact-checking methodology per international norms',
-          status: enStatus,
+          statusCode: enStatus,
           publishedAt: enPublishedAt,
           authorId: enAuthor.id,
-          editorId: enStatus === ContentStatus.PUBLISHED ? enEditor?.id : null,
+          editorId: enStatus === CONTENT_STATUS.PUBLISHED ? enEditor?.id : null,
           reviewedAt: enPublishedAt,
           metaTitle: `Fact-check: claim no. ${i}`,
           metaDescription: `A full review of claim no. ${i}`,
@@ -307,17 +297,17 @@ export const seedArabicFactChecks = async (
         },
       });
 
-      if (enStatus === ContentStatus.PUBLISHED && enPublishedAt) {
+      if (enStatus === CONTENT_STATUS.PUBLISHED && enPublishedAt) {
         await prisma.articleRevision.create({
           data: {
             articleId: enArticle.id,
             revisionNumber: 1,
-            tier: RevisionTier.SILENT,
+            tierCode: REVISION_TIER.SILENT,
             title: enArticle.title,
             summary: enArticle.summary,
             body: enArticle.body,
             methodology: enArticle.methodology,
-            verdictAtTime: verdict,
+            verdictAtTimeCode: verdict,
             editedById: enAuthor.id,
             createdAt: enPublishedAt,
           },
@@ -327,7 +317,7 @@ export const seedArabicFactChecks = async (
 
     results.push({
       ...factCheck,
-      hasPublishedArticle: arStatus === ContentStatus.PUBLISHED,
+      hasPublishedArticle: arStatus === CONTENT_STATUS.PUBLISHED,
     });
   }
 
@@ -360,7 +350,7 @@ const seedSpecialCases = async (
     const claim = await prisma.claim.create({
       data: {
         text: 'ادعاء يتطلب تصحيحاً بعد النشر',
-        language: Locale.AR,
+        languageCode: LOCALE.AR,
         claimantName: 'مصدر إعلامي',
         claimedAt: new Date(2024, 2, 1),
       },
@@ -368,7 +358,7 @@ const seedSpecialCases = async (
     const fc = await prisma.factCheck.create({
       data: {
         claimId: claim.id,
-        verdict: VeracityRating.MOSTLY_FALSE,
+        verdictCode: VERDICT.MOSTLY_FALSE,
         countryCodes: ['LB'],
         tags: ['تحقق_من_الحقائق'],
       },
@@ -377,13 +367,13 @@ const seedSpecialCases = async (
     const article = await prisma.factCheckArticle.create({
       data: {
         factCheckId: fc.id,
-        locale: Locale.AR,
+        localeCode: LOCALE.AR,
         slug: 'fact-check-ar-with-correction',
         title: 'تحقق يتضمن تصحيحاً منشوراً',
         summary: 'هذا التحقق صدر بشأنه تصحيح بعد النشر.',
         body: '# التحليل\n\nنص التحليل بعد التصحيح.',
         methodology: 'منهجية قياسية',
-        status: ContentStatus.PUBLISHED,
+        statusCode: CONTENT_STATUS.PUBLISHED,
         publishedAt,
         authorId: author.id,
         editorId,
@@ -395,24 +385,24 @@ const seedSpecialCases = async (
         {
           articleId: article.id,
           revisionNumber: 1,
-          tier: RevisionTier.SILENT,
+          tierCode: REVISION_TIER.SILENT,
           title: article.title,
           summary: article.summary,
           body: '# التحليل\n\nنص التحليل الأصلي قبل التصحيح.',
           methodology: article.methodology,
-          verdictAtTime: VeracityRating.MOSTLY_FALSE,
+          verdictAtTimeCode: VERDICT.MOSTLY_FALSE,
           editedById: author.id,
           createdAt: publishedAt,
         },
         {
           articleId: article.id,
           revisionNumber: 2,
-          tier: RevisionTier.CORRECTION,
+          tierCode: REVISION_TIER.CORRECTION,
           title: article.title,
           summary: article.summary,
           body: article.body,
           methodology: article.methodology,
-          verdictAtTime: VeracityRating.MOSTLY_FALSE,
+          verdictAtTimeCode: VERDICT.MOSTLY_FALSE,
           noticeText:
             'تصحيح: تضمّنت النسخة الأولى رقماً غير دقيق بشأن عدد المصادر، وقد صُحّح.',
           reason: 'خطأ في النسخ من المصدر الأصلي.',
@@ -428,7 +418,7 @@ const seedSpecialCases = async (
     const claim = await prisma.claim.create({
       data: {
         text: 'ادعاء تغيّر تصنيفه بعد ظهور أدلة جديدة',
-        language: Locale.AR,
+        languageCode: LOCALE.AR,
         claimantName: 'حساب على وسائل التواصل',
         claimedAt: new Date(2024, 0, 10),
       },
@@ -436,7 +426,7 @@ const seedSpecialCases = async (
     const fc = await prisma.factCheck.create({
       data: {
         claimId: claim.id,
-        verdict: VeracityRating.TRUE, // the CURRENT verdict, post-change
+        verdictCode: VERDICT.TRUE, // the CURRENT verdict, post-change
         countryCodes: ['JO', 'PS'],
         tags: ['تحقق_من_الحقائق'],
       },
@@ -447,8 +437,8 @@ const seedSpecialCases = async (
     await prisma.verdictChange.create({
       data: {
         factCheckId: fc.id,
-        fromVerdict: VeracityRating.HALF_TRUE,
-        toVerdict: VeracityRating.TRUE,
+        fromVerdictCode: VERDICT.HALF_TRUE,
+        toVerdictCode: VERDICT.TRUE,
         reason:
           'ظهرت وثائق رسمية جديدة تؤكد الادعاء بالكامل، فتم رفع التصنيف من "صحيح جزئياً" إلى "صحيح".',
         changedById: author.id,
@@ -460,9 +450,9 @@ const seedSpecialCases = async (
     // Invariant 6: a verdict change writes a CORRECTION-or-higher revision to
     // EVERY published article, in both locales.
     for (const [locale, slug, title] of [
-      [Locale.AR, 'fact-check-ar-verdict-changed', 'تحقق تغيّر تصنيفه'],
+      [LOCALE.AR, 'fact-check-ar-verdict-changed', 'تحقق تغيّر تصنيفه'],
       [
-        Locale.EN,
+        LOCALE.EN,
         'fact-check-en-verdict-changed',
         'Fact-check with a changed verdict',
       ],
@@ -470,20 +460,20 @@ const seedSpecialCases = async (
       const article = await prisma.factCheckArticle.create({
         data: {
           factCheckId: fc.id,
-          locale,
+          localeCode: locale,
           slug,
           title,
           summary:
-            locale === Locale.AR
+            locale === LOCALE.AR
               ? 'تم تعديل تصنيف هذا التحقق بعد النشر.'
               : 'The rating on this fact-check was changed after publication.',
           body:
-            locale === Locale.AR
+            locale === LOCALE.AR
               ? '# التحليل\n\nالتحليل بعد تحديث التصنيف.'
               : '# Analysis\n\nThe analysis following the rating update.',
           methodology:
-            locale === Locale.AR ? 'منهجية قياسية' : 'Standard methodology',
-          status: ContentStatus.PUBLISHED,
+            locale === LOCALE.AR ? 'منهجية قياسية' : 'Standard methodology',
+          statusCode: CONTENT_STATUS.PUBLISHED,
           publishedAt,
           authorId: author.id,
           editorId,
@@ -495,26 +485,26 @@ const seedSpecialCases = async (
           {
             articleId: article.id,
             revisionNumber: 1,
-            tier: RevisionTier.SILENT,
+            tierCode: REVISION_TIER.SILENT,
             title: article.title,
             summary: article.summary,
             body: article.body,
             methodology: article.methodology,
-            verdictAtTime: VeracityRating.HALF_TRUE, // the rating at the time
+            verdictAtTimeCode: VERDICT.HALF_TRUE, // the rating at the time
             editedById: author.id,
             createdAt: publishedAt,
           },
           {
             articleId: article.id,
             revisionNumber: 2,
-            tier: RevisionTier.VERDICT_CHANGE,
+            tierCode: REVISION_TIER.VERDICT_CHANGE,
             title: article.title,
             summary: article.summary,
             body: article.body,
             methodology: article.methodology,
-            verdictAtTime: VeracityRating.TRUE,
+            verdictAtTimeCode: VERDICT.TRUE,
             noticeText:
-              locale === Locale.AR
+              locale === LOCALE.AR
                 ? 'تغيير التصنيف: من "صحيح جزئياً" إلى "صحيح" بعد ظهور وثائق رسمية جديدة.'
                 : 'Verdict changed from "Half True" to "True" after new official documents emerged.',
             reason: 'أدلة جديدة.',
@@ -532,7 +522,7 @@ const seedSpecialCases = async (
     const claim = await prisma.claim.create({
       data: {
         text: 'ادعاء سُحب التحقق الخاص به',
-        language: Locale.AR,
+        languageCode: LOCALE.AR,
         claimantName: 'مجهول',
         claimedAt: new Date(2024, 1, 5),
       },
@@ -540,7 +530,7 @@ const seedSpecialCases = async (
     const fc = await prisma.factCheck.create({
       data: {
         claimId: claim.id,
-        verdict: VeracityRating.UNVERIFIABLE,
+        verdictCode: VERDICT.UNVERIFIABLE,
         countryCodes: ['SY'],
         tags: ['تحقق_من_الحقائق'],
       },
@@ -549,13 +539,13 @@ const seedSpecialCases = async (
     const article = await prisma.factCheckArticle.create({
       data: {
         factCheckId: fc.id,
-        locale: Locale.AR,
+        localeCode: LOCALE.AR,
         slug: 'fact-check-ar-retracted',
         title: 'تحقق مسحوب',
         summary: 'سُحب هذا التحقق.',
         body: '# التحليل\n\nنص التحليل الأصلي.',
         methodology: 'منهجية قياسية',
-        status: ContentStatus.RETRACTED,
+        statusCode: CONTENT_STATUS.RETRACTED,
         publishedAt,
         authorId: author.id,
         editorId,
@@ -567,24 +557,24 @@ const seedSpecialCases = async (
         {
           articleId: article.id,
           revisionNumber: 1,
-          tier: RevisionTier.SILENT,
+          tierCode: REVISION_TIER.SILENT,
           title: article.title,
           summary: article.summary,
           body: article.body,
           methodology: article.methodology,
-          verdictAtTime: VeracityRating.UNVERIFIABLE,
+          verdictAtTimeCode: VERDICT.UNVERIFIABLE,
           editedById: author.id,
           createdAt: publishedAt,
         },
         {
           articleId: article.id,
           revisionNumber: 2,
-          tier: RevisionTier.CORRECTION,
+          tierCode: REVISION_TIER.CORRECTION,
           title: article.title,
           summary: article.summary,
           body: article.body,
           methodology: article.methodology,
-          verdictAtTime: VeracityRating.UNVERIFIABLE,
+          verdictAtTimeCode: VERDICT.UNVERIFIABLE,
           noticeText:
             'سُحب هذا التحقق لعدم كفاية الأدلة التي استند إليها. نعتذر عن النشر الأولي.',
           reason: 'مراجعة داخلية خلصت إلى أن الأدلة غير كافية.',

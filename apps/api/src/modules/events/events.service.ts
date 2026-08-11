@@ -4,11 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EventStatus, EventType } from '@prisma/client';
+
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { createSlug } from '../../common/utils/slug.util';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateEventDto, HostRequestDto, RegisterEventDto } from './dto/create-event.dto';
+import { EVENT_STATUS, EventStatusCode, EventTypeCode } from '../../common/constants/lookups';
 
 @Injectable()
 export class EventsService {
@@ -39,8 +40,8 @@ export class EventsService {
 
   async findAll(
     paginationDto: PaginationDto,
-    type?: EventType,
-    status?: EventStatus,
+    type?: EventTypeCode,
+    status?: EventStatusCode,
     upcoming?: boolean,
   ) {
     const { page = 1, limit = 10, sortBy = 'startDate', sortOrder = 'asc' } = paginationDto;
@@ -53,7 +54,7 @@ export class EventsService {
     
     if (upcoming) {
       where.startDate = { gte: new Date() };
-      where.status = { in: [EventStatus.UPCOMING, EventStatus.ONGOING] };
+      where.status = { in: [EVENT_STATUS.UPCOMING, EVENT_STATUS.ONGOING] };
     }
 
     const [events, total] = await Promise.all([
@@ -204,7 +205,7 @@ export class EventsService {
     await this.prisma.notification.create({
       data: {
         userId,
-        type: 'EVENT_REMINDER',
+        typeCode: 'EVENT_REMINDER',
         title: 'Event Registration Confirmed',
         message: `You've successfully registered for ${event.title}`,
         actionUrl: `/events/${slug}`,
@@ -329,7 +330,7 @@ export class EventsService {
     };
   }
 
-  async updateEventStatus(slug: string, status: EventStatus) {
+  async updateEventStatus(slug: string, status: EventStatusCode) {
     return this.prisma.event.update({
       where: { slug },
       data: { status },

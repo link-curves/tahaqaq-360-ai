@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ContentStatus, SubmissionStatus } from '@prisma/client';
 import { PrismaService } from '../../../database/prisma.service';
+import { CONTENT_STATUS, SUBMISSION_STATUS } from '../../../common/constants/lookups';
 
 @Injectable()
 export class DashboardService {
@@ -52,13 +53,13 @@ export class DashboardService {
       // Fact Checks
       this.prisma.factCheck.count(),
       this.prisma.factCheck.count({
-        where: { status: ContentStatus.PUBLISHED },
+        where: { statusCode: CONTENT_STATUS.PUBLISHED },
       }),
 
       // Research
       this.prisma.research.count(),
       this.prisma.research.count({
-        where: { status: ContentStatus.PUBLISHED },
+        where: { status: CONTENT_STATUS.PUBLISHED },
       }),
 
       // Events
@@ -82,10 +83,10 @@ export class DashboardService {
       // Submissions
       this.prisma.submission.count(),
       this.prisma.submission.count({
-        where: { status: SubmissionStatus.PENDING },
+        where: { status: SUBMISSION_STATUS.PENDING },
       }),
       this.prisma.submission.count({
-        where: { status: SubmissionStatus.VERIFIED },
+        where: { status: SUBMISSION_STATUS.VERIFIED },
       }),
 
       // Comments & Certificates
@@ -181,13 +182,13 @@ export class DashboardService {
       // Fact Checks
       this.prisma.factCheck.count(),
       this.prisma.factCheck.count({
-        where: { status: ContentStatus.PUBLISHED },
+        where: { statusCode: CONTENT_STATUS.PUBLISHED },
       }),
 
       // Submissions
       this.prisma.submission.count(),
       this.prisma.submission.count({
-        where: { status: SubmissionStatus.PENDING },
+        where: { status: SUBMISSION_STATUS.PENDING },
       }),
 
       // Events
@@ -284,10 +285,10 @@ export class DashboardService {
         if (!acc[date]) {
           acc[date] = { pending: 0, verified: 0, rejected: 0 };
         }
-        if (submission.status === SubmissionStatus.PENDING) acc[date].pending++;
-        if (submission.status === SubmissionStatus.VERIFIED)
+        if (submission.status === SUBMISSION_STATUS.PENDING) acc[date].pending++;
+        if (submission.status === SUBMISSION_STATUS.VERIFIED)
           acc[date].verified++;
-        if (submission.status === SubmissionStatus.REJECTED)
+        if (submission.status === SUBMISSION_STATUS.REJECTED)
           acc[date].rejected++;
         return acc;
       },
@@ -349,7 +350,7 @@ export class DashboardService {
       await Promise.all([
         this.prisma.factCheck.groupBy({
           by: ['verdict'],
-          where: { status: ContentStatus.PUBLISHED },
+          where: { statusCode: CONTENT_STATUS.PUBLISHED },
           _count: true,
         }),
         this.prisma.submission.groupBy({
@@ -365,20 +366,20 @@ export class DashboardService {
     return {
       factChecksByVerdict: factChecksByVerdict.reduce(
         (acc: Record<string, number>, item) => {
-          acc[item.verdict] = item._count;
+          acc[item.verdictCode] = item._count;
           return acc;
         },
         {},
       ),
       submissionsByType: submissionsByType.reduce(
         (acc: Record<string, number>, item) => {
-          acc[item.type] = item._count;
+          acc[item.typeCode] = item._count;
           return acc;
         },
         {},
       ),
       eventsByType: eventsByType.reduce((acc: Record<string, number>, item) => {
-        acc[item.type] = item._count;
+        acc[item.typeCode] = item._count;
         return acc;
       }, {}),
     };

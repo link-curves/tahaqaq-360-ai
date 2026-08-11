@@ -11,7 +11,7 @@ export const seedArabicSavedContent = async (
 
   const savedContent: SavedContent[] = [];
   const publishedFactChecks = factChecks.filter((fc) => fc.hasPublishedArticle);
-  const activeUsers = users.filter((u) => u.role === 'USER');
+  const activeUsers = users.filter((u) => u.roleCode === 'USER');
 
   // Each user saves 0-10 fact-checks
   for (const user of activeUsers) {

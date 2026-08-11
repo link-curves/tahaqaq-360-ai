@@ -108,7 +108,7 @@ export class ResearchService {
         tags: createDto.tags || [],
         coverImage: createDto.featuredImage,
         isFeatured: createDto.isFeatured || false,
-        status: createDto.isPublished ? 'PUBLISHED' : 'DRAFT',
+        statusCode: createDto.isPublished ? 'PUBLISHED' : 'DRAFT',
         publishedAt: createDto.isPublished ? new Date() : null,
         attachments: [],
       },
@@ -188,12 +188,12 @@ export class ResearchService {
       throw new NotFoundException('Research article not found');
     }
 
-    const isPublished = article.status === 'PUBLISHED';
+    const isPublished = article.statusCode === 'PUBLISHED';
 
     return this.prisma.research.update({
       where: { slug },
       data: {
-        status: isPublished ? 'DRAFT' : 'PUBLISHED',
+        statusCode: isPublished ? 'DRAFT' : 'PUBLISHED',
         publishedAt: !isPublished ? new Date() : article.publishedAt,
       },
     });

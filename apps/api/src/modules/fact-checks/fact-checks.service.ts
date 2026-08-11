@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ContentStatus, Prisma, Role } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { createSlug } from '../../common/utils/slug.util';
 import { PrismaService } from '../../database/prisma.service';
@@ -12,6 +12,7 @@ import {
   FactCheckFilterDto,
   UpdateFactCheckDto,
 } from './dto/create-fact-check.dto';
+import { CONTENT_STATUS, RoleCode } from '../../common/constants/lookups';
 
 @Injectable()
 export class FactChecksService {
@@ -26,7 +27,7 @@ export class FactChecksService {
         slug,
         authorId: userId,
         publishedAt:
-          createDto.status === ContentStatus.PUBLISHED ? new Date() : null,
+          createDto.status === CONTENT_STATUS.PUBLISHED ? new Date() : null,
       },
       include: {
         author: {
@@ -60,10 +61,10 @@ export class FactChecksService {
     }
 
     if (filterDto.status) {
-      where.status = filterDto.status;
+      where.statusCode = filterDto.statusCode;
     } else {
       // Default to published for public
-      where.status = ContentStatus.PUBLISHED;
+      where.statusCode = CONTENT_STATUS.PUBLISHED;
     }
 
     if (filterDto.search) {
@@ -195,7 +196,7 @@ export class FactChecksService {
   async update(
     slug: string,
     userId: string,
-    userRole: Role,
+    userRole: RoleCode,
     updateDto: UpdateFactCheckDto,
   ) {
     const factCheck = await this.prisma.factCheck.findUnique({
@@ -219,7 +220,7 @@ export class FactChecksService {
       data: {
         ...updateDto,
         publishedAt:
-          updateDto.status === ContentStatus.PUBLISHED && !factCheck.publishedAt
+          updateDto.status === CONTENT_STATUS.PUBLISHED && !factCheck.publishedAt
             ? new Date()
             : factCheck.publishedAt,
       },
@@ -238,7 +239,7 @@ export class FactChecksService {
     return updatedFactCheck;
   }
 
-  async remove(slug: string, userId: string, userRole: Role) {
+  async remove(slug: string, userId: string, userRole: RoleCode) {
     const factCheck = await this.prisma.factCheck.findUnique({
       where: { slug },
     });
@@ -275,10 +276,10 @@ export class FactChecksService {
     const related = await this.prisma.factCheck.findMany({
       where: {
         slug: { not: slug },
-        status: ContentStatus.PUBLISHED,
+        status: CONTENT_STATUS.PUBLISHED,
         OR: [
           { tags: { hasSome: factCheck.tags } },
-          { verdict: factCheck.verdict },
+          { verdictCode: factCheck.verdictCode },
         ],
       },
       take: limit,
@@ -299,16 +300,16 @@ export class FactChecksService {
   async getStats() {
     const [total, byVerdict, recentCount] = await Promise.all([
       this.prisma.factCheck.count({
-        where: { status: ContentStatus.PUBLISHED },
+        where: { statusCode: CONTENT_STATUS.PUBLISHED },
       }),
       this.prisma.factCheck.groupBy({
         by: ['verdict'],
-        where: { status: ContentStatus.PUBLISHED },
+        where: { statusCode: CONTENT_STATUS.PUBLISHED },
         _count: true,
       }),
       this.prisma.factCheck.count({
         where: {
-          status: ContentStatus.PUBLISHED,
+          statusCode: CONTENT_STATUS.PUBLISHED,
           publishedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
         },
       }),
@@ -318,7 +319,7 @@ export class FactChecksService {
       total,
       recentCount,
       byVerdict: byVerdict.reduce((acc: Record<string, number>, item) => {
-        acc[item.verdict] = item._count;
+        acc[item.verdictCode] = item._count;
         return acc;
       }, {}),
     };

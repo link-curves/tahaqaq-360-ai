@@ -19,6 +19,7 @@ import { CreateTrainingRequestDto } from './dto/create-training-request.dto';
 import { FilterTrainingRequestsDto } from './dto/filter-training-requests.dto';
 import { UpdateTrainingRequestDto } from './dto/update-training-request.dto';
 import { TrainingRequestsService } from './training-requests.service';
+import { ROLE } from '../../common/constants/lookups';
 
 @ApiTags('Training Requests')
 @Controller('training-requests')
@@ -35,7 +36,7 @@ export class TrainingRequestsController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @Get()
   @ApiOperation({ summary: 'Get all training requests (Admin/Moderator only)' })
@@ -44,7 +45,7 @@ export class TrainingRequestsController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @Get(':id')
   @ApiOperation({
@@ -55,7 +56,7 @@ export class TrainingRequestsController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @Patch(':id')
   @ApiOperation({
@@ -70,7 +71,7 @@ export class TrainingRequestsController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(ROLE.ADMIN)
   @ApiBearerAuth('JWT-auth')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a training request (Admin only)' })

@@ -23,6 +23,7 @@ import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { FilterBlogDto } from './dto/filter-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
+import { ROLE } from '../../common/constants/lookups';
 
 @ApiTags('Blog')
 @Controller('blog')
@@ -63,7 +64,7 @@ export class BlogController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @Post()
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create new blog post (admin/moderator)' })
@@ -74,7 +75,7 @@ export class BlogController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @Patch(':id')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update blog post (admin/moderator)' })
@@ -85,7 +86,7 @@ export class BlogController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(ROLE.ADMIN)
   @Delete(':id')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete blog post (admin only)' })

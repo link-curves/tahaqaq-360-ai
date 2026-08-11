@@ -8,6 +8,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { FilterBlogDto } from './dto/filter-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
+import { CONTENT_STATUS } from '../../common/constants/lookups';
 
 @Injectable()
 export class BlogService {
@@ -27,7 +28,7 @@ export class BlogService {
     const blogData: Prisma.BlogCreateInput = {
       ...createBlogDto,
       publishedAt:
-        createBlogDto.status === ContentStatus.PUBLISHED
+        createBlogDto.status === CONTENT_STATUS.PUBLISHED
           ? new Date()
           : undefined,
     };
@@ -70,7 +71,7 @@ export class BlogService {
       where.status = status;
     } else {
       // Public endpoint should only show published by default
-      where.status = ContentStatus.PUBLISHED;
+      where.status = CONTENT_STATUS.PUBLISHED;
     }
 
     if (isFeatured !== undefined) {
@@ -156,8 +157,8 @@ export class BlogService {
     // Update publishedAt if status changes to PUBLISHED
     const updateData: Prisma.BlogUpdateInput = { ...updateBlogDto };
     if (
-      updateBlogDto.status === ContentStatus.PUBLISHED &&
-      existingBlog.status !== ContentStatus.PUBLISHED
+      updateBlogDto.status === CONTENT_STATUS.PUBLISHED &&
+      existingBlog.statusCode !== CONTENT_STATUS.PUBLISHED
     ) {
       updateData.publishedAt = new Date();
     }
@@ -184,7 +185,7 @@ export class BlogService {
 
   async getCategories() {
     const blogs = await this.prisma.blog.findMany({
-      where: { status: ContentStatus.PUBLISHED },
+      where: { status: CONTENT_STATUS.PUBLISHED },
       select: { category: true },
       distinct: ['category'],
     });
@@ -194,7 +195,7 @@ export class BlogService {
 
   async getTags() {
     const blogs = await this.prisma.blog.findMany({
-      where: { status: ContentStatus.PUBLISHED },
+      where: { status: CONTENT_STATUS.PUBLISHED },
       select: { tags: true },
     });
 

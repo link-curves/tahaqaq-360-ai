@@ -12,7 +12,7 @@ export const seedArabicCertificates = async (
   const publishedCourses = courses.filter((c) => c.isPublished);
 
   // Create certificates for some users who completed courses
-  const eligibleUsers = users.filter((u) => u.role === 'USER');
+  const eligibleUsers = users.filter((u) => u.roleCode === 'USER');
   const certificateCount = Math.min(100, eligibleUsers.length);
 
   for (let i = 0; i < certificateCount; i++) {

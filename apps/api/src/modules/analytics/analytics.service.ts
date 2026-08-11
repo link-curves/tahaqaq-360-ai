@@ -15,7 +15,7 @@ export class AnalyticsService {
       usersCount,
       submissionsCount,
     ] = await Promise.all([
-      this.prisma.factCheck.count({ where: { status: 'PUBLISHED' } }),
+      this.prisma.factCheck.count({ where: { statusCode: 'PUBLISHED' } }),
       this.prisma.event.count(),
       this.prisma.course.count({ where: { isPublished: true } }),
       this.prisma.research.count({ where: { status: 'PUBLISHED' } }),

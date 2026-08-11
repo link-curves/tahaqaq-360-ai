@@ -1,15 +1,4 @@
-import {
-  ContentStatus,
-  EvidenceType,
-  FactCheck,
-  Locale,
-  PrismaClient,
-  RevisionTier,
-  Role,
-  Topic,
-  User,
-  VeracityRating,
-} from '@prisma/client';
+import { FactCheck, PrismaClient, Topic, User } from '@prisma/client';
 import {
   claimTexts,
   factCheckTitles,
@@ -23,6 +12,7 @@ import {
   randomInt,
   shuffle,
 } from '../helpers/seed.helper';
+import { CONTENT_STATUS, EVIDENCE_TYPE, LOCALE, REVISION_TIER, ROLE, RoleCode, VERDICT } from '../../../common/constants/lookups';
 
 /**
  * English-dataset equivalent of the Arabic fact-check seeder.
@@ -50,8 +40,8 @@ export const seedFactChecks = async (
 ): Promise<SeededFactCheckEn[]> => {
   console.log('🌱 Starting fact-check seeding...');
 
-  const staffRoles: Role[] = [Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN];
-  const staff = users.filter((u) => staffRoles.includes(u.role));
+  const staffRoles: string[] = [ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN];
+  const staff = users.filter((u) => staffRoles.includes(u.roleCode));
   const authorPool = staff.length > 0 ? staff : users;
 
   const pickEditor = (authorId: string) => {
@@ -64,21 +54,21 @@ export const seedFactChecks = async (
   for (let i = 1; i <= 200; i++) {
     const author = randomElement(authorPool);
     const editor = pickEditor(author.id);
-    const verdict = randomElement(Object.values(VeracityRating));
+    const verdict = randomElement(Object.values(VERDICT));
 
     const status =
       i <= 180
-        ? ContentStatus.PUBLISHED
-        : randomElement([ContentStatus.DRAFT, ContentStatus.UNDER_REVIEW]);
+        ? CONTENT_STATUS.PUBLISHED
+        : randomElement([CONTENT_STATUS.DRAFT, CONTENT_STATUS.UNDER_REVIEW]);
     const publishedAt =
-      status === ContentStatus.PUBLISHED
+      status === CONTENT_STATUS.PUBLISHED
         ? randomDate(new Date(2023, 0, 1), new Date())
         : null;
 
     const claim = await prisma.claim.create({
       data: {
         text: randomElement(claimTexts),
-        language: Locale.EN,
+        languageCode: LOCALE.EN,
         claimantName:
           Math.random() > 0.5
             ? `${randomElement(firstNames)} ${randomElement(lastNames)}`
@@ -105,7 +95,7 @@ export const seedFactChecks = async (
     const factCheck = await prisma.factCheck.create({
       data: {
         claimId: claim.id,
-        verdict,
+        verdictCode: verdict,
         countryCodes: shuffle([...COUNTRY_POOL]).slice(0, randomInt(1, 2)),
         tags: shuffle([...tags]).slice(0, randomInt(3, 6)),
         topics: { create: chosenTopics.map((t) => ({ topicId: t.id })) },
@@ -118,7 +108,7 @@ export const seedFactChecks = async (
         return {
           factCheckId: factCheck.id,
           position: e,
-          type: randomElement(Object.values(EvidenceType)),
+          typeCode: randomElement(Object.values(EVIDENCE_TYPE)),
           url: isDead
             ? `https://dead-source.example.com/removed-en-${i}`
             : `https://example.com/source-en-${i}-${e + 1}`,
@@ -148,7 +138,7 @@ export const seedFactChecks = async (
     const article = await prisma.factCheckArticle.create({
       data: {
         factCheckId: factCheck.id,
-        locale: Locale.EN,
+        localeCode: LOCALE.EN,
         slug: `fact-check-${i}`,
         title: `${randomElement(factCheckTitles)} - Claim #${i}`,
         summary: `After thorough investigation, this claim is rated ${verdict.replace(/_/g, ' ').toLowerCase()}.`,
@@ -165,10 +155,10 @@ We consulted ${randomInt(3, 10)} subject matter experts and reviewed ${randomInt
 Based on available evidence, we rate this claim **${verdict.replace(/_/g, ' ').toLowerCase()}**.`,
         methodology:
           'Standard fact-checking methodology following international guidelines',
-        status,
+        statusCode: status,
         publishedAt,
         authorId: author.id,
-        editorId: status === ContentStatus.PUBLISHED ? editor?.id : null,
+        editorId: status === CONTENT_STATUS.PUBLISHED ? editor?.id : null,
         reviewedAt: publishedAt,
         metaTitle: `Fact-check: claim #${i}`,
         metaDescription: `A full review of claim #${i}`,
@@ -179,17 +169,17 @@ Based on available evidence, we rate this claim **${verdict.replace(/_/g, ' ').t
       },
     });
 
-    if (status === ContentStatus.PUBLISHED && publishedAt) {
+    if (status === CONTENT_STATUS.PUBLISHED && publishedAt) {
       await prisma.articleRevision.create({
         data: {
           articleId: article.id,
           revisionNumber: 1,
-          tier: RevisionTier.SILENT,
+          tierCode: REVISION_TIER.SILENT,
           title: article.title,
           summary: article.summary,
           body: article.body,
           methodology: article.methodology,
-          verdictAtTime: verdict,
+          verdictAtTimeCode: verdict,
           editedById: author.id,
           createdAt: publishedAt,
         },
@@ -198,7 +188,7 @@ Based on available evidence, we rate this claim **${verdict.replace(/_/g, ' ').t
 
     results.push({
       ...factCheck,
-      hasPublishedArticle: status === ContentStatus.PUBLISHED,
+      hasPublishedArticle: status === CONTENT_STATUS.PUBLISHED,
       publishedAt,
     });
   }

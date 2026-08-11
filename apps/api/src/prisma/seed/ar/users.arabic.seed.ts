@@ -6,6 +6,7 @@ import {
   arabicFirstNames,
   arabicLastNames,
 } from './data/arabic.data';
+import { ROLE } from '../../../common/constants/lookups';
 
 export const seedArabicUsers = async (
   prisma: PrismaClient,
@@ -24,7 +25,7 @@ export const seedArabicUsers = async (
       firstName: 'محمد',
       lastName: 'الأحمد',
       username: 'superadmin',
-      role: Role.SUPER_ADMIN,
+      roleCode: ROLE.SUPER_ADMIN,
       isEmailVerified: true,
       reputation: 1000,
       totalPoints: 10000,
@@ -43,7 +44,7 @@ export const seedArabicUsers = async (
         firstName: randomElement(arabicFirstNames),
         lastName: randomElement(arabicLastNames),
         username: `admin${i}`,
-        role: Role.ADMIN,
+        roleCode: ROLE.ADMIN,
         isEmailVerified: true,
         reputation: randomInt(500, 900),
         totalPoints: randomInt(5000, 9000),
@@ -63,7 +64,7 @@ export const seedArabicUsers = async (
         firstName: randomElement(arabicFirstNames),
         lastName: randomElement(arabicLastNames),
         username: `moderator${i}`,
-        role: Role.MODERATOR,
+        roleCode: ROLE.MODERATOR,
         isEmailVerified: true,
         reputation: randomInt(200, 500),
         totalPoints: randomInt(2000, 5000),
@@ -85,7 +86,7 @@ export const seedArabicUsers = async (
         firstName,
         lastName,
         username: `${firstName}_${lastName}_${i}`,
-        role: Role.USER,
+        roleCode: ROLE.USER,
         isEmailVerified: Math.random() > 0.3,
         reputation: randomInt(0, 200),
         totalPoints: randomInt(0, 2000),

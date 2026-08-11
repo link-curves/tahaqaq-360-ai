@@ -136,9 +136,9 @@ model ClaimAppearance {
 /// MOSTLY_TRUE while the English reads HALF_TRUE. Publishing two ratings for one
 /// claim under one masthead is not a defect you can ship.
 model FactCheck {
-  id      String         @id @default(cuid())
-  claimId String
-  claim   Claim          @relation(fields: [claimId], references: [id])
+  id          String         @id @default(cuid())
+  claimId     String
+  claim       Claim          @relation(fields: [claimId], references: [id])
   verdictCode String
   verdict     VeracityRating @relation(fields: [verdictCode], references: [code])
 
@@ -178,7 +178,7 @@ model FactCheckArticle {
   factCheckId String
   factCheck   FactCheck @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
   localeCode  String
-  locale      Locale @relation(fields: [localeCode], references: [code])
+  locale      Locale    @relation(fields: [localeCode], references: [code])
 
   slug        String
   title       String
@@ -268,15 +268,15 @@ model ArticleRevision {
   article        FactCheckArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
   revisionNumber Int // 1-based, per article
   tierCode       String
-  tier           RevisionTier @relation(fields: [tierCode], references: [code])
+  tier           RevisionTier     @relation(fields: [tierCode], references: [code])
 
   // Full snapshot as the article stood at this revision. Snapshots rather than
   // diffs: the requirement is "serve the version as it was on date X", which a
   // snapshot answers directly.
-  title         String
-  summary       String         @db.Text
-  body          String         @db.Text
-  methodology   String?        @db.Text
+  title             String
+  summary           String         @db.Text
+  body              String         @db.Text
+  methodology       String?        @db.Text
   /// Denormalised deliberately. Replaying VerdictChange against timestamps to
   /// work out the rating at a point in time is right in principle and wrong at 2am.
   verdictAtTimeCode String
@@ -308,7 +308,7 @@ model VerdictChange {
   fromVerdict     VeracityRating @relation("VerdictChangeFrom", fields: [fromVerdictCode], references: [code])
   toVerdictCode   String
   toVerdict       VeracityRating @relation("VerdictChangeTo", fields: [toVerdictCode], references: [code])
-  reason      String         @db.Text // public
+  reason          String         @db.Text // public
 
   changedById  String
   changedBy    User   @relation("VerdictChangedBy", fields: [changedById], references: [id])
@@ -937,11 +937,11 @@ model Notification {
 // ============================================
 
 model ModerationLog {
-  id     String           @id @default(cuid())
+  id         String           @id @default(cuid())
   actionCode String
   action     ModerationAction @relation(fields: [actionCode], references: [code])
-  reason String?
-  notes  String?          @db.Text
+  reason     String?
+  notes      String?          @db.Text
 
   moderatorId String
   moderator   User   @relation(fields: [moderatorId], references: [id])

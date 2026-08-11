@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { EventStatus, EventType } from '@prisma/client';
+
 import {
   IsArray,
   IsBoolean,
   IsDateString,
-  IsEnum,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -12,6 +12,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { EVENT_STATUS, EVENT_TYPE, EventStatusCode, EventTypeCode } from '../../../common/constants/lookups';
 
 export class CreateEventDto {
   @ApiProperty({ example: 'Media Literacy Workshop 2025' })
@@ -24,9 +25,9 @@ export class CreateEventDto {
   @MinLength(20)
   description: string;
 
-  @ApiProperty({ enum: EventType, example: EventType.WORKSHOP })
-  @IsEnum(EventType)
-  type: EventType;
+  @ApiProperty({ enum: Object.values(EVENT_TYPE), example: EVENT_TYPE.WORKSHOP })
+  @IsIn(Object.values(EVENT_TYPE))
+  type: EventTypeCode;
 
   @ApiProperty({ example: '2025-12-01T10:00:00Z' })
   @IsDateString()
@@ -82,10 +83,10 @@ export class CreateEventDto {
   @IsUrl()
   coverImage?: string;
 
-  @ApiProperty({ enum: EventStatus, required: false })
+  @ApiProperty({ enum: Object.values(EVENT_STATUS), required: false })
   @IsOptional()
-  @IsEnum(EventStatus)
-  status?: EventStatus;
+  @IsIn(Object.values(EVENT_STATUS))
+  status?: EventStatusCode;
 }
 
 export class RegisterEventDto {
@@ -123,9 +124,9 @@ export class HostRequestDto {
   @MinLength(50)
   description: string;
 
-  @ApiProperty({ enum: EventType })
-  @IsEnum(EventType)
-  eventType: EventType;
+  @ApiProperty({ enum: Object.values(EVENT_TYPE) })
+  @IsIn(Object.values(EVENT_TYPE))
+  eventType: EventTypeCode;
 
   @ApiProperty()
   @IsDateString()

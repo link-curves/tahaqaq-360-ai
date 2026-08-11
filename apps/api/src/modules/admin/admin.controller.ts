@@ -10,17 +10,18 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { AdminService } from './admin.service';
+import { ROLE, RoleCode } from '../../common/constants/lookups';
 
 @ApiTags('Admin')
 @Controller('admin')
 @UseGuards(RolesGuard)
-@Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
 @ApiBearerAuth('JWT-auth')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -29,7 +30,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Get all users' })
   getAllUsers(
     @Query() paginationDto: PaginationDto,
-    @Query('role') role?: Role,
+    @Query('role') role?: RoleCode,
     @Query('search') search?: string,
   ) {
     return this.adminService.getAllUsers(paginationDto, role, search);
@@ -37,7 +38,7 @@ export class AdminController {
 
   @Patch('users/:id/role')
   @ApiOperation({ summary: 'Update user role' })
-  updateUserRole(@Param('id') userId: string, @Body('role') role: Role) {
+  updateUserRole(@Param('id') userId: string, @Body('role') role: RoleCode) {
     return this.adminService.updateUserRole(userId, role);
   }
 
@@ -48,7 +49,7 @@ export class AdminController {
   }
 
   @Delete('users/:id')
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'Delete a user (Super Admin only)' })
   deleteUser(@Param('id') userId: string) {
     return this.adminService.deleteUser(userId);
@@ -86,7 +87,7 @@ export class AdminController {
   }
 
   @Patch('settings')
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update system settings' })
   updateSystemSettings(@Body() settings: any) {
     return this.adminService.updateSystemSettings(settings);

@@ -1,20 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SubmissionType } from '@prisma/client';
+
 import {
   IsArray,
   IsBoolean,
   IsEmail,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
   IsUrl,
   MinLength,
 } from 'class-validator';
+import { SUBMISSION_TYPE, SubmissionTypeCode } from '../../../common/constants/lookups';
 
 export class CreateSubmissionDto {
-  @ApiProperty({ enum: SubmissionType, example: SubmissionType.TEXT })
-  @IsEnum(SubmissionType)
-  type: SubmissionType;
+  @ApiProperty({ enum: Object.values(SUBMISSION_TYPE), example: SUBMISSION_TYPE.TEXT })
+  @IsIn(Object.values(SUBMISSION_TYPE))
+  type: SubmissionTypeCode;
 
   @ApiProperty({ example: 'I found this suspicious claim on social media...' })
   @IsString()

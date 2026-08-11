@@ -15,7 +15,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Role, SubmissionStatus } from '@prisma/client';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
@@ -25,6 +25,7 @@ import {
   UpdateSubmissionStatusDto,
 } from './dto/create-submission.dto';
 import { SubmissionsService } from './submissions.service';
+import { ROLE, RoleCode, SubmissionStatusCode } from '../../common/constants/lookups';
 
 @ApiTags('Submissions')
 @Controller('submissions')
@@ -43,14 +44,14 @@ export class SubmissionsController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get all submissions (Moderators only)' })
-  @ApiQuery({ name: 'status', required: false, enum: SubmissionStatus })
+  @ApiQuery({ name: 'status', required: false, enum: SubmissionStatusCode })
   @ApiQuery({ name: 'type', required: false })
   findAll(
     @Query() paginationDto: PaginationDto,
-    @Query('status') status?: SubmissionStatus,
+    @Query('status') status?: SubmissionStatusCode,
     @Query('type') type?: string,
   ) {
     return this.submissionsService.findAll(paginationDto, status, type);
@@ -68,7 +69,7 @@ export class SubmissionsController {
 
   @Get('stats')
   @UseGuards(RolesGuard)
-  @Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get submission statistics' })
   getStats() {
@@ -81,14 +82,14 @@ export class SubmissionsController {
   findOne(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') userRole: Role,
+    @CurrentUser('role') userRole: RoleCode,
   ) {
     return this.submissionsService.findOne(id, userId, userRole);
   }
 
   @Patch(':id/status')
   @UseGuards(RolesGuard)
-  @Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update submission status' })
   updateStatus(
@@ -101,7 +102,7 @@ export class SubmissionsController {
 
   @Patch(':id/priority')
   @UseGuards(RolesGuard)
-  @Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Assign priority to submission' })
   assignPriority(@Param('id') id: string, @Body('priority') priority: number) {
@@ -110,7 +111,7 @@ export class SubmissionsController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a submission (Admin only)' })
   deleteSubmission(@Param('id') id: string) {

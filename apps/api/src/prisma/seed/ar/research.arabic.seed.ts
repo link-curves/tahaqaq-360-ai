@@ -1,4 +1,4 @@
-import { ContentStatus, PrismaClient, Research } from '@prisma/client';
+import { PrismaClient, Research } from '@prisma/client';
 import { randomElement, randomInt } from '../helpers/seed.helper';
 import {
   arabicFirstNames,
@@ -7,6 +7,7 @@ import {
   arabicResearchTitles,
   arabicTags,
 } from './data/arabic.data';
+import { ContentStatusCode } from '../../../common/constants/lookups';
 
 export const seedArabicResearch = async (
   prisma: PrismaClient,
@@ -14,7 +15,7 @@ export const seedArabicResearch = async (
   console.log('🌱 البدء في إضافة الأبحاث بالعربية...');
 
   const researchPapers: Research[] = [];
-  const statuses: ContentStatus[] = ['PUBLISHED', 'DRAFT', 'ARCHIVED'];
+  const statuses: ContentStatusCode[] = ['PUBLISHED', 'DRAFT', 'ARCHIVED'];
 
   for (let i = 0; i < 50; i++) {
     const title = randomElement(arabicResearchTitles);
@@ -174,7 +175,7 @@ export const seedArabicResearch = async (
             size: randomInt(1000, 10000) + 'KB',
           },
         ],
-        status,
+        statusCode: status,
         publishedAt,
         views: status === 'PUBLISHED' ? randomInt(50, 5000) : 0,
         downloads: status === 'PUBLISHED' ? randomInt(10, 500) : 0,

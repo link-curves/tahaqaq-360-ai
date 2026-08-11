@@ -15,7 +15,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { EventStatus, EventType, Role } from '@prisma/client';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -27,6 +27,7 @@ import {
   RegisterEventDto,
 } from './dto/create-event.dto';
 import { EventsService } from './events.service';
+import { EventStatusCode, EventTypeCode, ROLE } from '../../common/constants/lookups';
 
 @ApiTags('Events')
 @Controller('events')
@@ -35,7 +36,7 @@ export class EventsController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new event' })
   create(@Body() createDto: CreateEventDto) {
@@ -45,14 +46,14 @@ export class EventsController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'Get all events' })
-  @ApiQuery({ name: 'type', required: false, enum: EventType })
-  @ApiQuery({ name: 'status', required: false, enum: EventStatus })
+  @ApiQuery({ name: 'type', required: false, enum: EventTypeCode })
+  @ApiQuery({ name: 'status', required: false, enum: EventStatusCode })
   @ApiQuery({ name: 'upcoming', required: false, type: Boolean })
   findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
-    @Query('type') type?: EventType,
-    @Query('status') status?: EventStatus,
+    @Query('type') type?: EventTypeCode,
+    @Query('status') status?: EventStatusCode,
     @Query('upcoming') upcoming?: boolean,
   ) {
     const paginationDto: PaginationDto = {
@@ -106,7 +107,7 @@ export class EventsController {
 
   @Patch(':slug')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update an event' })
   update(@Param('slug') slug: string, @Body() updateDto: CreateEventDto) {
@@ -115,7 +116,7 @@ export class EventsController {
 
   @Delete(':slug')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete an event' })
   remove(@Param('slug') slug: string) {

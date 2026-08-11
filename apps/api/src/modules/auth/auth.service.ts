@@ -85,7 +85,7 @@ export class AuthService {
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    const tokens = await this.generateTokens(user.id, user.email, user.roleCode);
 
     return {
       user: {
@@ -93,7 +93,7 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role,
+        roleCode: user.roleCode,
         avatar: user.avatar,
       },
       ...tokens,
@@ -137,7 +137,7 @@ export class AuthService {
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    const tokens = await this.generateTokens(user.id, user.email, user.roleCode);
 
     return {
       user: {
@@ -145,7 +145,7 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role,
+        roleCode: user.roleCode,
         avatar: user.avatar,
       },
       ...tokens,
@@ -189,7 +189,7 @@ export class AuthService {
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    const tokens = await this.generateTokens(user.id, user.email, user.roleCode);
 
     // Cookie configuration
     const accessCookieOptions: CookieOptions = {
@@ -214,7 +214,7 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role,
+        roleCode: user.roleCode,
         avatar: user.avatar,
       },
       accessCookieOptions,
@@ -238,7 +238,7 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
-      return this.generateTokens(user.id, user.email, user.role);
+      return this.generateTokens(user.id, user.email, user.roleCode);
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }

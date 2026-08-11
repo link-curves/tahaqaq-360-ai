@@ -20,6 +20,7 @@ import { IPaginatedResult } from '../../common/interfaces/pagination.interface';
 import { CreateResearchDto } from './dto/create-research.dto';
 import { UpdateResearchDto } from './dto/update-research.dto';
 import { ResearchService } from './research.service';
+import { ROLE } from '../../common/constants/lookups';
 
 @ApiTags('Research')
 @Controller('research')
@@ -62,7 +63,7 @@ export class ResearchController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new research article (Admin/Moderator)' })
   async createResearch(
@@ -74,7 +75,7 @@ export class ResearchController {
 
   @Patch(':slug')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update a research article (Admin/Moderator)' })
   async updateResearch(
@@ -86,7 +87,7 @@ export class ResearchController {
 
   @Delete(':slug')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a research article (Admin only)' })
   async deleteResearch(@Param('slug') slug: string) {
@@ -95,7 +96,7 @@ export class ResearchController {
 
   @Patch(':slug/publish')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(ROLE.ADMIN, ROLE.MODERATOR)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Toggle publish status (Admin/Moderator)' })
   async togglePublish(@Param('slug') slug: string) {
@@ -104,7 +105,7 @@ export class ResearchController {
 
   @Patch(':slug/feature')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(ROLE.ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Toggle featured status (Admin only)' })
   async toggleFeatured(@Param('slug') slug: string) {

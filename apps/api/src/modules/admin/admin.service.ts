@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Role } from '@prisma/client';
+
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
+import { RoleCode } from '../../common/constants/lookups';
 
 @Injectable()
 export class AdminService {
@@ -10,7 +11,7 @@ export class AdminService {
   // ============================================
   // USER MANAGEMENT
   // ============================================
-  async getAllUsers(paginationDto: PaginationDto, role?: Role, search?: string) {
+  async getAllUsers(paginationDto: PaginationDto, role?: RoleCode, search?: string) {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
     const skip = (page - 1) * limit;
 
@@ -70,7 +71,7 @@ export class AdminService {
     };
   }
 
-  async updateUserRole(userId: string, role: Role) {
+  async updateUserRole(userId: string, role: RoleCode) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -128,7 +129,7 @@ export class AdminService {
         },
       }),
       this.prisma.factCheck.findMany({
-        where: { status: 'UNDER_REVIEW' },
+        where: { statusCode: 'UNDER_REVIEW' },
         take: 10,
         include: {
           author: {

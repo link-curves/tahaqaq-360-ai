@@ -4,11 +4,12 @@ import { Role } from '@prisma/client';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { DashboardService } from './dashboard.service';
+import { ROLE } from '../../../common/constants/lookups';
 
 @ApiTags('Admin')
 @Controller('admin/dashboard')
 @UseGuards(RolesGuard)
-@Roles(Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
 @ApiBearerAuth('JWT-auth')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
