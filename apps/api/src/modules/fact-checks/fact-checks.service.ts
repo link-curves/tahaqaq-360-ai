@@ -1,314 +1,388 @@
 import {
-  ForbiddenException,
   Injectable,
   NotFoundException,
+  NotImplementedException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PaginationDto } from '../../common/dto/pagination.dto';
-import { createSlug } from '../../common/utils/slug.util';
+import {
+  CONTENT_STATUS,
+  LOCALE,
+  LocaleCode,
+  REVISION_TIER,
+  RoleCode,
+} from '../../common/constants/lookups';
 import { PrismaService } from '../../database/prisma.service';
 import {
   CreateFactCheckDto,
   FactCheckFilterDto,
   UpdateFactCheckDto,
 } from './dto/create-fact-check.dto';
-import { CONTENT_STATUS, RoleCode } from '../../common/constants/lookups';
 
+/**
+ * Reads over the editorial record: Claim -> FactCheck -> FactCheckArticle.
+ *
+ * The article is the entity the public reads: it carries the prose, the byline,
+ * the slug and the publish state, and there is one per locale. The verdict and
+ * the evidence hang off the review, shared by both locales (ADR-0002).
+ *
+ * PUBLIC PAYLOAD SAFETY
+ * Every select here is explicit, so `Evidence.note` and `ArticleRevision.reason`
+ * are never fetched — they are internal analyst notes. Using `include` instead
+ * would pull them in and leak them (ADR-0005/0006 invariant 7). There is a test
+ * asserting this; do not relax the selects.
+ */
 @Injectable()
 export class FactChecksService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, createDto: CreateFactCheckDto) {
-    const slug = createSlug(createDto.title);
-
-    const factCheck = await this.prisma.factCheck.create({
-      data: {
-        ...createDto,
-        slug,
-        authorId: userId,
-        publishedAt:
-          createDto.status === CONTENT_STATUS.PUBLISHED ? new Date() : null,
+  /** Shared by both locales, so it lives on the review. */
+  private readonly reviewListSelect = {
+    id: true,
+    verdictCode: true,
+    countryCodes: true,
+    verdict: { select: { code: true, labelAr: true, labelEn: true } },
+    claim: { select: { text: true, claimantName: true, claimedAt: true } },
+    topics: {
+      select: {
+        topic: { select: { slug: true, labelAr: true, labelEn: true } },
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            avatar: true,
-          },
-        },
-      },
-    });
+    },
+    _count: { select: { evidence: true, comments: true } },
+  } satisfies Prisma.FactCheckSelect;
 
-    return factCheck;
-  }
+  private readonly bylineSelect = {
+    id: true,
+    firstName: true,
+    lastName: true,
+    avatar: true,
+  } satisfies Prisma.UserSelect;
 
-  async findAll(paginationDto: PaginationDto, filterDto: FactCheckFilterDto) {
+  // ---------------------------------------------------------------------
+  // READS
+  // ---------------------------------------------------------------------
+
+  /**
+   * Paginated list of articles in one locale.
+   *
+   * Deliberately a lighter projection than `findOne`: no body, no evidence
+   * rows, no appearances. An index page that loads every citation for every
+   * result is the obvious way to make this endpoint slow.
+   */
+  async findAll(filterDto: FactCheckFilterDto) {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'createdAt',
+      sortBy = 'publishedAt',
       sortOrder = 'desc',
-    } = paginationDto;
-    const skip = (page - 1) * limit;
+      locale = LOCALE.AR,
+      status,
+      verdict,
+      topic,
+      country,
+      search,
+      tags,
+      authorId,
+      isFeatured,
+      startDate,
+      endDate,
+    } = filterDto;
 
-    // Build where clause
-    const where: Prisma.FactCheckWhereInput = {};
+    const where: Prisma.FactCheckArticleWhereInput = {
+      localeCode: locale,
+      // Public callers see published work only. An explicit status filter is
+      // for admin surfaces, which are role-guarded at the controller.
+      statusCode: status ?? CONTENT_STATUS.PUBLISHED,
+    };
 
-    if (filterDto.verdict) {
-      where.verdictCode = filterDto.verdict;
+    if (authorId) where.authorId = authorId;
+    if (isFeatured !== undefined) where.isFeatured = isFeatured;
+
+    if (startDate || endDate) {
+      where.publishedAt = {};
+      if (startDate) where.publishedAt.gte = new Date(startDate);
+      if (endDate) where.publishedAt.lte = new Date(endDate);
     }
 
-    if (filterDto.status) {
-      where.statusCode = filterDto.statusCode;
-    } else {
-      // Default to published for public
-      where.statusCode = CONTENT_STATUS.PUBLISHED;
-    }
-
-    if (filterDto.search) {
+    if (search) {
       where.OR = [
-        { title: { contains: filterDto.search, mode: 'insensitive' } },
-        { claim: { contains: filterDto.search, mode: 'insensitive' } },
-        { summary: { contains: filterDto.search, mode: 'insensitive' } },
+        { title: { contains: search, mode: 'insensitive' } },
+        { summary: { contains: search, mode: 'insensitive' } },
+        {
+          factCheck: {
+            claim: { text: { contains: search, mode: 'insensitive' } },
+          },
+        },
       ];
     }
 
-    if (filterDto.tags && filterDto.tags.length > 0) {
-      where.tags = { hasSome: filterDto.tags };
-    }
+    // Verdict, topic, country and tags are properties of the review.
+    const review: Prisma.FactCheckWhereInput = {};
+    if (verdict) review.verdictCode = verdict;
+    if (topic) review.topics = { some: { topic: { slug: topic } } };
+    if (country) review.countryCodes = { has: country };
+    if (tags?.length) review.tags = { hasSome: tags };
+    if (Object.keys(review).length > 0) where.factCheck = review;
 
-    if (filterDto.authorId) {
-      where.authorId = filterDto.authorId;
-    }
-
-    if (filterDto.startDate || filterDto.endDate) {
-      where.publishedAt = {};
-      if (filterDto.startDate) {
-        where.publishedAt.gte = new Date(filterDto.startDate);
-      }
-      if (filterDto.endDate) {
-        where.publishedAt.lte = new Date(filterDto.endDate);
-      }
-    }
-
-    // Execute queries
-    const [factChecks, total] = await Promise.all([
-      this.prisma.factCheck.findMany({
+    const [articles, total] = await Promise.all([
+      this.prisma.factCheckArticle.findMany({
         where,
-        skip,
+        skip: (page - 1) * limit,
         take: limit,
         orderBy: { [sortBy]: sortOrder },
-        include: {
-          author: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-            },
-          },
-          _count: {
-            select: { comments: true },
-          },
+        select: {
+          id: true,
+          localeCode: true,
+          slug: true,
+          title: true,
+          summary: true,
+          featuredImage: true,
+          isFeatured: true,
+          statusCode: true,
+          publishedAt: true,
+          views: true,
+          shares: true,
+          author: { select: this.bylineSelect },
+          factCheck: { select: this.reviewListSelect },
         },
       }),
-      this.prisma.factCheck.count({ where }),
+      this.prisma.factCheckArticle.count({ where }),
     ]);
 
+    const totalPages = Math.ceil(total / limit);
+
+    // The flat shape TransformInterceptor detects as paginated. All four of
+    // data/total/page/limit must be present or `meta` silently disappears.
     return {
-      data: factChecks,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        hasNextPage: page < Math.ceil(total / limit),
-        hasPreviousPage: page > 1,
-      },
+      data: articles.map((a) => this.shapeListItem(a)),
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
     };
   }
 
-  async findOne(slug: string, incrementView: boolean = true) {
-    const factCheck = await this.prisma.factCheck.findUnique({
-      where: { slug },
-      include: {
-        author: {
+  /**
+   * One article in full: the claim and where it appeared, the ordered
+   * evidence, the byline and editor, and any public corrections.
+   */
+  async findOne(locale: LocaleCode, slug: string, incrementView = true) {
+    const article = await this.prisma.factCheckArticle.findUnique({
+      where: { localeCode_slug: { localeCode: locale, slug } },
+      select: {
+        id: true,
+        localeCode: true,
+        slug: true,
+        title: true,
+        summary: true,
+        body: true,
+        methodology: true,
+        statusCode: true,
+        publishedAt: true,
+        reviewedAt: true,
+        metaTitle: true,
+        metaDescription: true,
+        featuredImage: true,
+        views: true,
+        shares: true,
+        author: { select: this.bylineSelect },
+        editor: { select: this.bylineSelect },
+        factCheck: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
-            username: true,
-            avatar: true,
-            reputation: true,
-          },
-        },
-        comments: {
-          where: { parentId: null },
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-          include: {
-            user: {
+            verdictCode: true,
+            countryCodes: true,
+            tags: true,
+            verdict: {
               select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                avatar: true,
+                code: true,
+                labelAr: true,
+                labelEn: true,
+                definitionAr: true,
+                definitionEn: true,
               },
             },
-            replies: {
-              take: 5,
-              include: {
-                user: {
+            claim: {
+              select: {
+                text: true,
+                languageCode: true,
+                claimantName: true,
+                claimedAt: true,
+                firstSeenAt: true,
+                appearances: {
+                  orderBy: { appearedAt: 'asc' },
                   select: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    avatar: true,
+                    url: true,
+                    platform: true,
+                    publisher: true,
+                    appearedAt: true,
+                    archiveUrl: true,
+                    archivedAt: true,
+                    mediaUrls: true,
                   },
                 },
               },
             },
+            evidence: {
+              orderBy: { position: 'asc' },
+              // NOTE: `note` is deliberately absent — internal analyst note.
+              select: {
+                position: true,
+                typeCode: true,
+                url: true,
+                title: true,
+                publisher: true,
+                publishedAt: true,
+                accessedAt: true,
+                archiveUrl: true,
+                archivedAt: true,
+                excerpt: true,
+              },
+            },
+            topics: {
+              select: {
+                topic: { select: { slug: true, labelAr: true, labelEn: true } },
+              },
+            },
+            // Powers the language switcher.
+            articles: {
+              select: { localeCode: true, slug: true, statusCode: true },
+            },
+            _count: { select: { comments: true } },
           },
         },
-        _count: {
-          select: { comments: true, savedBy: true },
+        revisions: {
+          // Only disclosed revisions are public; SILENT ones are internal.
+          where: { tierCode: { not: REVISION_TIER.SILENT } },
+          orderBy: { revisionNumber: 'desc' },
+          // NOTE: `reason` is deliberately absent — internal.
+          select: {
+            revisionNumber: true,
+            tierCode: true,
+            noticeText: true,
+            verdictAtTimeCode: true,
+            createdAt: true,
+          },
         },
       },
     });
 
-    if (!factCheck) {
+    if (!article) {
       throw new NotFoundException('Fact check not found');
     }
 
-    // Increment view count
     if (incrementView) {
-      await this.prisma.factCheck.update({
-        where: { slug },
+      await this.prisma.factCheckArticle.update({
+        where: { id: article.id },
         data: { views: { increment: 1 } },
       });
     }
 
-    return factCheck;
+    const { factCheck, revisions, ...rest } = article;
+    const { topics, articles, ...review } = factCheck;
+
+    return {
+      ...rest,
+      isRetracted: article.statusCode === CONTENT_STATUS.RETRACTED,
+      factCheck: {
+        ...review,
+        topics: topics.map((t) => t.topic),
+      },
+      // Sibling locales that are actually published — a draft translation
+      // must not appear in the language switcher.
+      availableLocales: articles
+        .filter(
+          (a) =>
+            a.localeCode !== article.localeCode &&
+            a.statusCode === CONTENT_STATUS.PUBLISHED,
+        )
+        .map((a) => ({ locale: a.localeCode, slug: a.slug })),
+      corrections: revisions,
+    };
   }
 
-  async update(
-    slug: string,
-    userId: string,
-    userRole: RoleCode,
-    updateDto: UpdateFactCheckDto,
-  ) {
-    const factCheck = await this.prisma.factCheck.findUnique({
-      where: { slug },
-    });
-
-    if (!factCheck) {
-      throw new NotFoundException('Fact check not found');
-    }
-
-    // Authorization check
-    if (
-      factCheck.authorId !== userId &&
-      !['ADMIN', 'SUPER_ADMIN'].includes(userRole)
-    ) {
-      throw new ForbiddenException('You can only edit your own fact checks');
-    }
-
-    const updatedFactCheck = await this.prisma.factCheck.update({
-      where: { slug },
-      data: {
-        ...updateDto,
-        publishedAt:
-          updateDto.status === CONTENT_STATUS.PUBLISHED && !factCheck.publishedAt
-            ? new Date()
-            : factCheck.publishedAt,
-      },
-      include: {
-        author: {
+  /** Same locale, published, sharing a topic or the verdict. */
+  async getRelated(locale: LocaleCode, slug: string, limit?: number) {
+    // `enableImplicitConversion` turns a missing numeric query param into NaN,
+    // which slips past a parameter default and reaches Prisma as `take: NaN`.
+    const take = Number.isFinite(Number(limit)) ? Number(limit) : 5;
+    const article = await this.prisma.factCheckArticle.findUnique({
+      where: { localeCode_slug: { localeCode: locale, slug } },
+      select: {
+        factCheck: {
           select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            avatar: true,
+            verdictCode: true,
+            tags: true,
+            topics: { select: { topicId: true } },
           },
         },
       },
     });
 
-    return updatedFactCheck;
-  }
-
-  async remove(slug: string, userId: string, userRole: RoleCode) {
-    const factCheck = await this.prisma.factCheck.findUnique({
-      where: { slug },
-    });
-
-    if (!factCheck) {
+    if (!article) {
       throw new NotFoundException('Fact check not found');
     }
 
-    // Authorization check
-    if (
-      factCheck.authorId !== userId &&
-      !['ADMIN', 'SUPER_ADMIN'].includes(userRole)
-    ) {
-      throw new ForbiddenException('You can only delete your own fact checks');
-    }
+    const topicIds = article.factCheck.topics.map((t) => t.topicId);
 
-    await this.prisma.factCheck.delete({
-      where: { slug },
-    });
-
-    return { message: 'Fact check deleted successfully' };
-  }
-
-  async getRelated(slug: string, limit: number = 5) {
-    const factCheck = await this.prisma.factCheck.findUnique({
-      where: { slug },
-      select: { tags: true, verdict: true },
-    });
-
-    if (!factCheck) {
-      throw new NotFoundException('Fact check not found');
-    }
-
-    const related = await this.prisma.factCheck.findMany({
+    const related = await this.prisma.factCheckArticle.findMany({
       where: {
+        localeCode: locale,
+        statusCode: CONTENT_STATUS.PUBLISHED,
         slug: { not: slug },
-        status: CONTENT_STATUS.PUBLISHED,
-        OR: [
-          { tags: { hasSome: factCheck.tags } },
-          { verdictCode: factCheck.verdictCode },
-        ],
+        factCheck: {
+          OR: [
+            ...(topicIds.length
+              ? [{ topics: { some: { topicId: { in: topicIds } } } }]
+              : []),
+            { verdictCode: article.factCheck.verdictCode },
+            ...(article.factCheck.tags.length
+              ? [{ tags: { hasSome: article.factCheck.tags } }]
+              : []),
+          ],
+        },
       },
-      take: limit,
+      take,
       orderBy: { views: 'desc' },
       select: {
-        id: true,
-        title: true,
+        localeCode: true,
         slug: true,
-        verdict: true,
+        title: true,
+        summary: true,
         featuredImage: true,
         publishedAt: true,
+        factCheck: {
+          select: {
+            verdictCode: true,
+            verdict: { select: { code: true, labelAr: true, labelEn: true } },
+          },
+        },
       },
     });
 
     return related;
   }
 
-  async getStats() {
+  async getStats(locale: LocaleCode = LOCALE.AR) {
+    const publishedInLocale: Prisma.FactCheckWhereInput = {
+      articles: {
+        some: { localeCode: locale, statusCode: CONTENT_STATUS.PUBLISHED },
+      },
+    };
+
     const [total, byVerdict, recentCount] = await Promise.all([
-      this.prisma.factCheck.count({
-        where: { statusCode: CONTENT_STATUS.PUBLISHED },
+      this.prisma.factCheckArticle.count({
+        where: { localeCode: locale, statusCode: CONTENT_STATUS.PUBLISHED },
       }),
       this.prisma.factCheck.groupBy({
         by: ['verdictCode'],
-        where: { statusCode: CONTENT_STATUS.PUBLISHED },
-        _count: true,
+        where: publishedInLocale,
+        _count: { _all: true },
       }),
-      this.prisma.factCheck.count({
+      this.prisma.factCheckArticle.count({
         where: {
+          localeCode: locale,
           statusCode: CONTENT_STATUS.PUBLISHED,
           publishedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
         },
@@ -319,44 +393,100 @@ export class FactChecksService {
       total,
       recentCount,
       byVerdict: byVerdict.reduce((acc: Record<string, number>, item) => {
-        acc[item.verdictCode] = item._count;
+        acc[item.verdictCode] = item._count._all;
         return acc;
       }, {}),
     };
   }
 
-  async toggleSave(slug: string, userId: string) {
-    const factCheck = await this.prisma.factCheck.findUnique({
-      where: { slug },
-      select: { id: true },
+  /** Saving is language-independent, so it is recorded against the review. */
+  async toggleSave(locale: LocaleCode, slug: string, userId: string) {
+    const article = await this.prisma.factCheckArticle.findUnique({
+      where: { localeCode_slug: { localeCode: locale, slug } },
+      select: { factCheckId: true },
     });
 
-    if (!factCheck) {
+    if (!article) {
       throw new NotFoundException('Fact check not found');
     }
 
     const existing = await this.prisma.savedContent.findUnique({
       where: {
-        userId_factCheckId: {
-          userId,
-          factCheckId: factCheck.id,
-        },
+        userId_factCheckId: { userId, factCheckId: article.factCheckId },
       },
     });
 
     if (existing) {
-      await this.prisma.savedContent.delete({
-        where: { id: existing.id },
-      });
+      await this.prisma.savedContent.delete({ where: { id: existing.id } });
       return { saved: false, message: 'Fact check removed from saved items' };
-    } else {
-      await this.prisma.savedContent.create({
-        data: {
-          userId,
-          factCheckId: factCheck.id,
-        },
-      });
-      return { saved: true, message: 'Fact check saved successfully' };
     }
+
+    await this.prisma.savedContent.create({
+      data: { userId, factCheckId: article.factCheckId },
+    });
+    return { saved: true, message: 'Fact check saved successfully' };
+  }
+
+  // ---------------------------------------------------------------------
+  // WRITES — Phase 3
+  //
+  // Deliberately not implemented rather than half-implemented. Authoring now
+  // spans Claim, FactCheck, per-locale articles, ordered evidence and the
+  // append-only revision log, and ADR-0006 puts hard invariants on it:
+  // publishing writes revision 1, every later edit writes a revision, an
+  // editor distinct from the author must sign off, and a verdict change
+  // propagates a correction to every published locale.
+  //
+  // A write path that silently skipped those would corrupt the editorial
+  // record in ways that are not recoverable after the fact — which is the one
+  // failure this whole model exists to prevent.
+  // ---------------------------------------------------------------------
+
+  private notYet(): never {
+    throw new NotImplementedException(
+      'Authoring moved to the Claim/FactCheck/Article model and is implemented ' +
+        'in Phase 3, together with the ADR-0006 revision invariants. ' +
+        'See docs/plans/content-model-implementation.md.',
+    );
+  }
+
+  async create(_userId: string, _createDto: CreateFactCheckDto) {
+    this.notYet();
+  }
+
+  async update(
+    _locale: LocaleCode,
+    _slug: string,
+    _userId: string,
+    _userRole: RoleCode,
+    _updateDto: UpdateFactCheckDto,
+  ) {
+    this.notYet();
+  }
+
+  async remove(
+    _locale: LocaleCode,
+    _slug: string,
+    _userId: string,
+    _userRole: RoleCode,
+  ) {
+    // Note: even in Phase 3 this must not hard-delete a published article.
+    // Retraction is a status change (ADR-0006).
+    this.notYet();
+  }
+
+  // ---------------------------------------------------------------------
+
+  private shapeListItem<
+    T extends {
+      factCheck: { topics: { topic: unknown }[] };
+    },
+  >(article: T) {
+    const { factCheck, ...rest } = article;
+    const { topics, ...review } = factCheck;
+    return {
+      ...rest,
+      factCheck: { ...review, topics: topics.map((t) => t.topic) },
+    };
   }
 }
