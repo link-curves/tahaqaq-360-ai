@@ -25,7 +25,7 @@ import {
   UpdateSubmissionStatusDto,
 } from './dto/create-submission.dto';
 import { SubmissionsService } from './submissions.service';
-import { ROLE, RoleCode, SubmissionStatusCode } from '../../common/constants/lookups';
+import { ROLE, RoleCode, SUBMISSION_STATUS, SubmissionStatusCode } from '../../common/constants/lookups';
 
 @ApiTags('Submissions')
 @Controller('submissions')
@@ -47,7 +47,7 @@ export class SubmissionsController {
   @Roles(ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get all submissions (Moderators only)' })
-  @ApiQuery({ name: 'status', required: false, enum: SubmissionStatusCode })
+  @ApiQuery({ name: 'status', required: false, enum: Object.values(SUBMISSION_STATUS) })
   @ApiQuery({ name: 'type', required: false })
   findAll(
     @Query() paginationDto: PaginationDto,

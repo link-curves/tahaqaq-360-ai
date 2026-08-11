@@ -28,6 +28,7 @@ import {
 } from './dto/create-event.dto';
 import { EventsService } from './events.service';
 import { EventStatusCode, EventTypeCode, ROLE } from '../../common/constants/lookups';
+import { EVENT_STATUS, EVENT_TYPE } from '../../common/constants/lookups';
 
 @ApiTags('Events')
 @Controller('events')
@@ -46,8 +47,8 @@ export class EventsController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'Get all events' })
-  @ApiQuery({ name: 'type', required: false, enum: EventTypeCode })
-  @ApiQuery({ name: 'status', required: false, enum: EventStatusCode })
+  @ApiQuery({ name: 'type', required: false, enum: Object.values(EVENT_TYPE) })
+  @ApiQuery({ name: 'status', required: false, enum: Object.values(EVENT_STATUS) })
   @ApiQuery({ name: 'upcoming', required: false, type: Boolean })
   findAll(
     @Query('page') page?: number,

@@ -57,7 +57,7 @@ export class FactChecksService {
     const where: Prisma.FactCheckWhereInput = {};
 
     if (filterDto.verdict) {
-      where.verdict = filterDto.verdict;
+      where.verdictCode = filterDto.verdict;
     }
 
     if (filterDto.status) {
@@ -303,7 +303,7 @@ export class FactChecksService {
         where: { statusCode: CONTENT_STATUS.PUBLISHED },
       }),
       this.prisma.factCheck.groupBy({
-        by: ['verdict'],
+        by: ['verdictCode'],
         where: { statusCode: CONTENT_STATUS.PUBLISHED },
         _count: true,
       }),

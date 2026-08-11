@@ -48,11 +48,12 @@ export class AuthService {
         lastName: true,
         role: true,
         createdAt: true,
+        roleCode: true,
       },
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    const tokens = await this.generateTokens(user.id, user.email, user.roleCode);
 
     return {
       user,

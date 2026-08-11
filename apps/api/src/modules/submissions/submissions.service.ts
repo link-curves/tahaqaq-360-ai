@@ -10,16 +10,18 @@ import {
   CreateSubmissionDto,
   UpdateSubmissionStatusDto,
 } from './dto/create-submission.dto';
-import { ROLE, RoleCode, SubmissionStatusCode } from '../../common/constants/lookups';
+import { NOTIFICATION_TYPE, ROLE, RoleCode, SubmissionStatusCode } from '../../common/constants/lookups';
 
 @Injectable()
 export class SubmissionsService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string, createDto: CreateSubmissionDto) {
+    const { type, ...submissionFields } = createDto;
     const submission = await this.prisma.submission.create({
       data: {
-        ...createDto,
+        ...submissionFields,
+        typeCode: type,
         submitterId: userId,
       },
       include: {
@@ -46,7 +48,7 @@ export class SubmissionsService {
     // Create notification for moderators
     const moderators = await this.prisma.user.findMany({
       where: {
-        role: { in: [ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN] },
+        roleCode: { in: [ROLE.MODERATOR, ROLE.ADMIN, ROLE.SUPER_ADMIN] },
       },
       select: { id: true },
     });
@@ -54,7 +56,7 @@ export class SubmissionsService {
     await this.prisma.notification.createMany({
       data: moderators.map((mod) => ({
         userId: mod.id,
-        type: 'SUBMISSION_UPDATE',
+        typeCode: NOTIFICATION_TYPE.SUBMISSION_UPDATE,
         title: 'New Submission',
         message: `A new ${createDto.type.toLowerCase()} submission needs review`,
         actionUrl: `/admin/submissions/${submission.id}`,
@@ -79,8 +81,8 @@ export class SubmissionsService {
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    if (status) where.status = status;
-    if (type) where.type = type;
+    if (status) where.statusCode = status;
+    if (type) where.typeCode = type;
     if (userId) where.submitterId = userId;
 
     const [submissions, total] = await Promise.all([
@@ -101,9 +103,9 @@ export class SubmissionsService {
           factCheck: {
             select: {
               id: true,
-              title: true,
-              slug: true,
-              verdict: true,
+              verdictCode: true,
+              // Title and slug are per-locale on the article now (ADR-0002).
+              articles: { select: { localeCode: true, title: true, slug: true } },
             },
           },
           moderationLogs: {
@@ -201,7 +203,7 @@ export class SubmissionsService {
     const updated = await this.prisma.submission.update({
       where: { id },
       data: {
-        status: updateDto.status as SubmissionStatus,
+        statusCode: updateDto.status as string,
         internalNotes: updateDto.internalNotes,
         rejectionReason: updateDto.rejectionReason,
         reviewedBy: moderatorId,
@@ -257,11 +259,11 @@ export class SubmissionsService {
     const [total, byStatus, byType, recentCount] = await Promise.all([
       this.prisma.submission.count(),
       this.prisma.submission.groupBy({
-        by: ['status'],
+        by: ['statusCode'],
         _count: true,
       }),
       this.prisma.submission.groupBy({
-        by: ['type'],
+        by: ['typeCode'],
         _count: true,
       }),
       this.prisma.submission.count({

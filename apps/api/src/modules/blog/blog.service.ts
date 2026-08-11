@@ -25,12 +25,13 @@ export class BlogService {
     }
 
     // If publishing, set publishedAt
-    const blogData: Prisma.BlogCreateInput = {
-      ...createBlogDto,
+    // `status` on the DTO maps to the statusCode FK on the model.
+    const { status, ...blogFields } = createBlogDto;
+    const blogData: Prisma.BlogUncheckedCreateInput = {
+      ...blogFields,
+      statusCode: status ?? CONTENT_STATUS.DRAFT,
       publishedAt:
-        createBlogDto.status === CONTENT_STATUS.PUBLISHED
-          ? new Date()
-          : undefined,
+        status === CONTENT_STATUS.PUBLISHED ? new Date() : undefined,
     };
 
     return this.prisma.blog.create({
@@ -68,10 +69,10 @@ export class BlogService {
     }
 
     if (status) {
-      where.status = status;
+      where.statusCode = status;
     } else {
       // Public endpoint should only show published by default
-      where.status = CONTENT_STATUS.PUBLISHED;
+      where.statusCode = CONTENT_STATUS.PUBLISHED;
     }
 
     if (isFeatured !== undefined) {
@@ -155,9 +156,11 @@ export class BlogService {
     }
 
     // Update publishedAt if status changes to PUBLISHED
-    const updateData: Prisma.BlogUpdateInput = { ...updateBlogDto };
+    const { status: nextStatus, ...updateFields } = updateBlogDto;
+    const updateData: Prisma.BlogUncheckedUpdateInput = { ...updateFields };
+    if (nextStatus !== undefined) updateData.statusCode = nextStatus;
     if (
-      updateBlogDto.status === CONTENT_STATUS.PUBLISHED &&
+      nextStatus === CONTENT_STATUS.PUBLISHED &&
       existingBlog.statusCode !== CONTENT_STATUS.PUBLISHED
     ) {
       updateData.publishedAt = new Date();
@@ -185,7 +188,7 @@ export class BlogService {
 
   async getCategories() {
     const blogs = await this.prisma.blog.findMany({
-      where: { status: CONTENT_STATUS.PUBLISHED },
+      where: { statusCode: CONTENT_STATUS.PUBLISHED },
       select: { category: true },
       distinct: ['category'],
     });
@@ -195,7 +198,7 @@ export class BlogService {
 
   async getTags() {
     const blogs = await this.prisma.blog.findMany({
-      where: { status: CONTENT_STATUS.PUBLISHED },
+      where: { statusCode: CONTENT_STATUS.PUBLISHED },
       select: { tags: true },
     });
 

@@ -9,6 +9,7 @@ import { IPaginatedResult } from '../../common/interfaces/pagination.interface';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateResearchDto } from './dto/create-research.dto';
 import { UpdateResearchDto } from './dto/update-research.dto';
+import { CONTENT_STATUS } from '../../common/constants/lookups';
 
 @Injectable()
 export class ResearchService {
@@ -37,7 +38,9 @@ export class ResearchService {
     }
 
     if (isPublished !== undefined) {
-      where.status = isPublished ? 'PUBLISHED' : 'DRAFT';
+      where.statusCode = isPublished
+        ? CONTENT_STATUS.PUBLISHED
+        : CONTENT_STATUS.DRAFT;
     }
 
     const [research, total] = await Promise.all([
