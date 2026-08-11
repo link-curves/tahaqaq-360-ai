@@ -11,7 +11,16 @@ CREATE TYPE "SubmissionStatus" AS ENUM ('PENDING', 'IN_REVIEW', 'VERIFIED', 'REJ
 CREATE TYPE "SubmissionType" AS ENUM ('TEXT', 'IMAGE', 'VIDEO', 'AUDIO', 'LINK');
 
 -- CreateEnum
-CREATE TYPE "ContentStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED', 'UNDER_REVIEW');
+CREATE TYPE "ContentStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED', 'UNDER_REVIEW', 'RETRACTED');
+
+-- CreateEnum
+CREATE TYPE "Locale" AS ENUM ('AR', 'EN');
+
+-- CreateEnum
+CREATE TYPE "EvidenceType" AS ENUM ('PRIMARY_SOURCE', 'OFFICIAL_RECORD', 'EXPERT_STATEMENT', 'MEDIA_REPORT', 'DATASET', 'ARCHIVE', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "RevisionTier" AS ENUM ('SILENT', 'UPDATE', 'CORRECTION', 'VERDICT_CHANGE');
 
 -- CreateEnum
 CREATE TYPE "EventType" AS ENUM ('WORKSHOP', 'WEBINAR', 'EXHIBITION', 'CONFERENCE', 'TRAINING');
@@ -49,33 +58,173 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
+CREATE TABLE "claims" (
+    "id" TEXT NOT NULL,
+    "text" TEXT NOT NULL,
+    "language" "Locale",
+    "claimantName" TEXT,
+    "claimedAt" TIMESTAMP(3),
+    "firstSeenAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "claims_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "claim_appearances" (
+    "id" TEXT NOT NULL,
+    "claimId" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "platform" TEXT,
+    "publisher" TEXT,
+    "appearedAt" TIMESTAMP(3),
+    "archiveUrl" TEXT,
+    "archivedAt" TIMESTAMP(3),
+    "mediaUrls" TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "claim_appearances_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "fact_checks" (
     "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "slug" TEXT NOT NULL,
-    "claim" TEXT NOT NULL,
-    "claimant" TEXT,
-    "claimDate" TIMESTAMP(3),
+    "claimId" TEXT NOT NULL,
     "verdict" "VeracityRating" NOT NULL,
-    "summary" TEXT NOT NULL,
-    "fullAnalysis" TEXT NOT NULL,
-    "methodology" TEXT,
-    "sources" JSONB[],
-    "mediaUrls" TEXT[],
+    "countryCodes" TEXT[],
     "tags" TEXT[],
-    "views" INTEGER NOT NULL DEFAULT 0,
-    "shares" INTEGER NOT NULL DEFAULT 0,
-    "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
-    "featuredImage" TEXT,
-    "metaTitle" TEXT,
-    "metaDescription" TEXT,
-    "publishedAt" TIMESTAMP(3),
-    "authorId" TEXT NOT NULL,
     "submissionId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "fact_checks_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "fact_check_articles" (
+    "id" TEXT NOT NULL,
+    "factCheckId" TEXT NOT NULL,
+    "locale" "Locale" NOT NULL,
+    "slug" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "summary" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "methodology" TEXT,
+    "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
+    "publishedAt" TIMESTAMP(3),
+    "authorId" TEXT NOT NULL,
+    "editorId" TEXT,
+    "reviewedAt" TIMESTAMP(3),
+    "metaTitle" TEXT,
+    "metaDescription" TEXT,
+    "featuredImage" TEXT,
+    "isFeatured" BOOLEAN NOT NULL DEFAULT false,
+    "views" INTEGER NOT NULL DEFAULT 0,
+    "shares" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "fact_check_articles_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "evidence" (
+    "id" TEXT NOT NULL,
+    "factCheckId" TEXT NOT NULL,
+    "position" INTEGER NOT NULL,
+    "type" "EvidenceType" NOT NULL DEFAULT 'OTHER',
+    "url" TEXT NOT NULL,
+    "title" TEXT,
+    "publisher" TEXT,
+    "publishedAt" TIMESTAMP(3),
+    "accessedAt" TIMESTAMP(3) NOT NULL,
+    "archiveUrl" TEXT,
+    "archivedAt" TIMESTAMP(3),
+    "excerpt" TEXT,
+    "note" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "evidence_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "article_revisions" (
+    "id" TEXT NOT NULL,
+    "articleId" TEXT NOT NULL,
+    "revisionNumber" INTEGER NOT NULL,
+    "tier" "RevisionTier" NOT NULL,
+    "title" TEXT NOT NULL,
+    "summary" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "methodology" TEXT,
+    "verdictAtTime" "VeracityRating" NOT NULL,
+    "noticeText" TEXT,
+    "reason" TEXT,
+    "editedById" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "article_revisions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "verdict_changes" (
+    "id" TEXT NOT NULL,
+    "factCheckId" TEXT NOT NULL,
+    "fromVerdict" "VeracityRating" NOT NULL,
+    "toVerdict" "VeracityRating" NOT NULL,
+    "reason" TEXT NOT NULL,
+    "changedById" TEXT NOT NULL,
+    "approvedById" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "verdict_changes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "topics" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "labelAr" TEXT NOT NULL,
+    "labelEn" TEXT NOT NULL,
+    "descriptionAr" TEXT,
+    "descriptionEn" TEXT,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "topics_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "fact_check_topics" (
+    "factCheckId" TEXT NOT NULL,
+    "topicId" TEXT NOT NULL,
+
+    CONSTRAINT "fact_check_topics_pkey" PRIMARY KEY ("factCheckId","topicId")
+);
+
+-- CreateTable
+CREATE TABLE "countries" (
+    "code" TEXT NOT NULL,
+    "nameAr" TEXT NOT NULL,
+    "nameEn" TEXT NOT NULL,
+
+    CONSTRAINT "countries_pkey" PRIMARY KEY ("code")
+);
+
+-- CreateTable
+CREATE TABLE "verdict_definitions" (
+    "verdict" "VeracityRating" NOT NULL,
+    "labelAr" TEXT NOT NULL,
+    "labelEn" TEXT NOT NULL,
+    "definitionAr" TEXT NOT NULL,
+    "definitionEn" TEXT NOT NULL,
+    "position" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "verdict_definitions_pkey" PRIMARY KEY ("verdict")
 );
 
 -- CreateTable
@@ -181,6 +330,19 @@ CREATE TABLE "course_progress" (
 );
 
 -- CreateTable
+CREATE TABLE "lesson_progress" (
+    "id" TEXT NOT NULL,
+    "isCompleted" BOOLEAN NOT NULL DEFAULT false,
+    "completedAt" TIMESTAMP(3),
+    "userId" TEXT NOT NULL,
+    "lessonId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "lesson_progress_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "certificates" (
     "id" TEXT NOT NULL,
     "certificateNumber" TEXT NOT NULL,
@@ -258,6 +420,32 @@ CREATE TABLE "host_requests" (
 );
 
 -- CreateTable
+CREATE TABLE "training_requests" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "organization" TEXT NOT NULL,
+    "position" TEXT,
+    "trainingTopic" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "preferredDate" TIMESTAMP(3),
+    "alternativeDate" TIMESTAMP(3),
+    "expectedAttendees" INTEGER NOT NULL,
+    "location" TEXT NOT NULL,
+    "targetAudience" TEXT,
+    "specificNeeds" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "reviewNotes" TEXT,
+    "reviewedBy" TEXT,
+    "reviewedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "training_requests_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "sessions" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -280,6 +468,30 @@ CREATE TABLE "sessions" (
 );
 
 -- CreateTable
+CREATE TABLE "blog_posts" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "excerpt" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "coverImage" TEXT,
+    "author" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "tags" TEXT[],
+    "isFeatured" BOOLEAN NOT NULL DEFAULT false,
+    "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
+    "publishedAt" TIMESTAMP(3),
+    "views" INTEGER NOT NULL DEFAULT 0,
+    "readTime" INTEGER,
+    "metaTitle" TEXT,
+    "metaDescription" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "blog_posts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "research" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -289,6 +501,7 @@ CREATE TABLE "research" (
     "authors" TEXT[],
     "category" TEXT NOT NULL,
     "tags" TEXT[],
+    "isFeatured" BOOLEAN NOT NULL DEFAULT false,
     "coverImage" TEXT,
     "attachments" JSONB[],
     "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
@@ -437,6 +650,39 @@ CREATE TABLE "system_metrics" (
     CONSTRAINT "system_metrics_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "privacy_policies" (
+    "id" TEXT NOT NULL,
+    "version" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "isCurrent" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "privacy_policies_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "terms_of_service" (
+    "id" TEXT NOT NULL,
+    "version" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "isCurrent" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "terms_of_service_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "accessibility_statements" (
+    "id" TEXT NOT NULL,
+    "version" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "isCurrent" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "accessibility_statements_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -456,25 +702,55 @@ CREATE INDEX "users_role_idx" ON "users"("role");
 CREATE INDEX "users_reputation_idx" ON "users"("reputation");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "fact_checks_slug_key" ON "fact_checks"("slug");
+CREATE INDEX "claims_claimedAt_idx" ON "claims"("claimedAt");
+
+-- CreateIndex
+CREATE INDEX "claim_appearances_claimId_idx" ON "claim_appearances"("claimId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "fact_checks_submissionId_key" ON "fact_checks"("submissionId");
 
 -- CreateIndex
-CREATE INDEX "fact_checks_slug_idx" ON "fact_checks"("slug");
-
--- CreateIndex
 CREATE INDEX "fact_checks_verdict_idx" ON "fact_checks"("verdict");
 
 -- CreateIndex
-CREATE INDEX "fact_checks_status_idx" ON "fact_checks"("status");
+CREATE INDEX "fact_checks_claimId_idx" ON "fact_checks"("claimId");
 
 -- CreateIndex
-CREATE INDEX "fact_checks_publishedAt_idx" ON "fact_checks"("publishedAt");
+CREATE INDEX "fact_check_articles_status_idx" ON "fact_check_articles"("status");
 
 -- CreateIndex
-CREATE INDEX "fact_checks_authorId_idx" ON "fact_checks"("authorId");
+CREATE INDEX "fact_check_articles_publishedAt_idx" ON "fact_check_articles"("publishedAt");
+
+-- CreateIndex
+CREATE INDEX "fact_check_articles_authorId_idx" ON "fact_check_articles"("authorId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "fact_check_articles_factCheckId_locale_key" ON "fact_check_articles"("factCheckId", "locale");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "fact_check_articles_locale_slug_key" ON "fact_check_articles"("locale", "slug");
+
+-- CreateIndex
+CREATE INDEX "evidence_factCheckId_position_idx" ON "evidence"("factCheckId", "position");
+
+-- CreateIndex
+CREATE INDEX "evidence_publisher_idx" ON "evidence"("publisher");
+
+-- CreateIndex
+CREATE INDEX "article_revisions_articleId_createdAt_idx" ON "article_revisions"("articleId", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "article_revisions_articleId_revisionNumber_key" ON "article_revisions"("articleId", "revisionNumber");
+
+-- CreateIndex
+CREATE INDEX "verdict_changes_factCheckId_idx" ON "verdict_changes"("factCheckId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "topics_slug_key" ON "topics"("slug");
+
+-- CreateIndex
+CREATE INDEX "fact_check_topics_topicId_idx" ON "fact_check_topics"("topicId");
 
 -- CreateIndex
 CREATE INDEX "submissions_status_idx" ON "submissions"("status");
@@ -519,6 +795,15 @@ CREATE INDEX "course_progress_courseId_idx" ON "course_progress"("courseId");
 CREATE UNIQUE INDEX "course_progress_userId_courseId_key" ON "course_progress"("userId", "courseId");
 
 -- CreateIndex
+CREATE INDEX "lesson_progress_userId_idx" ON "lesson_progress"("userId");
+
+-- CreateIndex
+CREATE INDEX "lesson_progress_lessonId_idx" ON "lesson_progress"("lessonId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "lesson_progress_userId_lessonId_key" ON "lesson_progress"("userId", "lessonId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "certificates_certificateNumber_key" ON "certificates"("certificateNumber");
 
 -- CreateIndex
@@ -555,6 +840,15 @@ CREATE UNIQUE INDEX "event_registrations_userId_eventId_key" ON "event_registrat
 CREATE INDEX "host_requests_status_idx" ON "host_requests"("status");
 
 -- CreateIndex
+CREATE INDEX "training_requests_status_idx" ON "training_requests"("status");
+
+-- CreateIndex
+CREATE INDEX "training_requests_email_idx" ON "training_requests"("email");
+
+-- CreateIndex
+CREATE INDEX "training_requests_createdAt_idx" ON "training_requests"("createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "sessions_slug_key" ON "sessions"("slug");
 
 -- CreateIndex
@@ -562,6 +856,21 @@ CREATE INDEX "sessions_slug_idx" ON "sessions"("slug");
 
 -- CreateIndex
 CREATE INDEX "sessions_status_idx" ON "sessions"("status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "blog_posts_slug_key" ON "blog_posts"("slug");
+
+-- CreateIndex
+CREATE INDEX "blog_posts_slug_idx" ON "blog_posts"("slug");
+
+-- CreateIndex
+CREATE INDEX "blog_posts_status_idx" ON "blog_posts"("status");
+
+-- CreateIndex
+CREATE INDEX "blog_posts_category_idx" ON "blog_posts"("category");
+
+-- CreateIndex
+CREATE INDEX "blog_posts_publishedAt_idx" ON "blog_posts"("publishedAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "research_slug_key" ON "research"("slug");
@@ -632,11 +941,56 @@ CREATE INDEX "system_metrics_metric_idx" ON "system_metrics"("metric");
 -- CreateIndex
 CREATE INDEX "system_metrics_recordedAt_idx" ON "system_metrics"("recordedAt");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "privacy_policies_version_key" ON "privacy_policies"("version");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "terms_of_service_version_key" ON "terms_of_service"("version");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "accessibility_statements_version_key" ON "accessibility_statements"("version");
+
 -- AddForeignKey
-ALTER TABLE "fact_checks" ADD CONSTRAINT "fact_checks_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "claim_appearances" ADD CONSTRAINT "claim_appearances_claimId_fkey" FOREIGN KEY ("claimId") REFERENCES "claims"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "fact_checks" ADD CONSTRAINT "fact_checks_claimId_fkey" FOREIGN KEY ("claimId") REFERENCES "claims"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "fact_checks" ADD CONSTRAINT "fact_checks_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "submissions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "fact_check_articles" ADD CONSTRAINT "fact_check_articles_factCheckId_fkey" FOREIGN KEY ("factCheckId") REFERENCES "fact_checks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "fact_check_articles" ADD CONSTRAINT "fact_check_articles_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "fact_check_articles" ADD CONSTRAINT "fact_check_articles_editorId_fkey" FOREIGN KEY ("editorId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "evidence" ADD CONSTRAINT "evidence_factCheckId_fkey" FOREIGN KEY ("factCheckId") REFERENCES "fact_checks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "article_revisions" ADD CONSTRAINT "article_revisions_articleId_fkey" FOREIGN KEY ("articleId") REFERENCES "fact_check_articles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "article_revisions" ADD CONSTRAINT "article_revisions_editedById_fkey" FOREIGN KEY ("editedById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "verdict_changes" ADD CONSTRAINT "verdict_changes_factCheckId_fkey" FOREIGN KEY ("factCheckId") REFERENCES "fact_checks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "verdict_changes" ADD CONSTRAINT "verdict_changes_changedById_fkey" FOREIGN KEY ("changedById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "verdict_changes" ADD CONSTRAINT "verdict_changes_approvedById_fkey" FOREIGN KEY ("approvedById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "fact_check_topics" ADD CONSTRAINT "fact_check_topics_factCheckId_fkey" FOREIGN KEY ("factCheckId") REFERENCES "fact_checks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "fact_check_topics" ADD CONSTRAINT "fact_check_topics_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "topics"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "submissions" ADD CONSTRAINT "submissions_submitterId_fkey" FOREIGN KEY ("submitterId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -658,6 +1012,12 @@ ALTER TABLE "course_progress" ADD CONSTRAINT "course_progress_userId_fkey" FOREI
 
 -- AddForeignKey
 ALTER TABLE "course_progress" ADD CONSTRAINT "course_progress_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "courses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "lesson_progress" ADD CONSTRAINT "lesson_progress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "lesson_progress" ADD CONSTRAINT "lesson_progress_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "lessons"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "certificates" ADD CONSTRAINT "certificates_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

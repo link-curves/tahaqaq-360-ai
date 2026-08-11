@@ -61,6 +61,38 @@ enum ContentStatus {
   PUBLISHED
   ARCHIVED
   UNDER_REVIEW
+  // A published fact-check that was withdrawn. It keeps its URL and renders a
+  // retraction notice — deleting a published verdict is indistinguishable from
+  // hiding a mistake. See ADR-0006.
+  RETRACTED
+}
+
+/// Language of a published article. Arabic is the primary editorial language;
+/// English is a full sibling artifact, not a translation. See ADR-0002.
+enum Locale {
+  AR
+  EN
+}
+
+/// What kind of thing a citation points at. See ADR-0005.
+enum EvidenceType {
+  PRIMARY_SOURCE // the document / recording / dataset itself
+  OFFICIAL_RECORD // government, court, regulator
+  EXPERT_STATEMENT // named expert, on record
+  MEDIA_REPORT // journalism
+  DATASET // statistics
+  ARCHIVE // snapshot standing in for a dead original
+  OTHER
+}
+
+/// How consequential a post-publication edit was, and therefore how much public
+/// disclosure it requires. Chosen by the editor, never inferred from a diff —
+/// a one-word change can be a typo or a reversal of meaning. See ADR-0006.
+enum RevisionTier {
+  SILENT // typo, formatting, dead-link swap — no public notice
+  UPDATE // new information, verdict unaffected
+  CORRECTION // something published was wrong, verdict holds
+  VERDICT_CHANGE // the rating itself changed
 }
 
 enum EventType {
@@ -120,7 +152,11 @@ model User {
 
   // Relations
   submissions        Submission[]
-  factChecks         FactCheck[]         @relation("Author")
+  authoredArticles   FactCheckArticle[]  @relation("ArticleAuthor")
+  editedArticles     FactCheckArticle[]  @relation("ArticleEditor")
+  articleRevisions   ArticleRevision[]   @relation("RevisionEditor")
+  verdictChangesMade VerdictChange[]     @relation("VerdictChangedBy")
+  verdictApprovals   VerdictChange[]     @relation("VerdictApprovedBy")
   certificates       Certificate[]
   eventRegistrations EventRegistration[]
   achievements       UserAchievement[]
@@ -144,53 +180,300 @@ model User {
 // FACT CHECKING CORE
 // ============================================
 
-model FactCheck {
-  id            String         @id @default(cuid())
-  title         String
-  slug          String         @unique
-  claim         String         @db.Text
-  claimant      String?
-  claimDate     DateTime?
-  verdict       VeracityRating
-  summary       String         @db.Text
-  fullAnalysis  String         @db.Text
-  methodology   String?        @db.Text
-  sources       Json[] // Array of source objects
-  mediaUrls     String[]
-  tags          String[]
-  views         Int            @default(0)
-  shares        Int            @default(0)
-  status        ContentStatus  @default(DRAFT)
-  featuredImage String?
-  isFeatured    Boolean        @default(false)
+// ============================================
+// EDITORIAL RECORD
+// Claim -> FactCheck (the review) -> FactCheckArticle (one per locale)
+// See ADR-0002, ADR-0005, ADR-0006, ADR-0007.
+// ============================================
 
-  // SEO
-  metaTitle       String?
-  metaDescription String?
+/// What was asserted, independent of who checked it.
+///
+/// Separated from the review so the same claim can be re-reviewed later and
+/// recognised across submissions — which is also the hook the AI deduplication
+/// stage needs.
+model Claim {
+  id           String    @id @default(cuid())
+  text         String    @db.Text // as circulated, in its original language
+  language     Locale?
+  claimantName String? // who spread it
+  claimedAt    DateTime? // when the claim was made
+  firstSeenAt  DateTime? // when the desk first saw it circulating
 
-  // Publishing
-  publishedAt DateTime?
-  authorId    String
-  author      User      @relation("Author", fields: [authorId], references: [id])
+  appearances ClaimAppearance[]
+  reviews     FactCheck[]
 
-  // Related
-  submissionId String?     @unique
-  submission   Submission? @relation(fields: [submissionId], references: [id])
-
-  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
+  @@index([claimedAt])
+  @@map("claims")
+}
+
+/// Where a claim showed up. A claim appears in many places (a tweet, a WhatsApp
+/// forward, a TV segment), so this is a collection, not a column.
+///
+/// `archiveUrl` is the load-bearing field: claims get deleted, and the snapshot
+/// is the difference between a defensible fact-check and an unfalsifiable one.
+model ClaimAppearance {
+  id         String    @id @default(cuid())
+  claimId    String
+  claim      Claim     @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  url        String
+  platform   String? // twitter | facebook | whatsapp | tv | news | other
+  publisher  String?
+  appearedAt DateTime?
+  archiveUrl String?
+  archivedAt DateTime?
+  mediaUrls  String[]
+
+  createdAt DateTime @default(now())
+
+  @@index([claimId])
+  @@map("claim_appearances")
+}
+
+/// The editorial review of a claim. Language-neutral.
+///
+/// The verdict lives HERE, not on the article, and that is deliberate: if each
+/// locale carried its own rating, nothing would stop the Arabic reading
+/// MOSTLY_TRUE while the English reads HALF_TRUE. Publishing two ratings for one
+/// claim under one masthead is not a defect you can ship.
+model FactCheck {
+  id      String         @id @default(cuid())
+  claimId String
+  claim   Claim          @relation(fields: [claimId], references: [id])
+  verdict VeracityRating
+
+  /// ISO 3166-1 alpha-2. Validated against `Country` in the service layer.
+  countryCodes String[]
+
+  /// Free-text, SEO/discovery only. NEVER the basis for filtering, navigation,
+  /// or reporting — those read `topics` and `countryCodes`. See ADR-0007.
+  tags String[]
+
+  submissionId String?     @unique
+  submission   Submission? @relation(fields: [submissionId], references: [id])
+
+  articles       FactCheckArticle[]
+  evidence       Evidence[]
+  topics         FactCheckTopic[]
+  verdictChanges VerdictChange[]
+
+  // Engagement and discussion are language-independent, so they stay on the
+  // review rather than the article.
   comments Comment[]
   savedBy  SavedContent[]
 
-  @@index([slug])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([verdict])
+  @@index([claimId])
+  @@map("fact_checks")
+}
+
+/// One per locale. A full editorial artifact: its own byline, editor, publish
+/// state and revision history. The English version is not a translation row —
+/// it can be corrected while the Arabic is not.
+model FactCheckArticle {
+  id          String    @id @default(cuid())
+  factCheckId String
+  factCheck   FactCheck @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
+  locale      Locale
+
+  slug        String
+  title       String
+  summary     String  @db.Text
+  body        String  @db.Text
+  methodology String? @db.Text
+
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  /// Byline — who wrote it.
+  authorId String
+  author   User    @relation("ArticleAuthor", fields: [authorId], references: [id])
+  /// Editor — who reviewed it. A distinct step from submission moderation.
+  /// Service layer requires this to be set (and to differ from authorId)
+  /// before an article may reach PUBLISHED.
+  editorId String?
+  editor   User?   @relation("ArticleEditor", fields: [editorId], references: [id])
+
+  reviewedAt DateTime?
+
+  metaTitle       String?
+  metaDescription String?
+  featuredImage   String?
+  isFeatured      Boolean @default(false)
+
+  views  Int @default(0)
+  shares Int @default(0)
+
+  revisions ArticleRevision[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([factCheckId, locale]) // one article per locale per review
+  @@unique([locale, slug]) // slugs are unique WITHIN a locale, not globally
   @@index([status])
   @@index([publishedAt])
   @@index([authorId])
-  @@map("fact_checks")
+  @@map("fact_check_articles")
+}
+
+/// An ordered citation. Replaces the old `sources Json[]`, which was typed
+/// `any[]` end to end and could not be ordered, queried, or archived.
+///
+/// Hangs off the review, not the article: a URL is language-neutral and both
+/// locales cite the same sources. See ADR-0005.
+model Evidence {
+  id          String    @id @default(cuid())
+  factCheckId String
+  factCheck   FactCheck @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
+
+  /// Presentation order. Normalised to a contiguous 0..n-1 range on write.
+  /// Indexed rather than @@unique — a unique constraint would make reordering
+  /// require temporary values.
+  position Int
+  type     EvidenceType @default(OTHER)
+
+  url         String
+  title       String?
+  publisher   String?
+  publishedAt DateTime? // the source's own publication date
+  /// When the analyst actually consulted it. Required: a source that said X in
+  /// January and Y in March makes the fact-check unfalsifiable without this.
+  accessedAt  DateTime
+  archiveUrl  String?
+  archivedAt  DateTime?
+
+  excerpt String? @db.Text // the passage relied on
+  note    String? @db.Text // INTERNAL — must never be serialized publicly
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([factCheckId, position])
+  @@index([publisher])
+  @@map("evidence")
+}
+
+/// Append-only snapshot of an article. There is no update or delete path for
+/// this table, including for admins. See ADR-0006.
+model ArticleRevision {
+  id             String           @id @default(cuid())
+  articleId      String
+  article        FactCheckArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  revisionNumber Int // 1-based, per article
+  tier           RevisionTier
+
+  // Full snapshot as the article stood at this revision. Snapshots rather than
+  // diffs: the requirement is "serve the version as it was on date X", which a
+  // snapshot answers directly.
+  title         String
+  summary       String         @db.Text
+  body          String         @db.Text
+  methodology   String?        @db.Text
+  /// Denormalised deliberately. Replaying VerdictChange against timestamps to
+  /// work out the rating at a point in time is right in principle and wrong at 2am.
+  verdictAtTime VeracityRating
+
+  noticeText String? @db.Text // PUBLIC. Required unless tier is SILENT.
+  reason     String? @db.Text // INTERNAL — never serialized publicly
+
+  editedById String
+  editedBy   User   @relation("RevisionEditor", fields: [editedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([articleId, revisionNumber])
+  @@index([articleId, createdAt])
+  @@map("article_revisions")
+}
+
+/// A change to a published rating — the highest-consequence edit in the system.
+/// Requires a second person: `approvedById` must be set and must differ from
+/// `changedById`. Propagates a CORRECTION-or-higher revision to every published
+/// article of the fact-check, in both locales.
+model VerdictChange {
+  id          String    @id @default(cuid())
+  factCheckId String
+  factCheck   FactCheck @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
+
+  fromVerdict VeracityRating
+  toVerdict   VeracityRating
+  reason      String         @db.Text // public
+
+  changedById  String
+  changedBy    User   @relation("VerdictChangedBy", fields: [changedById], references: [id])
+  approvedById String
+  approvedBy   User   @relation("VerdictApprovedBy", fields: [approvedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([factCheckId])
+  @@map("verdict_changes")
+}
+
+// ============================================
+// TAXONOMY (ADR-0007)
+// ============================================
+
+/// Curated, editor-owned. Keep it small — 10-25 flat topics. A taxonomy that
+/// outgrows one screen stops being applied consistently.
+model Topic {
+  id            String  @id @default(cuid())
+  slug          String  @unique // stable machine key
+  labelAr       String
+  labelEn       String
+  descriptionAr String?
+  descriptionEn String?
+  position      Int     @default(0)
+  /// Retire a topic without orphaning the fact-checks already classified under it.
+  isActive      Boolean @default(true)
+
+  factChecks FactCheckTopic[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("topics")
+}
+
+model FactCheckTopic {
+  factCheckId String
+  topicId     String
+  factCheck   FactCheck @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
+  topic       Topic     @relation(fields: [topicId], references: [id])
+
+  @@id([factCheckId, topicId])
+  @@index([topicId])
+  @@map("fact_check_topics")
+}
+
+/// ISO 3166-1 reference data, seeded. Exists so filter UIs and reports can join
+/// for bilingual names instead of hardcoding a name map in two frontends.
+model Country {
+  code   String @id // ISO 3166-1 alpha-2
+  nameAr String
+  nameEn String
+
+  @@map("countries")
+}
+
+/// The published rating scale. IFCN expects an organisation's scale to be
+/// public; the enum alone is not that. Definition text is the client's
+/// editorial voice, not a developer's paraphrase.
+model VerdictDefinition {
+  verdict      VeracityRating @id
+  labelAr      String
+  labelEn      String
+  definitionAr String         @db.Text
+  definitionEn String         @db.Text
+  position     Int            @default(0)
+
+  @@map("verdict_definitions")
 }
 
 model Submission {
