@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ContentStatus, VeracityRating } from '@prisma/client';
+import { ContentStatus, Locale, VeracityRating } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
   IsArray,
@@ -101,6 +101,32 @@ export class CreateFactCheckDto {
 export class UpdateFactCheckDto extends CreateFactCheckDto {}
 
 export class FactCheckFilterDto extends PaginationDto {
+  @ApiProperty({
+    enum: Locale,
+    required: false,
+    description: 'Language of the article. Defaults to AR (Arabic-first desk).',
+  })
+  @IsOptional()
+  @IsEnum(Locale)
+  locale?: Locale;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Topic slug, e.g. "health". Controlled vocabulary — see ADR-0007.',
+  })
+  @IsOptional()
+  @IsString()
+  topic?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'ISO 3166-1 alpha-2 country code, e.g. "LB".',
+  })
+  @IsOptional()
+  @IsString()
+  country?: string;
+
   @IsOptional()
   @IsEnum(VeracityRating)
   verdict?: VeracityRating;

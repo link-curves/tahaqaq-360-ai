@@ -1,4 +1,18 @@
-import { PrismaClient, VeracityRating } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import {
+  CONTENT_STATUS_SEED,
+  EVENT_STATUS_SEED,
+  EVENT_TYPE_SEED,
+  EVIDENCE_TYPE_SEED,
+  LOCALE_SEED,
+  MODERATION_ACTION_SEED,
+  NOTIFICATION_TYPE_SEED,
+  REVISION_TIER_SEED,
+  ROLE_SEED,
+  SUBMISSION_STATUS_SEED,
+  SUBMISSION_TYPE_SEED,
+  VERDICT_SEED,
+} from '../../common/constants/lookups';
 
 /**
  * Reference data: topics, countries, and the published rating scale.
@@ -115,85 +129,72 @@ export const COUNTRY_SEED = [
   { code: 'IN', nameAr: 'الهند', nameEn: 'India' },
 ];
 
+
 // ---------------------------------------------------------------------------
-// VERDICT DEFINITIONS — the published rating scale
+// LOOKUP TABLES
 //
-// ⚠️ PLACEHOLDER TEXT. IFCN expects an organisation's rating scale to be
-// published, and these definitions are a public editorial commitment in the
-// client's own voice. The wording below exists so the ratings page renders and
-// the shape is testable — it MUST be replaced before launch.
+// Seeded from src/common/constants/lookups.ts so the rows and the TypeScript
+// constants cannot disagree. LookupIntegrityService re-checks this at boot.
 // ---------------------------------------------------------------------------
-export const VERDICT_DEFINITION_SEED = [
-  {
-    verdict: VeracityRating.TRUE,
-    labelAr: 'صحيح',
-    labelEn: 'True',
-    definitionAr: 'الادعاء دقيق ومدعوم بالأدلة المتاحة.',
-    definitionEn:
-      'The claim is accurate and supported by the available evidence.',
-  },
-  {
-    verdict: VeracityRating.MOSTLY_TRUE,
-    labelAr: 'صحيح في معظمه',
-    labelEn: 'Mostly True',
-    definitionAr: 'الادعاء دقيق في جوهره مع حاجة إلى توضيح أو تفصيل إضافي.',
-    definitionEn:
-      'The claim is accurate in substance but needs clarification or additional context.',
-  },
-  {
-    verdict: VeracityRating.HALF_TRUE,
-    labelAr: 'صحيح جزئياً',
-    labelEn: 'Half True',
-    definitionAr: 'الادعاء يتضمن عناصر صحيحة وأخرى غير دقيقة.',
-    definitionEn: 'The claim contains both accurate and inaccurate elements.',
-  },
-  {
-    verdict: VeracityRating.MOSTLY_FALSE,
-    labelAr: 'خاطئ في معظمه',
-    labelEn: 'Mostly False',
-    definitionAr: 'الادعاء يحتوي على عنصر من الحقيقة لكنه مضلل في جوهره.',
-    definitionEn:
-      'The claim contains an element of truth but is misleading in substance.',
-  },
-  {
-    verdict: VeracityRating.FALSE,
-    labelAr: 'خاطئ',
-    labelEn: 'False',
-    definitionAr: 'الادعاء غير دقيق وتناقضه الأدلة المتاحة.',
-    definitionEn:
-      'The claim is inaccurate and contradicted by the available evidence.',
-  },
-  {
-    verdict: VeracityRating.MISLEADING,
-    labelAr: 'مضلل',
-    labelEn: 'Misleading',
-    definitionAr:
-      'المعلومات صحيحة في ظاهرها لكنها مقدَّمة بطريقة تقود إلى استنتاج خاطئ.',
-    definitionEn:
-      'The information is technically accurate but framed so as to lead to a false conclusion.',
-  },
-  {
-    verdict: VeracityRating.SATIRE,
-    labelAr: 'سخرية',
-    labelEn: 'Satire',
-    definitionAr: 'المحتوى ساخر في أصله وليس المقصود منه أن يُفهم على أنه خبر.',
-    definitionEn:
-      'The content originated as satire and was not intended to be read as news.',
-  },
-  {
-    verdict: VeracityRating.UNVERIFIABLE,
-    labelAr: 'غير قابل للتحقق',
-    labelEn: 'Unverifiable',
-    definitionAr: 'لا تتوفر أدلة كافية لتأكيد الادعاء أو نفيه.',
-    definitionEn:
-      'There is insufficient evidence available to confirm or refute the claim.',
-  },
-];
+export const seedLookupTables = async (prisma: PrismaClient) => {
+  const simple = [
+    ['role', ROLE_SEED],
+    ['contentStatus', CONTENT_STATUS_SEED],
+    ['locale', LOCALE_SEED],
+    ['submissionStatus', SUBMISSION_STATUS_SEED],
+    ['submissionType', SUBMISSION_TYPE_SEED],
+    ['evidenceType', EVIDENCE_TYPE_SEED],
+    ['revisionTier', REVISION_TIER_SEED],
+    ['eventType', EVENT_TYPE_SEED],
+    ['eventStatus', EVENT_STATUS_SEED],
+    ['notificationType', NOTIFICATION_TYPE_SEED],
+    ['moderationAction', MODERATION_ACTION_SEED],
+  ] as const;
+
+  let count = 0;
+  for (const [model, rows] of simple) {
+    for (const row of rows) {
+      await (prisma as any)[model].upsert({
+        where: { code: row.code },
+        update: { name: row.name, description: row.description ?? null },
+        create: { code: row.code, name: row.name, description: row.description ?? null },
+      });
+      count++;
+    }
+  }
+
+  // VeracityRating carries the published rating scale, so it has its own shape.
+  for (const [i, v] of VERDICT_SEED.entries()) {
+    await prisma.veracityRating.upsert({
+      where: { code: v.code },
+      update: {
+        labelAr: v.labelAr,
+        labelEn: v.labelEn,
+        definitionAr: v.definitionAr,
+        definitionEn: v.definitionEn,
+        position: i,
+      },
+      create: {
+        code: v.code,
+        labelAr: v.labelAr,
+        labelEn: v.labelEn,
+        definitionAr: v.definitionAr,
+        definitionEn: v.definitionEn,
+        position: i,
+      },
+    });
+    count++;
+  }
+
+  console.log(`✅ جداول القيم المرجعية: ${count} صف عبر 12 جدولاً`);
+  return count;
+};
 
 export const seedReferenceData = async (prisma: PrismaClient) => {
-  console.log(
-    '🌱 البدء في إضافة البيانات المرجعية (المواضيع والدول والتصنيفات)...',
-  );
+  console.log('🌱 البدء في إضافة البيانات المرجعية...');
+
+  // Lookup tables first — everything else has foreign keys into them.
+  await seedLookupTables(prisma);
 
   for (const [i, t] of TOPIC_SEED.entries()) {
     await prisma.topic.upsert({
@@ -211,17 +212,9 @@ export const seedReferenceData = async (prisma: PrismaClient) => {
     });
   }
 
-  for (const [i, v] of VERDICT_DEFINITION_SEED.entries()) {
-    await prisma.verdictDefinition.upsert({
-      where: { verdict: v.verdict },
-      update: { ...v, position: i },
-      create: { ...v, position: i },
-    });
-  }
-
   const topics = await prisma.topic.findMany({ orderBy: { position: 'asc' } });
   console.log(
-    `✅ المواضيع: ${topics.length} | الدول: ${COUNTRY_SEED.length} | تعريفات التصنيف: ${VERDICT_DEFINITION_SEED.length}\n`,
+    `✅ المواضيع: ${topics.length} | الدول: ${COUNTRY_SEED.length}\n`,
   );
 
   return topics;

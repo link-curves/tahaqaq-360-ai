@@ -10,9 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_DIRECT_URL")
+  provider = "postgresql"
 }
 
 // This is your Prisma schema file
@@ -21,109 +19,6 @@ datasource db {
 // ============================================
 // ENUMS
 // ============================================
-
-enum Role {
-  USER
-  MODERATOR
-  ADMIN
-  SUPER_ADMIN
-}
-
-enum VeracityRating {
-  TRUE
-  MOSTLY_TRUE
-  HALF_TRUE
-  MOSTLY_FALSE
-  FALSE
-  UNVERIFIABLE
-  SATIRE
-  MISLEADING
-}
-
-enum SubmissionStatus {
-  PENDING
-  IN_REVIEW
-  VERIFIED
-  REJECTED
-  PUBLISHED
-}
-
-enum SubmissionType {
-  TEXT
-  IMAGE
-  VIDEO
-  AUDIO
-  LINK
-}
-
-enum ContentStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-  UNDER_REVIEW
-  // A published fact-check that was withdrawn. It keeps its URL and renders a
-  // retraction notice — deleting a published verdict is indistinguishable from
-  // hiding a mistake. See ADR-0006.
-  RETRACTED
-}
-
-/// Language of a published article. Arabic is the primary editorial language;
-/// English is a full sibling artifact, not a translation. See ADR-0002.
-enum Locale {
-  AR
-  EN
-}
-
-/// What kind of thing a citation points at. See ADR-0005.
-enum EvidenceType {
-  PRIMARY_SOURCE // the document / recording / dataset itself
-  OFFICIAL_RECORD // government, court, regulator
-  EXPERT_STATEMENT // named expert, on record
-  MEDIA_REPORT // journalism
-  DATASET // statistics
-  ARCHIVE // snapshot standing in for a dead original
-  OTHER
-}
-
-/// How consequential a post-publication edit was, and therefore how much public
-/// disclosure it requires. Chosen by the editor, never inferred from a diff —
-/// a one-word change can be a typo or a reversal of meaning. See ADR-0006.
-enum RevisionTier {
-  SILENT // typo, formatting, dead-link swap — no public notice
-  UPDATE // new information, verdict unaffected
-  CORRECTION // something published was wrong, verdict holds
-  VERDICT_CHANGE // the rating itself changed
-}
-
-enum EventType {
-  WORKSHOP
-  WEBINAR
-  EXHIBITION
-  CONFERENCE
-  TRAINING
-}
-
-enum EventStatus {
-  UPCOMING
-  ONGOING
-  COMPLETED
-  CANCELLED
-}
-
-enum NotificationType {
-  SUBMISSION_UPDATE
-  EVENT_REMINDER
-  ACHIEVEMENT_UNLOCKED
-  CERTIFICATE_ISSUED
-  SYSTEM
-}
-
-enum ModerationAction {
-  APPROVE
-  REJECT
-  FLAG
-  ESCALATE
-}
 
 // ============================================
 // USER MANAGEMENT
@@ -138,7 +33,8 @@ model User {
   username        String? @unique
   avatar          String?
   bio             String?
-  role            Role    @default(USER)
+  roleCode        String  @default("USER")
+  role            Role    @relation(fields: [roleCode], references: [code])
   isEmailVerified Boolean @default(false)
   googleId        String? @unique
   reputation      Int     @default(0)
@@ -171,7 +67,7 @@ model User {
   activityLogs       ActivityLog[]
 
   @@index([email])
-  @@index([role])
+  @@index([roleCode])
   @@index([reputation])
   @@map("users")
 }
@@ -194,7 +90,8 @@ model User {
 model Claim {
   id           String    @id @default(cuid())
   text         String    @db.Text // as circulated, in its original language
-  language     Locale?
+  languageCode String?
+  language     Locale?   @relation(fields: [languageCode], references: [code])
   claimantName String? // who spread it
   claimedAt    DateTime? // when the claim was made
   firstSeenAt  DateTime? // when the desk first saw it circulating
@@ -242,7 +139,8 @@ model FactCheck {
   id      String         @id @default(cuid())
   claimId String
   claim   Claim          @relation(fields: [claimId], references: [id])
-  verdict VeracityRating
+  verdictCode String
+  verdict     VeracityRating @relation(fields: [verdictCode], references: [code])
 
   /// ISO 3166-1 alpha-2. Validated against `Country` in the service layer.
   countryCodes String[]
@@ -267,7 +165,7 @@ model FactCheck {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([verdict])
+  @@index([verdictCode])
   @@index([claimId])
   @@map("fact_checks")
 }
@@ -279,7 +177,8 @@ model FactCheckArticle {
   id          String    @id @default(cuid())
   factCheckId String
   factCheck   FactCheck @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
-  locale      Locale
+  localeCode  String
+  locale      Locale @relation(fields: [localeCode], references: [code])
 
   slug        String
   title       String
@@ -287,7 +186,8 @@ model FactCheckArticle {
   body        String  @db.Text
   methodology String? @db.Text
 
-  status      ContentStatus @default(DRAFT)
+  statusCode  String        @default("DRAFT")
+  status      ContentStatus @relation(fields: [statusCode], references: [code])
   publishedAt DateTime?
 
   /// Byline — who wrote it.
@@ -314,9 +214,9 @@ model FactCheckArticle {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([factCheckId, locale]) // one article per locale per review
-  @@unique([locale, slug]) // slugs are unique WITHIN a locale, not globally
-  @@index([status])
+  @@unique([factCheckId, localeCode]) // one article per locale per review
+  @@unique([localeCode, slug]) // slugs are unique WITHIN a locale, not globally
+  @@index([statusCode])
   @@index([publishedAt])
   @@index([authorId])
   @@map("fact_check_articles")
@@ -336,7 +236,8 @@ model Evidence {
   /// Indexed rather than @@unique — a unique constraint would make reordering
   /// require temporary values.
   position Int
-  type     EvidenceType @default(OTHER)
+  typeCode String       @default("OTHER")
+  type     EvidenceType @relation(fields: [typeCode], references: [code])
 
   url         String
   title       String?
@@ -366,7 +267,8 @@ model ArticleRevision {
   articleId      String
   article        FactCheckArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
   revisionNumber Int // 1-based, per article
-  tier           RevisionTier
+  tierCode       String
+  tier           RevisionTier @relation(fields: [tierCode], references: [code])
 
   // Full snapshot as the article stood at this revision. Snapshots rather than
   // diffs: the requirement is "serve the version as it was on date X", which a
@@ -377,7 +279,8 @@ model ArticleRevision {
   methodology   String?        @db.Text
   /// Denormalised deliberately. Replaying VerdictChange against timestamps to
   /// work out the rating at a point in time is right in principle and wrong at 2am.
-  verdictAtTime VeracityRating
+  verdictAtTimeCode String
+  verdictAtTime     VeracityRating @relation(fields: [verdictAtTimeCode], references: [code])
 
   noticeText String? @db.Text // PUBLIC. Required unless tier is SILENT.
   reason     String? @db.Text // INTERNAL — never serialized publicly
@@ -401,8 +304,10 @@ model VerdictChange {
   factCheckId String
   factCheck   FactCheck @relation(fields: [factCheckId], references: [id], onDelete: Cascade)
 
-  fromVerdict VeracityRating
-  toVerdict   VeracityRating
+  fromVerdictCode String
+  fromVerdict     VeracityRating @relation("VerdictChangeFrom", fields: [fromVerdictCode], references: [code])
+  toVerdictCode   String
+  toVerdict       VeracityRating @relation("VerdictChangeTo", fields: [toVerdictCode], references: [code])
   reason      String         @db.Text // public
 
   changedById  String
@@ -462,28 +367,16 @@ model Country {
   @@map("countries")
 }
 
-/// The published rating scale. IFCN expects an organisation's scale to be
-/// public; the enum alone is not that. Definition text is the client's
-/// editorial voice, not a developer's paraphrase.
-model VerdictDefinition {
-  verdict      VeracityRating @id
-  labelAr      String
-  labelEn      String
-  definitionAr String         @db.Text
-  definitionEn String         @db.Text
-  position     Int            @default(0)
-
-  @@map("verdict_definitions")
-}
-
 model Submission {
   id            String           @id @default(cuid())
-  type          SubmissionType
+  typeCode      String
+  type          SubmissionType   @relation(fields: [typeCode], references: [code])
   content       String           @db.Text
   sourceUrl     String?
   mediaUrls     String[]
   context       String?          @db.Text
-  status        SubmissionStatus @default(PENDING)
+  statusCode    String           @default("PENDING")
+  status        SubmissionStatus @relation(fields: [statusCode], references: [code])
   priority      Int              @default(0)
   internalNotes String?          @db.Text
 
@@ -506,7 +399,7 @@ model Submission {
   factCheck      FactCheck?
   moderationLogs ModerationLog[]
 
-  @@index([status])
+  @@index([statusCode])
   @@index([submitterId])
   @@index([createdAt])
   @@map("submissions")
@@ -688,8 +581,10 @@ model Event {
   title       String
   slug        String      @unique
   description String      @db.Text
-  type        EventType
-  status      EventStatus @default(UPCOMING)
+  typeCode    String
+  type        EventType   @relation(fields: [typeCode], references: [code])
+  statusCode  String      @default("UPCOMING")
+  status      EventStatus @relation(fields: [statusCode], references: [code])
   coverImage  String?
 
   // Event details
@@ -714,7 +609,7 @@ model Event {
   registrations EventRegistration[]
 
   @@index([slug])
-  @@index([status])
+  @@index([statusCode])
   @@index([startDate])
   @@map("events")
 }
@@ -754,7 +649,8 @@ model HostRequest {
   // Event details
   proposedTitle     String
   description       String    @db.Text
-  eventType         EventType
+  eventTypeCode     String
+  eventType         EventType @relation(fields: [eventTypeCode], references: [code])
   preferredDate     DateTime
   expectedAttendees Int?
   location          String?
@@ -828,7 +724,8 @@ model Session {
   resources Json[]
 
   // Publishing
-  status      ContentStatus @default(DRAFT)
+  statusCode  String        @default("DRAFT")
+  status      ContentStatus @relation(fields: [statusCode], references: [code])
   publishedAt DateTime?
 
   // Timestamps
@@ -837,7 +734,7 @@ model Session {
   updatedAt  DateTime  @updatedAt
 
   @@index([slug])
-  @@index([status])
+  @@index([statusCode])
   @@map("sessions")
 }
 
@@ -858,7 +755,8 @@ model Blog {
   isFeatured Boolean  @default(false)
 
   // Publishing
-  status      ContentStatus @default(DRAFT)
+  statusCode  String        @default("DRAFT")
+  status      ContentStatus @relation(fields: [statusCode], references: [code])
   publishedAt DateTime?
 
   // Metrics
@@ -874,7 +772,7 @@ model Blog {
   updatedAt DateTime @updatedAt
 
   @@index([slug])
-  @@index([status])
+  @@index([statusCode])
   @@index([category])
   @@index([publishedAt])
   @@map("blog_posts")
@@ -900,7 +798,8 @@ model Research {
   attachments Json[]
 
   // Publishing
-  status      ContentStatus @default(DRAFT)
+  statusCode  String        @default("DRAFT")
+  status      ContentStatus @relation(fields: [statusCode], references: [code])
   publishedAt DateTime?
 
   // Metrics
@@ -913,7 +812,7 @@ model Research {
 
   @@index([slug])
   @@index([category])
-  @@index([status])
+  @@index([statusCode])
   @@map("research")
 }
 
@@ -1014,7 +913,8 @@ model UserAchievement {
 
 model Notification {
   id        String           @id @default(cuid())
-  type      NotificationType
+  typeCode  String
+  type      NotificationType @relation(fields: [typeCode], references: [code])
   title     String
   message   String
   actionUrl String?
@@ -1038,7 +938,8 @@ model Notification {
 
 model ModerationLog {
   id     String           @id @default(cuid())
-  action ModerationAction
+  actionCode String
+  action     ModerationAction @relation(fields: [actionCode], references: [code])
   reason String?
   notes  String?          @db.Text
 
@@ -1175,4 +1076,157 @@ model AccessibilityStatement {
   createdAt DateTime @default(now())
 
   @@map("accessibility_statements")
+}
+
+// ============================================
+// LOOKUP / REFERENCE TABLES
+//
+// Formerly Prisma enums, now rows, so values can be added without a schema
+// change. Keyed by a semantic `code` rather than a cuid: a random primary key
+// makes `@default("DRAFT")` impossible on the referencing foreign key, and
+// makes ids differ between environments.
+//
+// Application code refers to these via the constants in
+// src/common/constants/lookups.ts, which are checked against the database at
+// startup so the two cannot drift silently.
+// ============================================
+
+model Role {
+  code        String  @id // USER | MODERATOR | ADMIN | SUPER_ADMIN
+  name        String
+  description String?
+
+  users User[]
+
+  @@map("roles")
+}
+
+/// The published rating scale. Absorbs the former `VerdictDefinition` model:
+/// once ratings are rows, the rating IS its own definition.
+/// Definition text is a public editorial commitment — the client's words.
+model VeracityRating {
+  code         String  @id // TRUE | MOSTLY_TRUE | ... | MISLEADING
+  labelAr      String
+  labelEn      String
+  definitionAr String  @db.Text
+  definitionEn String  @db.Text
+  position     Int     @default(0)
+  description  String?
+
+  factChecks         FactCheck[]
+  articleRevisions   ArticleRevision[]
+  verdictChangesFrom VerdictChange[]   @relation("VerdictChangeFrom")
+  verdictChangesTo   VerdictChange[]   @relation("VerdictChangeTo")
+
+  @@map("veracity_ratings")
+}
+
+model SubmissionStatus {
+  code        String  @id // PENDING | IN_REVIEW | VERIFIED | REJECTED | PUBLISHED
+  name        String
+  description String?
+
+  submissions Submission[]
+
+  @@map("submission_statuses")
+}
+
+model SubmissionType {
+  code        String  @id // TEXT | IMAGE | VIDEO | AUDIO | LINK
+  name        String
+  description String?
+
+  submissions Submission[]
+
+  @@map("submission_types")
+}
+
+model ContentStatus {
+  code        String  @id // DRAFT | UNDER_REVIEW | PUBLISHED | ARCHIVED | RETRACTED
+  name        String
+  description String?
+
+  // Previously declared `submissions Submission[]`, which was wrong —
+  // Submission is keyed by SubmissionStatus, not ContentStatus.
+  factCheckArticles FactCheckArticle[]
+  sessions          Session[]
+  blogs             Blog[]
+  research          Research[]
+
+  @@map("content_statuses")
+}
+
+model Locale {
+  code        String  @id // ISO 639-1: AR | EN
+  name        String
+  description String?
+
+  claims            Claim[]
+  factCheckArticles FactCheckArticle[]
+
+  @@map("locales")
+}
+
+model EvidenceType {
+  code        String  @id // PRIMARY_SOURCE | OFFICIAL_RECORD | ... | OTHER
+  name        String
+  description String?
+
+  evidence Evidence[]
+
+  @@map("evidence_types")
+}
+
+model RevisionTier {
+  code        String  @id // SILENT | UPDATE | CORRECTION | VERDICT_CHANGE
+  name        String
+  description String?
+
+  // Previously declared `submissions Submission[]`, which was wrong —
+  // revision tiers belong to ArticleRevision.
+  articleRevisions ArticleRevision[]
+
+  @@map("revision_tiers")
+}
+
+model EventType {
+  code        String  @id // WORKSHOP | WEBINAR | EXHIBITION | CONFERENCE | TRAINING
+  name        String
+  description String?
+
+  events       Event[]
+  hostRequests HostRequest[]
+
+  @@map("event_types")
+}
+
+model EventStatus {
+  code        String  @id // UPCOMING | ONGOING | COMPLETED | CANCELLED
+  name        String
+  description String?
+
+  events Event[]
+
+  @@map("event_statuses")
+}
+
+model NotificationType {
+  code        String  @id // SUBMISSION_UPDATE | EVENT_REMINDER | ... | SYSTEM
+  name        String
+  description String?
+
+  notifications Notification[]
+
+  @@map("notification_types")
+}
+
+model ModerationAction {
+  code        String  @id // APPROVE | REJECT | FLAG | ESCALATE
+  name        String
+  description String?
+
+  // Previously had no back-relation at all.
+  moderationLogs ModerationLog[]
+
+  @@map("moderation_actions")
 }
