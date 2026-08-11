@@ -371,7 +371,7 @@ export class EventsService {
       where: { id: registration.id },
       data: {
         attendedAt: new Date(),
-        status: 'ATTENDED',
+        statusCode: 'ATTENDED',
       },
     });
   }

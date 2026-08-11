@@ -32,7 +32,7 @@
     "db:reset-seed:ar": "prisma migrate reset --schema=src/prisma/schema.prisma --force && ts-node src/prisma/seed/arabic.seed.ts",
     "db:fresh": "pnpm db:reset-seed",
     "db:fresh:ar": "pnpm db:reset-seed:ar",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json --incremental false"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",

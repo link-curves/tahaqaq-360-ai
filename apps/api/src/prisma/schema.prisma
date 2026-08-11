@@ -328,15 +328,14 @@ model VerdictChange {
 /// Curated, editor-owned. Keep it small — 10-25 flat topics. A taxonomy that
 /// outgrows one screen stops being applied consistently.
 model Topic {
-  id            String  @id @default(cuid())
-  slug          String  @unique // stable machine key
-  labelAr       String
-  labelEn       String
-  descriptionAr String?
-  descriptionEn String?
-  position      Int     @default(0)
+  id           String  @id @default(cuid())
+  slug         String  @unique // stable machine key
+  /// LocalizedText — see ADR-0008.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
   /// Retire a topic without orphaning the fact-checks already classified under it.
-  isActive      Boolean @default(true)
+  isActive     Boolean @default(true)
 
   factChecks FactCheckTopic[]
 
@@ -361,8 +360,8 @@ model FactCheckTopic {
 /// for bilingual names instead of hardcoding a name map in two frontends.
 model Country {
   code   String @id // ISO 3166-1 alpha-2
-  nameAr String
-  nameEn String
+  /// LocalizedText — see ADR-0008.
+  labels Json
 
   @@map("countries")
 }
@@ -623,7 +622,8 @@ model EventRegistration {
   event   Event  @relation(fields: [eventId], references: [id])
 
   // Registration details
-  status     String    @default("CONFIRMED") // CONFIRMED, CANCELLED, ATTENDED
+  statusCode String                  @default("CONFIRMED")
+  status     EventRegistrationStatus @relation(fields: [statusCode], references: [code])
   attendedAt DateTime?
   feedback   String?
   rating     Int?
@@ -656,7 +656,8 @@ model HostRequest {
   location          String?
 
   // Status
-  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  statusCode  String            @default("PENDING")
+  status      HostRequestStatus @relation(fields: [statusCode], references: [code])
   reviewNotes String?
   reviewedAt  DateTime?
 
@@ -664,7 +665,7 @@ model HostRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([status])
+  @@index([statusCode])
   @@map("host_requests")
 }
 
@@ -689,8 +690,9 @@ model TrainingRequest {
   specificNeeds     String?   @db.Text
 
   // Status
-  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, CONTACTED
-  reviewNotes String?   @db.Text
+  statusCode  String                @default("PENDING")
+  status      TrainingRequestStatus @relation(fields: [statusCode], references: [code])
+  reviewNotes String?               @db.Text
   reviewedBy  String?
   reviewedAt  DateTime?
 
@@ -698,7 +700,7 @@ model TrainingRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([status])
+  @@index([statusCode])
   @@index([email])
   @@index([createdAt])
   @@map("training_requests")
@@ -851,8 +853,9 @@ model ContactMessage {
   message String  @db.Text
 
   // Status
-  status      String    @default("NEW") // NEW, IN_PROGRESS, RESOLVED
-  response    String?   @db.Text
+  statusCode  String               @default("NEW")
+  status      ContactMessageStatus @relation(fields: [statusCode], references: [code])
+  response    String?              @db.Text
   respondedAt DateTime?
   respondedBy String?
 
@@ -864,7 +867,7 @@ model ContactMessage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([status])
+  @@index([statusCode])
   @@index([createdAt])
   @@map("contact_messages")
 }
@@ -1082,19 +1085,27 @@ model AccessibilityStatement {
 // LOOKUP / REFERENCE TABLES
 //
 // Formerly Prisma enums, now rows, so values can be added without a schema
-// change. Keyed by a semantic `code` rather than a cuid: a random primary key
-// makes `@default("DRAFT")` impossible on the referencing foreign key, and
-// makes ids differ between environments.
+// change. Keyed by a semantic `code`: a random primary key makes
+// `@default("DRAFT")` impossible on the referencing foreign key and makes ids
+// differ between environments.
+//
+// Labels are a `LocalizedText` JSON map rather than *Ar/*En columns, so a third
+// language is data rather than a migration (ADR-0008). They are resolved to a
+// single string by the API — see common/constants/lookups.ts.
 //
 // Application code refers to these via the constants in
-// src/common/constants/lookups.ts, which are checked against the database at
-// startup so the two cannot drift silently.
+// src/common/constants/lookups.ts, checked against the database at startup by
+// LookupIntegrityService so the two cannot drift silently.
 // ============================================
 
+/// USER | MODERATOR | ADMIN | SUPER_ADMIN
 model Role {
-  code        String  @id // USER | MODERATOR | ADMIN | SUPER_ADMIN
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
   users User[]
 
@@ -1102,16 +1113,15 @@ model Role {
 }
 
 /// The published rating scale. Absorbs the former `VerdictDefinition` model:
-/// once ratings are rows, the rating IS its own definition.
-/// Definition text is a public editorial commitment — the client's words.
+/// once ratings are rows, the rating IS its own definition. `descriptions`
+/// holds the public definition text — the client's editorial voice.
 model VeracityRating {
-  code         String  @id // TRUE | MOSTLY_TRUE | ... | MISLEADING
-  labelAr      String
-  labelEn      String
-  definitionAr String  @db.Text
-  definitionEn String  @db.Text
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
   position     Int     @default(0)
-  description  String?
+  isActive     Boolean @default(true)
 
   factChecks         FactCheck[]
   articleRevisions   ArticleRevision[]
@@ -1121,33 +1131,15 @@ model VeracityRating {
   @@map("veracity_ratings")
 }
 
-model SubmissionStatus {
-  code        String  @id // PENDING | IN_REVIEW | VERIFIED | REJECTED | PUBLISHED
-  name        String
-  description String?
-
-  submissions Submission[]
-
-  @@map("submission_statuses")
-}
-
-model SubmissionType {
-  code        String  @id // TEXT | IMAGE | VIDEO | AUDIO | LINK
-  name        String
-  description String?
-
-  submissions Submission[]
-
-  @@map("submission_types")
-}
-
+/// DRAFT | UNDER_REVIEW | PUBLISHED | ARCHIVED | RETRACTED
 model ContentStatus {
-  code        String  @id // DRAFT | UNDER_REVIEW | PUBLISHED | ARCHIVED | RETRACTED
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
-  // Previously declared `submissions Submission[]`, which was wrong —
-  // Submission is keyed by SubmissionStatus, not ContentStatus.
   factCheckArticles FactCheckArticle[]
   sessions          Session[]
   blogs             Blog[]
@@ -1156,10 +1148,15 @@ model ContentStatus {
   @@map("content_statuses")
 }
 
+/// ISO 639-1. `isActive` lets a language exist as data — translated
+/// gradually — before it is exposed publicly (ADR-0008).
 model Locale {
-  code        String  @id // ISO 639-1: AR | EN
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
   claims            Claim[]
   factCheckArticles FactCheckArticle[]
@@ -1167,32 +1164,70 @@ model Locale {
   @@map("locales")
 }
 
+/// PENDING | IN_REVIEW | VERIFIED | REJECTED | PUBLISHED
+model SubmissionStatus {
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
+
+  submissions Submission[]
+
+  @@map("submission_statuses")
+}
+
+/// TEXT | IMAGE | VIDEO | AUDIO | LINK
+model SubmissionType {
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
+
+  submissions Submission[]
+
+  @@map("submission_types")
+}
+
+/// PRIMARY_SOURCE | OFFICIAL_RECORD | … | OTHER
 model EvidenceType {
-  code        String  @id // PRIMARY_SOURCE | OFFICIAL_RECORD | ... | OTHER
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
   evidence Evidence[]
 
   @@map("evidence_types")
 }
 
+/// SILENT | UPDATE | CORRECTION | VERDICT_CHANGE
 model RevisionTier {
-  code        String  @id // SILENT | UPDATE | CORRECTION | VERDICT_CHANGE
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
-  // Previously declared `submissions Submission[]`, which was wrong —
-  // revision tiers belong to ArticleRevision.
   articleRevisions ArticleRevision[]
 
   @@map("revision_tiers")
 }
 
+/// WORKSHOP | WEBINAR | EXHIBITION | CONFERENCE | TRAINING
 model EventType {
-  code        String  @id // WORKSHOP | WEBINAR | EXHIBITION | CONFERENCE | TRAINING
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
   events       Event[]
   hostRequests HostRequest[]
@@ -1200,33 +1235,100 @@ model EventType {
   @@map("event_types")
 }
 
+/// UPCOMING | ONGOING | COMPLETED | CANCELLED
 model EventStatus {
-  code        String  @id // UPCOMING | ONGOING | COMPLETED | CANCELLED
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
   events Event[]
 
   @@map("event_statuses")
 }
 
+/// SUBMISSION_UPDATE | EVENT_REMINDER | … | SYSTEM
 model NotificationType {
-  code        String  @id // SUBMISSION_UPDATE | EVENT_REMINDER | ... | SYSTEM
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
   notifications Notification[]
 
   @@map("notification_types")
 }
 
+/// APPROVE | REJECT | FLAG | ESCALATE
 model ModerationAction {
-  code        String  @id // APPROVE | REJECT | FLAG | ESCALATE
-  name        String
-  description String?
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
 
-  // Previously had no back-relation at all.
   moderationLogs ModerationLog[]
 
   @@map("moderation_actions")
+}
+
+/// CONFIRMED | CANCELLED | ATTENDED — was a free-text column.
+model EventRegistrationStatus {
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
+
+  registrations EventRegistration[]
+
+  @@map("event_registration_statuses")
+}
+
+/// PENDING | APPROVED | REJECTED — was a free-text column.
+model HostRequestStatus {
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
+
+  hostRequests HostRequest[]
+
+  @@map("host_request_statuses")
+}
+
+/// PENDING | APPROVED | REJECTED | CONTACTED — was a free-text column.
+model TrainingRequestStatus {
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
+
+  trainingRequests TrainingRequest[]
+
+  @@map("training_request_statuses")
+}
+
+/// NEW | IN_PROGRESS | RESOLVED — was a free-text column.
+model ContactMessageStatus {
+  code         String  @id
+  /// LocalizedText: { "ar": "…", "en": "…" }. Adding a language is adding a key.
+  labels       Json
+  descriptions Json?
+  position     Int     @default(0)
+  isActive     Boolean @default(true)
+
+  contactMessages ContactMessage[]
+
+  @@map("contact_message_statuses")
 }

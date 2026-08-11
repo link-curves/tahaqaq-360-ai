@@ -1,66 +1,53 @@
 import { PrismaClient } from '@prisma/client';
-import {
-  CONTENT_STATUS_SEED,
-  EVENT_STATUS_SEED,
-  EVENT_TYPE_SEED,
-  EVIDENCE_TYPE_SEED,
-  LOCALE_SEED,
-  MODERATION_ACTION_SEED,
-  NOTIFICATION_TYPE_SEED,
-  REVISION_TIER_SEED,
-  ROLE_SEED,
-  SUBMISSION_STATUS_SEED,
-  SUBMISSION_TYPE_SEED,
-  VERDICT_SEED,
-} from '../../common/constants/lookups';
+import { LOOKUP_REGISTRY, LocalizedText } from '../../common/constants/lookups';
 
 /**
- * Reference data: topics, countries, and the published rating scale.
+ * Reference data: lookup tables, topics and countries.
  *
- * This is bilingual and language-independent, so it is shared by both the
- * Arabic and English seed entry points rather than duplicated per language.
+ * Language-independent, so it is shared by both seed entry points rather than
+ * duplicated per language. Labels are `LocalizedText` maps — adding French is
+ * adding a key, not a migration (ADR-0008).
  *
- * See ADR-0007 (taxonomy) and ADR-0002 (rating definitions).
+ * MUST run before anything else: every other model has a foreign key into the
+ * lookup tables, so seeding users before roles fails with a foreign-key
+ * violation.
  */
 
 // ---------------------------------------------------------------------------
 // TOPICS
 //
-// Derived from `arabicCategories` in ./ar/data/arabic.data.ts — i.e. the
-// vocabulary the project already used — rather than invented from scratch.
+// Derived from `arabicCategories` in ./ar/data/arabic.data.ts — the vocabulary
+// the project already used — rather than invented from scratch.
 //
 // ⚠️ NEEDS CLIENT SIGN-OFF before fact-checks are classified against it.
 // Re-classifying later is an editorial exercise, not a config change.
 // The last three are PROPOSED ADDITIONS, not part of the original list.
 // ---------------------------------------------------------------------------
-export const TOPIC_SEED = [
+export const TOPIC_SEED: Array<{ slug: string; labels: LocalizedText }> = [
   // --- the 15 categories already in use ---
-  { slug: 'politics', labelAr: 'السياسة', labelEn: 'Politics' },
-  { slug: 'health', labelAr: 'الصحة', labelEn: 'Health' },
-  { slug: 'science', labelAr: 'العلوم', labelEn: 'Science' },
-  { slug: 'technology', labelAr: 'التكنولوجيا', labelEn: 'Technology' },
-  { slug: 'economy', labelAr: 'الاقتصاد', labelEn: 'Economy' },
-  { slug: 'environment', labelAr: 'البيئة', labelEn: 'Environment' },
-  { slug: 'education', labelAr: 'التعليم', labelEn: 'Education' },
-  { slug: 'sports', labelAr: 'الرياضة', labelEn: 'Sports' },
-  { slug: 'culture', labelAr: 'الثقافة', labelEn: 'Culture' },
-  { slug: 'society', labelAr: 'المجتمع', labelEn: 'Society' },
+  { slug: 'politics', labels: { ar: 'السياسة', en: 'Politics' } },
+  { slug: 'health', labels: { ar: 'الصحة', en: 'Health' } },
+  { slug: 'science', labels: { ar: 'العلوم', en: 'Science' } },
+  { slug: 'technology', labels: { ar: 'التكنولوجيا', en: 'Technology' } },
+  { slug: 'economy', labels: { ar: 'الاقتصاد', en: 'Economy' } },
+  { slug: 'environment', labels: { ar: 'البيئة', en: 'Environment' } },
+  { slug: 'education', labels: { ar: 'التعليم', en: 'Education' } },
+  { slug: 'sports', labels: { ar: 'الرياضة', en: 'Sports' } },
+  { slug: 'culture', labels: { ar: 'الثقافة', en: 'Culture' } },
+  { slug: 'society', labels: { ar: 'المجتمع', en: 'Society' } },
   {
     slug: 'cybersecurity',
-    labelAr: 'الأمن السيبراني',
-    labelEn: 'Cybersecurity',
+    labels: { ar: 'الأمن السيبراني', en: 'Cybersecurity' },
   },
   {
     slug: 'social-media',
-    labelAr: 'وسائل التواصل الاجتماعي',
-    labelEn: 'Social Media',
+    labels: { ar: 'وسائل التواصل الاجتماعي', en: 'Social Media' },
   },
-  { slug: 'media', labelAr: 'الإعلام', labelEn: 'Media' },
-  { slug: 'human-rights', labelAr: 'حقوق الإنسان', labelEn: 'Human Rights' },
+  { slug: 'media', labels: { ar: 'الإعلام', en: 'Media' } },
+  { slug: 'human-rights', labels: { ar: 'حقوق الإنسان', en: 'Human Rights' } },
   {
     slug: 'international-relations',
-    labelAr: 'العلاقات الدولية',
-    labelEn: 'International Relations',
+    labels: { ar: 'العلاقات الدولية', en: 'International Relations' },
   },
 
   // --- PROPOSED ADDITIONS — client decides ---
@@ -70,145 +57,108 @@ export const TOPIC_SEED = [
   // is editorially sensitive and is explicitly the client's call.
   {
     slug: 'conflict-and-war',
-    labelAr: 'النزاعات والحروب',
-    labelEn: 'Conflict & War',
+    labels: { ar: 'النزاعات والحروب', en: 'Conflict & War' },
   },
   {
     slug: 'migration-and-refugees',
-    labelAr: 'الهجرة واللاجئون',
-    labelEn: 'Migration & Refugees',
+    labels: { ar: 'الهجرة واللاجئون', en: 'Migration & Refugees' },
   },
-  { slug: 'religion', labelAr: 'الدين', labelEn: 'Religion' },
+  { slug: 'religion', labels: { ar: 'الدين', en: 'Religion' } },
 ];
 
 // ---------------------------------------------------------------------------
 // COUNTRIES — ISO 3166-1 alpha-2
 //
 // MENA first, then the non-regional countries most likely to appear in
-// international claims. This is standard reference data, not an editorial
-// list; prune or extend it as coverage requires.
+// international claims. Standard reference data, not an editorial list.
 // ---------------------------------------------------------------------------
-export const COUNTRY_SEED = [
-  // MENA
-  { code: 'LB', nameAr: 'لبنان', nameEn: 'Lebanon' },
-  { code: 'SY', nameAr: 'سوريا', nameEn: 'Syria' },
-  { code: 'JO', nameAr: 'الأردن', nameEn: 'Jordan' },
-  { code: 'PS', nameAr: 'فلسطين', nameEn: 'Palestine' },
-  { code: 'IQ', nameAr: 'العراق', nameEn: 'Iraq' },
-  { code: 'EG', nameAr: 'مصر', nameEn: 'Egypt' },
-  { code: 'SA', nameAr: 'السعودية', nameEn: 'Saudi Arabia' },
+export const COUNTRY_SEED: Array<{ code: string; labels: LocalizedText }> = [
+  { code: 'LB', labels: { ar: 'لبنان', en: 'Lebanon' } },
+  { code: 'SY', labels: { ar: 'سوريا', en: 'Syria' } },
+  { code: 'JO', labels: { ar: 'الأردن', en: 'Jordan' } },
+  { code: 'PS', labels: { ar: 'فلسطين', en: 'Palestine' } },
+  { code: 'IQ', labels: { ar: 'العراق', en: 'Iraq' } },
+  { code: 'EG', labels: { ar: 'مصر', en: 'Egypt' } },
+  { code: 'SA', labels: { ar: 'السعودية', en: 'Saudi Arabia' } },
   {
     code: 'AE',
-    nameAr: 'الإمارات العربية المتحدة',
-    nameEn: 'United Arab Emirates',
+    labels: { ar: 'الإمارات العربية المتحدة', en: 'United Arab Emirates' },
   },
-  { code: 'QA', nameAr: 'قطر', nameEn: 'Qatar' },
-  { code: 'KW', nameAr: 'الكويت', nameEn: 'Kuwait' },
-  { code: 'BH', nameAr: 'البحرين', nameEn: 'Bahrain' },
-  { code: 'OM', nameAr: 'عُمان', nameEn: 'Oman' },
-  { code: 'YE', nameAr: 'اليمن', nameEn: 'Yemen' },
-  { code: 'LY', nameAr: 'ليبيا', nameEn: 'Libya' },
-  { code: 'TN', nameAr: 'تونس', nameEn: 'Tunisia' },
-  { code: 'DZ', nameAr: 'الجزائر', nameEn: 'Algeria' },
-  { code: 'MA', nameAr: 'المغرب', nameEn: 'Morocco' },
-  { code: 'SD', nameAr: 'السودان', nameEn: 'Sudan' },
-  { code: 'MR', nameAr: 'موريتانيا', nameEn: 'Mauritania' },
-  { code: 'SO', nameAr: 'الصومال', nameEn: 'Somalia' },
-  { code: 'DJ', nameAr: 'جيبوتي', nameEn: 'Djibouti' },
-  { code: 'KM', nameAr: 'جزر القمر', nameEn: 'Comoros' },
-  { code: 'TR', nameAr: 'تركيا', nameEn: 'Türkiye' },
-  { code: 'IR', nameAr: 'إيران', nameEn: 'Iran' },
-  { code: 'IL', nameAr: 'إسرائيل', nameEn: 'Israel' },
-  // Frequently referenced outside the region
-  { code: 'US', nameAr: 'الولايات المتحدة', nameEn: 'United States' },
-  { code: 'GB', nameAr: 'المملكة المتحدة', nameEn: 'United Kingdom' },
-  { code: 'FR', nameAr: 'فرنسا', nameEn: 'France' },
-  { code: 'DE', nameAr: 'ألمانيا', nameEn: 'Germany' },
-  { code: 'RU', nameAr: 'روسيا', nameEn: 'Russia' },
-  { code: 'CN', nameAr: 'الصين', nameEn: 'China' },
-  { code: 'IN', nameAr: 'الهند', nameEn: 'India' },
+  { code: 'QA', labels: { ar: 'قطر', en: 'Qatar' } },
+  { code: 'KW', labels: { ar: 'الكويت', en: 'Kuwait' } },
+  { code: 'BH', labels: { ar: 'البحرين', en: 'Bahrain' } },
+  { code: 'OM', labels: { ar: 'عُمان', en: 'Oman' } },
+  { code: 'YE', labels: { ar: 'اليمن', en: 'Yemen' } },
+  { code: 'LY', labels: { ar: 'ليبيا', en: 'Libya' } },
+  { code: 'TN', labels: { ar: 'تونس', en: 'Tunisia' } },
+  { code: 'DZ', labels: { ar: 'الجزائر', en: 'Algeria' } },
+  { code: 'MA', labels: { ar: 'المغرب', en: 'Morocco' } },
+  { code: 'SD', labels: { ar: 'السودان', en: 'Sudan' } },
+  { code: 'MR', labels: { ar: 'موريتانيا', en: 'Mauritania' } },
+  { code: 'SO', labels: { ar: 'الصومال', en: 'Somalia' } },
+  { code: 'DJ', labels: { ar: 'جيبوتي', en: 'Djibouti' } },
+  { code: 'KM', labels: { ar: 'جزر القمر', en: 'Comoros' } },
+  { code: 'TR', labels: { ar: 'تركيا', en: 'Türkiye' } },
+  { code: 'IR', labels: { ar: 'إيران', en: 'Iran' } },
+  { code: 'IL', labels: { ar: 'إسرائيل', en: 'Israel' } },
+  { code: 'US', labels: { ar: 'الولايات المتحدة', en: 'United States' } },
+  { code: 'GB', labels: { ar: 'المملكة المتحدة', en: 'United Kingdom' } },
+  { code: 'FR', labels: { ar: 'فرنسا', en: 'France' } },
+  { code: 'DE', labels: { ar: 'ألمانيا', en: 'Germany' } },
+  { code: 'RU', labels: { ar: 'روسيا', en: 'Russia' } },
+  { code: 'CN', labels: { ar: 'الصين', en: 'China' } },
+  { code: 'IN', labels: { ar: 'الهند', en: 'India' } },
 ];
 
-
-// ---------------------------------------------------------------------------
-// LOOKUP TABLES
-//
-// Seeded from src/common/constants/lookups.ts so the rows and the TypeScript
-// constants cannot disagree. LookupIntegrityService re-checks this at boot.
-// ---------------------------------------------------------------------------
+/**
+ * Seeds all lookup tables from LOOKUP_REGISTRY — the same source the
+ * application imports, so codes and labels cannot disagree with what the code
+ * refers to.
+ */
 export const seedLookupTables = async (prisma: PrismaClient) => {
-  const simple = [
-    ['role', ROLE_SEED],
-    ['contentStatus', CONTENT_STATUS_SEED],
-    ['locale', LOCALE_SEED],
-    ['submissionStatus', SUBMISSION_STATUS_SEED],
-    ['submissionType', SUBMISSION_TYPE_SEED],
-    ['evidenceType', EVIDENCE_TYPE_SEED],
-    ['revisionTier', REVISION_TIER_SEED],
-    ['eventType', EVENT_TYPE_SEED],
-    ['eventStatus', EVENT_STATUS_SEED],
-    ['notificationType', NOTIFICATION_TYPE_SEED],
-    ['moderationAction', MODERATION_ACTION_SEED],
-  ] as const;
-
   let count = 0;
-  for (const [model, rows] of simple) {
-    for (const row of rows) {
-      await (prisma as any)[model].upsert({
+
+  for (const entry of LOOKUP_REGISTRY) {
+    const delegate = (prisma as any)[entry.model];
+    for (const [i, row] of entry.rows.entries()) {
+      const data = {
+        labels: row.labels,
+        descriptions: row.descriptions ?? undefined,
+        position: i,
+      };
+      await delegate.upsert({
         where: { code: row.code },
-        update: { name: row.name, description: row.description ?? null },
-        create: { code: row.code, name: row.name, description: row.description ?? null },
+        update: data,
+        create: { code: row.code, ...data },
       });
       count++;
     }
   }
 
-  // VeracityRating carries the published rating scale, so it has its own shape.
-  for (const [i, v] of VERDICT_SEED.entries()) {
-    await prisma.veracityRating.upsert({
-      where: { code: v.code },
-      update: {
-        labelAr: v.labelAr,
-        labelEn: v.labelEn,
-        definitionAr: v.definitionAr,
-        definitionEn: v.definitionEn,
-        position: i,
-      },
-      create: {
-        code: v.code,
-        labelAr: v.labelAr,
-        labelEn: v.labelEn,
-        definitionAr: v.definitionAr,
-        definitionEn: v.definitionEn,
-        position: i,
-      },
-    });
-    count++;
-  }
-
-  console.log(`✅ جداول القيم المرجعية: ${count} صف عبر 12 جدولاً`);
+  console.log(
+    `✅ جداول القيم المرجعية: ${count} صف عبر ${LOOKUP_REGISTRY.length} جدولاً`,
+  );
   return count;
 };
 
 export const seedReferenceData = async (prisma: PrismaClient) => {
   console.log('🌱 البدء في إضافة البيانات المرجعية...');
 
-  // Lookup tables first — everything else has foreign keys into them.
   await seedLookupTables(prisma);
 
   for (const [i, t] of TOPIC_SEED.entries()) {
     await prisma.topic.upsert({
       where: { slug: t.slug },
-      update: { labelAr: t.labelAr, labelEn: t.labelEn, position: i },
-      create: { ...t, position: i },
+      update: { labels: t.labels, position: i },
+      create: { slug: t.slug, labels: t.labels, position: i },
     });
   }
 
   for (const c of COUNTRY_SEED) {
     await prisma.country.upsert({
       where: { code: c.code },
-      update: { nameAr: c.nameAr, nameEn: c.nameEn },
-      create: c,
+      update: { labels: c.labels },
+      create: { code: c.code, labels: c.labels },
     });
   }
 

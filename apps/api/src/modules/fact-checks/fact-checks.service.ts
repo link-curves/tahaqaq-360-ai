@@ -9,6 +9,7 @@ import {
   LOCALE,
   LocaleCode,
   REVISION_TIER,
+  resolveLocalized,
   RoleCode,
 } from '../../common/constants/lookups';
 import { PrismaService } from '../../database/prisma.service';
@@ -40,11 +41,11 @@ export class FactChecksService {
     id: true,
     verdictCode: true,
     countryCodes: true,
-    verdict: { select: { code: true, labelAr: true, labelEn: true } },
+    verdict: { select: { code: true, labels: true } },
     claim: { select: { text: true, claimantName: true, claimedAt: true } },
     topics: {
       select: {
-        topic: { select: { slug: true, labelAr: true, labelEn: true } },
+        topic: { select: { slug: true, labels: true } },
       },
     },
     _count: { select: { evidence: true, comments: true } },
@@ -153,7 +154,7 @@ export class FactChecksService {
     // The flat shape TransformInterceptor detects as paginated. All four of
     // data/total/page/limit must be present or `meta` silently disappears.
     return {
-      data: articles.map((a) => this.shapeListItem(a)),
+      data: articles.map((a) => this.shapeListItem(a, locale)),
       total,
       page,
       limit,
@@ -197,10 +198,8 @@ export class FactChecksService {
             verdict: {
               select: {
                 code: true,
-                labelAr: true,
-                labelEn: true,
-                definitionAr: true,
-                definitionEn: true,
+                labels: true,
+                descriptions: true,
               },
             },
             claim: {
@@ -242,7 +241,7 @@ export class FactChecksService {
             },
             topics: {
               select: {
-                topic: { select: { slug: true, labelAr: true, labelEn: true } },
+                topic: { select: { slug: true, labels: true } },
               },
             },
             // Powers the language switcher.
@@ -280,14 +279,15 @@ export class FactChecksService {
     }
 
     const { factCheck, revisions, ...rest } = article;
-    const { topics, articles, ...review } = factCheck;
+    const { topics, articles, verdict, ...review } = factCheck;
 
     return {
       ...rest,
       isRetracted: article.statusCode === CONTENT_STATUS.RETRACTED,
       factCheck: {
         ...review,
-        topics: topics.map((t) => t.topic),
+        verdict: this.localize(verdict, locale),
+        topics: topics.map((t) => this.localize(t.topic, locale)),
       },
       // Sibling locales that are actually published — a draft translation
       // must not appear in the language switcher.
@@ -355,13 +355,19 @@ export class FactChecksService {
         factCheck: {
           select: {
             verdictCode: true,
-            verdict: { select: { code: true, labelAr: true, labelEn: true } },
+            verdict: { select: { code: true, labels: true } },
           },
         },
       },
     });
 
-    return related;
+    return related.map((r) => ({
+      ...r,
+      factCheck: {
+        ...r.factCheck,
+        verdict: this.localize(r.factCheck.verdict, locale),
+      },
+    }));
   }
 
   async getStats(locale: LocaleCode = LOCALE.AR) {
@@ -477,16 +483,36 @@ export class FactChecksService {
 
   // ---------------------------------------------------------------------
 
-  private shapeListItem<
-    T extends {
-      factCheck: { topics: { topic: unknown }[] };
-    },
-  >(article: T) {
+  /**
+   * Collapse a `labels`/`descriptions` map to the requested language.
+   *
+   * Falls back to Arabic and then to the row's own code, so a partially
+   * translated locale degrades rather than rendering blank (ADR-0008). Adding a
+   * language changes no code here and no API field.
+   */
+  private localize(row: any, locale: string) {
+    if (!row) return row;
+    const { labels, descriptions, ...rest } = row;
+    const out: Record<string, unknown> = {
+      ...rest,
+      label: resolveLocalized(labels, locale, rest.code ?? rest.slug ?? ''),
+    };
+    if (descriptions !== undefined) {
+      out.definition = resolveLocalized(descriptions, locale);
+    }
+    return out;
+  }
+
+  private shapeListItem(article: any, locale: string) {
     const { factCheck, ...rest } = article;
-    const { topics, ...review } = factCheck;
+    const { topics, verdict, ...review } = factCheck;
     return {
       ...rest,
-      factCheck: { ...review, topics: topics.map((t) => t.topic) },
+      factCheck: {
+        ...review,
+        verdict: this.localize(verdict, locale),
+        topics: topics.map((t: any) => this.localize(t.topic, locale)),
+      },
     };
   }
 }

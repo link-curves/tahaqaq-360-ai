@@ -202,7 +202,7 @@ export class AdminService {
     return this.prisma.contactMessage.update({
       where: { id: messageId },
       data: {
-        status: 'RESOLVED',
+        statusCode: 'RESOLVED',
         response,
         respondedAt: new Date(),
         respondedBy: adminId,

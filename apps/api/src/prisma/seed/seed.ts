@@ -290,7 +290,7 @@ async function main() {
         data: {
           userId: user.id,
           eventId: event.id,
-          status:
+          statusCode:
             event.statusCode === EVENT_STATUS.COMPLETED ? 'ATTENDED' : 'CONFIRMED',
           attendedAt:
             event.statusCode === EVENT_STATUS.COMPLETED ? event.startDate : null,
@@ -769,7 +769,7 @@ async function main() {
           'Feature request',
         ]),
         message: `Hello, I wanted to reach out regarding ${randomElement(categories).toLowerCase()}. I have some questions and would appreciate your assistance.`,
-        status: randomElement(['NEW', 'IN_PROGRESS', 'RESOLVED']),
+        statusCode: randomElement(['NEW', 'IN_PROGRESS', 'RESOLVED']),
         userId: sender?.id,
         createdAt: randomDate(new Date(2024, 0, 1), new Date()),
       },
@@ -807,7 +807,7 @@ async function main() {
           'Cairo',
           'Amman',
         ]),
-        status: randomElement(['PENDING', 'APPROVED', 'REJECTED']),
+        statusCode: randomElement(['PENDING', 'APPROVED', 'REJECTED']),
         createdAt: randomDate(new Date(2024, 0, 1), new Date()),
       },
     });

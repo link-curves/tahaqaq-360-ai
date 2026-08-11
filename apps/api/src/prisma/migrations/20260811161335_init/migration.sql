@@ -150,10 +150,8 @@ CREATE TABLE "verdict_changes" (
 CREATE TABLE "topics" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "labelAr" TEXT NOT NULL,
-    "labelEn" TEXT NOT NULL,
-    "descriptionAr" TEXT,
-    "descriptionEn" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
     "position" INTEGER NOT NULL DEFAULT 0,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -173,8 +171,7 @@ CREATE TABLE "fact_check_topics" (
 -- CreateTable
 CREATE TABLE "countries" (
     "code" TEXT NOT NULL,
-    "nameAr" TEXT NOT NULL,
-    "nameEn" TEXT NOT NULL,
+    "labels" JSONB NOT NULL,
 
     CONSTRAINT "countries_pkey" PRIMARY KEY ("code")
 );
@@ -340,7 +337,7 @@ CREATE TABLE "event_registrations" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "eventId" TEXT NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'CONFIRMED',
+    "statusCode" TEXT NOT NULL DEFAULT 'CONFIRMED',
     "attendedAt" TIMESTAMP(3),
     "feedback" TEXT,
     "rating" INTEGER,
@@ -362,7 +359,7 @@ CREATE TABLE "host_requests" (
     "preferredDate" TIMESTAMP(3) NOT NULL,
     "expectedAttendees" INTEGER,
     "location" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "statusCode" TEXT NOT NULL DEFAULT 'PENDING',
     "reviewNotes" TEXT,
     "reviewedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -387,7 +384,7 @@ CREATE TABLE "training_requests" (
     "location" TEXT NOT NULL,
     "targetAudience" TEXT,
     "specificNeeds" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "statusCode" TEXT NOT NULL DEFAULT 'PENDING',
     "reviewNotes" TEXT,
     "reviewedBy" TEXT,
     "reviewedAt" TIMESTAMP(3),
@@ -489,7 +486,7 @@ CREATE TABLE "contact_messages" (
     "phone" TEXT,
     "subject" TEXT NOT NULL,
     "message" TEXT NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'NEW',
+    "statusCode" TEXT NOT NULL DEFAULT 'NEW',
     "response" TEXT,
     "respondedAt" TIMESTAMP(3),
     "respondedBy" TEXT,
@@ -638,8 +635,10 @@ CREATE TABLE "accessibility_statements" (
 -- CreateTable
 CREATE TABLE "roles" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "roles_pkey" PRIMARY KEY ("code")
 );
@@ -647,39 +646,21 @@ CREATE TABLE "roles" (
 -- CreateTable
 CREATE TABLE "veracity_ratings" (
     "code" TEXT NOT NULL,
-    "labelAr" TEXT NOT NULL,
-    "labelEn" TEXT NOT NULL,
-    "definitionAr" TEXT NOT NULL,
-    "definitionEn" TEXT NOT NULL,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
     "position" INTEGER NOT NULL DEFAULT 0,
-    "description" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "veracity_ratings_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateTable
-CREATE TABLE "submission_statuses" (
-    "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-
-    CONSTRAINT "submission_statuses_pkey" PRIMARY KEY ("code")
-);
-
--- CreateTable
-CREATE TABLE "submission_types" (
-    "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-
-    CONSTRAINT "submission_types_pkey" PRIMARY KEY ("code")
-);
-
--- CreateTable
 CREATE TABLE "content_statuses" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "content_statuses_pkey" PRIMARY KEY ("code")
 );
@@ -687,17 +668,43 @@ CREATE TABLE "content_statuses" (
 -- CreateTable
 CREATE TABLE "locales" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "locales_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateTable
+CREATE TABLE "submission_statuses" (
+    "code" TEXT NOT NULL,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "submission_statuses_pkey" PRIMARY KEY ("code")
+);
+
+-- CreateTable
+CREATE TABLE "submission_types" (
+    "code" TEXT NOT NULL,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "submission_types_pkey" PRIMARY KEY ("code")
+);
+
+-- CreateTable
 CREATE TABLE "evidence_types" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "evidence_types_pkey" PRIMARY KEY ("code")
 );
@@ -705,8 +712,10 @@ CREATE TABLE "evidence_types" (
 -- CreateTable
 CREATE TABLE "revision_tiers" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "revision_tiers_pkey" PRIMARY KEY ("code")
 );
@@ -714,8 +723,10 @@ CREATE TABLE "revision_tiers" (
 -- CreateTable
 CREATE TABLE "event_types" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "event_types_pkey" PRIMARY KEY ("code")
 );
@@ -723,8 +734,10 @@ CREATE TABLE "event_types" (
 -- CreateTable
 CREATE TABLE "event_statuses" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "event_statuses_pkey" PRIMARY KEY ("code")
 );
@@ -732,8 +745,10 @@ CREATE TABLE "event_statuses" (
 -- CreateTable
 CREATE TABLE "notification_types" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "notification_types_pkey" PRIMARY KEY ("code")
 );
@@ -741,10 +756,56 @@ CREATE TABLE "notification_types" (
 -- CreateTable
 CREATE TABLE "moderation_actions" (
     "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "moderation_actions_pkey" PRIMARY KEY ("code")
+);
+
+-- CreateTable
+CREATE TABLE "event_registration_statuses" (
+    "code" TEXT NOT NULL,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "event_registration_statuses_pkey" PRIMARY KEY ("code")
+);
+
+-- CreateTable
+CREATE TABLE "host_request_statuses" (
+    "code" TEXT NOT NULL,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "host_request_statuses_pkey" PRIMARY KEY ("code")
+);
+
+-- CreateTable
+CREATE TABLE "training_request_statuses" (
+    "code" TEXT NOT NULL,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "training_request_statuses_pkey" PRIMARY KEY ("code")
+);
+
+-- CreateTable
+CREATE TABLE "contact_message_statuses" (
+    "code" TEXT NOT NULL,
+    "labels" JSONB NOT NULL,
+    "descriptions" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "contact_message_statuses_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateIndex
@@ -901,10 +962,10 @@ CREATE INDEX "event_registrations_eventId_idx" ON "event_registrations"("eventId
 CREATE UNIQUE INDEX "event_registrations_userId_eventId_key" ON "event_registrations"("userId", "eventId");
 
 -- CreateIndex
-CREATE INDEX "host_requests_status_idx" ON "host_requests"("status");
+CREATE INDEX "host_requests_statusCode_idx" ON "host_requests"("statusCode");
 
 -- CreateIndex
-CREATE INDEX "training_requests_status_idx" ON "training_requests"("status");
+CREATE INDEX "training_requests_statusCode_idx" ON "training_requests"("statusCode");
 
 -- CreateIndex
 CREATE INDEX "training_requests_email_idx" ON "training_requests"("email");
@@ -955,7 +1016,7 @@ CREATE INDEX "faqs_category_idx" ON "faqs"("category");
 CREATE INDEX "faqs_isPublished_idx" ON "faqs"("isPublished");
 
 -- CreateIndex
-CREATE INDEX "contact_messages_status_idx" ON "contact_messages"("status");
+CREATE INDEX "contact_messages_statusCode_idx" ON "contact_messages"("statusCode");
 
 -- CreateIndex
 CREATE INDEX "contact_messages_createdAt_idx" ON "contact_messages"("createdAt");
@@ -1138,7 +1199,16 @@ ALTER TABLE "event_registrations" ADD CONSTRAINT "event_registrations_userId_fke
 ALTER TABLE "event_registrations" ADD CONSTRAINT "event_registrations_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "event_registrations" ADD CONSTRAINT "event_registrations_statusCode_fkey" FOREIGN KEY ("statusCode") REFERENCES "event_registration_statuses"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "host_requests" ADD CONSTRAINT "host_requests_eventTypeCode_fkey" FOREIGN KEY ("eventTypeCode") REFERENCES "event_types"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "host_requests" ADD CONSTRAINT "host_requests_statusCode_fkey" FOREIGN KEY ("statusCode") REFERENCES "host_request_statuses"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "training_requests" ADD CONSTRAINT "training_requests_statusCode_fkey" FOREIGN KEY ("statusCode") REFERENCES "training_request_statuses"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_statusCode_fkey" FOREIGN KEY ("statusCode") REFERENCES "content_statuses"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1148,6 +1218,9 @@ ALTER TABLE "blog_posts" ADD CONSTRAINT "blog_posts_statusCode_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "research" ADD CONSTRAINT "research_statusCode_fkey" FOREIGN KEY ("statusCode") REFERENCES "content_statuses"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "contact_messages" ADD CONSTRAINT "contact_messages_statusCode_fkey" FOREIGN KEY ("statusCode") REFERENCES "contact_message_statuses"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "contact_messages" ADD CONSTRAINT "contact_messages_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
